@@ -1,0 +1,8 @@
+id: claude-chat-entrypoint-owner
+valid:
+  - 'const env = withDolphinClaudeChatEntrypoint(configured, platform)'
+  - "const binary = 'dolphin'"
+invalid:
+  - "const env = { CLAUDE_CODE_ENTRYPOINT: 'dolphin' }"
+  - "env['claude_code_entrypoint'] = 'other'"
+  - "const identity = 'sdk-cli'"

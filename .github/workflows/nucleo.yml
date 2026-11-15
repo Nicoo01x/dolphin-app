@@ -1,0 +1,75 @@
+name: Núcleo
+
+# El núcleo: el CLI, la consola y los bots. El escritorio tiene su propio
+# workflow (escritorio.yml), que es pnpm y otra cosa.
+# master es la rama del repo de trabajo; main, la del repo público (la foto de cada versión).
+on:
+  push:
+    branches: [master, main]
+    paths-ignore: ['escritorio/**', 'web/**', 'docs/**', '**/*.md']
+  pull_request:
+    branches: [master, main]
+    paths-ignore: ['escritorio/**', 'web/**', 'docs/**', '**/*.md']
+  # Windows a pedido: ver abajo por qué no va en cada push.
+  workflow_dispatch:
+    inputs:
+      windows:
+        description: 'Correr también en Windows'
+        type: boolean
+        default: true
+
+# Un push nuevo cancela la corrida del anterior. Con varios seguidos —una noche
+# de trabajo son diez— se pagaban diez corridas de las que solo importaba la
+# última.
+concurrency:
+  group: nucleo-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Linux siempre; Windows en los PR y cuando se pide a mano.
+        #
+        # No es que Windows importe menos: es al revés, Dolphin se desarrolla en
+        # Windows y ahí la suite entera corre en cada cambio, varias veces por
+        # día. Lo que el CI agrega de verdad es el sistema donde NADIE la corre
+        # a mano. Y un minuto de Windows se cobra como dos, así que la mitad de
+        # la cuota se iba en repetir lo que ya se probó (31/10: se acabó).
+        os: ${{ (github.event_name == 'push' && fromJSON('["ubuntu-latest"]')) || fromJSON('["ubuntu-latest", "windows-latest"]') }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12'
+          cache: npm
+
+      # El postinstall construye la consola: que el install de verdad ande es
+      # parte de lo que hay que probar.
+      - name: Instalar
+        run: npm ci
+
+      - name: Tipos
+        run: npm run typecheck
+
+      # Sin red y sin gastar un token. Las fases que piden un navegador se
+      # saltean solas donde no hay Chrome.
+      - name: Tests
+        run: npm test
+
+      # Lo que se publica: JS plano, sin una sola dependencia de runtime.
+      - name: Compilar
+        run: npm run build
+
+      # El ciclo entero de punta a punta, con el agente de mentira.
+      - name: Smoke
+        run: npm run smoke

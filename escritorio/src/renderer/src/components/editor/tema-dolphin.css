@@ -1,0 +1,212 @@
+/*
+ * Lo del tema del editor que Monaco no sabe pintar desde `defineTheme`.
+ *
+ * Tres cosas y nada más: el texto fantasma, la línea activa y la silueta del archivo en el
+ * margen. Todo lo demás vive en `tema-dolphin-monaco.ts`, que es donde se puede leer junto con el
+ * resto de los colores.
+ */
+
+/* ── El texto fantasma ──────────────────────────────────────────────────────
+   Gris liso, sin halo, como el de Copilot y el de Cursor. Tuvo un `text-shadow`
+   para que fuera «lo único con luz propia de la pantalla»: era un efecto, y un
+   efecto adentro del código molesta en vez de ayudar. Lo que lo distingue del
+   texto de verdad es que está más apagado, y con eso alcanza.                 */
+.monaco-editor .ghost-text-decoration,
+.monaco-editor .ghost-text-decoration-preview,
+.monaco-editor .suggest-preview-text .ghost-text {
+  color: #ffffff !important;
+  opacity: 0.42;
+  font-style: normal !important;
+}
+
+:root:not(.dark) .monaco-editor .ghost-text-decoration,
+:root:not(.dark) .monaco-editor .ghost-text-decoration-preview,
+:root:not(.dark) .monaco-editor .suggest-preview-text .ghost-text {
+  color: #000000 !important;
+  opacity: 0.4;
+}
+
+/* El lugar al que Tab salta y su cartelito ya viven en `assets/main.css`, con el resto de las
+   decoraciones de Monaco. No se repiten acá: dos archivos pintando la misma clase es un bug que
+   tarda meses en aparecer y que se arregla en el lugar equivocado. */
+
+/* ── Sin líneas ─────────────────────────────────────────────────────────────
+   El límite entre el gutter y el texto no se dibuja: no existe.               */
+.monaco-editor .margin-view-overlays .current-line-margin {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.monaco-editor .decorationsOverviewRuler {
+  display: none !important;
+}
+
+/* La línea activa: una banda pareja sobre la línea, de punta a punta.
+   Tuvo un degradé que se encendía en el margen y se apagaba hacia la derecha.
+   Era invención y quedaba mal: el resaltado va SOBRE la línea donde está el
+   cursor —como en Cursor y en Copilot— y no al costado. Un degradé además
+   miente sobre dónde termina la línea activa. */
+.monaco-editor .view-overlays .current-line {
+  border: 0 !important;
+  background: rgb(255 255 255 / 4.5%) !important;
+}
+
+:root:not(.dark) .monaco-editor .view-overlays .current-line {
+  background: rgb(0 0 0 / 3.5%) !important;
+}
+
+/* ── La silueta del archivo ─────────────────────────────────────────────────
+   Una barra por nivel de sangría, pegada al borde del panel. Al mirar el
+   margen ves dónde anida y dónde se aplana sin leer una palabra; es
+   información que ya estaba ahí y que nadie dibuja. Va contra el borde y no al
+   lado del número: ahí se leía como un guión y parecía un error de tipeo.
+   Es sólo dibujo: no toma el mouse, porque su caja (26 px, todo el carril de
+   decoraciones) tapa la rayita de git y se comía el clic que abre el revertir. */
+.monaco-editor .dolphin-sangria {
+  pointer-events: none;
+}
+.monaco-editor .dolphin-sangria::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: rgb(255 255 255 / 5.5%);
+}
+
+:root:not(.dark) .monaco-editor .dolphin-sangria::before {
+  background: rgb(0 0 0 / 6%);
+}
+
+.monaco-editor .dolphin-sangria.n0::before {
+  left: -22px;
+  background: rgb(255 255 255 / 16%);
+}
+
+.monaco-editor .dolphin-sangria.n1::before {
+  left: -19px;
+}
+.monaco-editor .dolphin-sangria.n2::before {
+  left: -16px;
+}
+.monaco-editor .dolphin-sangria.n3::before {
+  left: -13px;
+}
+.monaco-editor .dolphin-sangria.n4::before {
+  left: -10px;
+}
+.monaco-editor .dolphin-sangria.n5::before {
+  left: -7px;
+}
+.monaco-editor .dolphin-sangria.n6::before {
+  left: -4px;
+}
+
+:root:not(.dark) .monaco-editor .dolphin-sangria.n0::before {
+  background: rgb(0 0 0 / 16%);
+}
+
+/* El borde de git: la rayita al lado del número de línea.
+   3 px y pegada al texto, como VS Code. Más ancha compite con el número; más angosta no se ve.
+   El borrado es un triangulito entre dos líneas porque lo que marca no ocupa ninguna. */
+.monaco-editor .borde-git-agregado,
+.monaco-editor .borde-git-cambiado {
+  width: 3px !important;
+  margin-left: 3px;
+  border-radius: 1px;
+}
+.monaco-editor .borde-git-agregado {
+  background: #4ea97b;
+}
+.monaco-editor .borde-git-cambiado {
+  background: #c99a3f;
+}
+.monaco-editor .borde-git-borrado {
+  width: 0 !important;
+  margin-left: 3px;
+  position: relative;
+}
+.monaco-editor .borde-git-borrado::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  border-left: 5px solid #c0695e;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+/* La rayita mide 3 px y apuntarle con el mouse es puntería: el ::before agranda la zona de clic
+   sin ensanchar lo que se ve. Un clic ahí abre el flotante para revertir ese trozo. */
+.monaco-editor .borde-git-agregado,
+.monaco-editor .borde-git-cambiado,
+.monaco-editor .borde-git-borrado {
+  cursor: pointer;
+}
+.monaco-editor .borde-git-agregado::before,
+.monaco-editor .borde-git-cambiado::before,
+.monaco-editor .borde-git-borrado::before {
+  content: '';
+  position: absolute;
+  inset: 0 -4px;
+}
+.monaco-editor .borde-git-agregado,
+.monaco-editor .borde-git-cambiado {
+  position: relative;
+}
+
+/* El flotante del trozo: superficie elevada por tono, sin borde, radio de flotante (14). Lo de
+   adentro va un tono más hondo y con radio anidado; el botón es el único acento, en tinta. */
+.monaco-editor .dolphin-trozo {
+  display: flex;
+  width: min(520px, 70vw);
+  flex-direction: column;
+  gap: 8px;
+  border-radius: var(--dolphin-radio-flotante, 14px);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  padding: 8px;
+  box-shadow: var(--dolphin-sombra-flotante);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.monaco-editor .dolphin-trozo-titulo {
+  margin: 0;
+  padding: 0 4px;
+  color: var(--muted-foreground);
+}
+.monaco-editor .dolphin-trozo-original {
+  max-height: 180px;
+  overflow: auto;
+  margin: 0;
+  border-radius: var(--dolphin-radio-fila, 8px);
+  background: var(--muted);
+  padding: 8px 10px;
+  font-family: var(--monaco-monospace-font, ui-monospace, monospace);
+  white-space: pre;
+}
+.monaco-editor .dolphin-trozo-boton {
+  align-self: flex-start;
+  border: 0;
+  border-radius: var(--dolphin-radio-fila, 8px);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  padding: 6px 12px;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform var(--dolphin-dur-presion, 50ms) var(--dolphin-ease-salida, ease-out);
+}
+.monaco-editor .dolphin-trozo-boton:active {
+  transform: scale(var(--dolphin-presion, 0.98));
+}
+.monaco-editor .dolphin-trozo-boton:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .monaco-editor .dolphin-trozo-boton {
+    transition: none;
+  }
+}

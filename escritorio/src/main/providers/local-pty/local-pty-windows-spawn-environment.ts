@@ -1,0 +1,102 @@
+import { leerEnvDolphin } from '../../../shared/dolphin-env'
+import { win32 as pathWin32 } from 'node:path'
+import {
+  CLAUDE_INJECTED_CONFIG_DIR_ENV,
+  CLAUDE_PROFILE_POINTER_ENV
+} from '../../../shared/claude-profile-routing'
+import { DOLPHIN_HERMES_STARTUP_QUERY_ENV } from '../../../shared/agent-launch/startup/hermes-startup-query'
+import {
+  isHostCodexHomeForWsl,
+  isWslCodexHomeForHost
+} from '../../pty/shell-startup/codex-home-wsl-env'
+import { addWslEnvKeys } from '../../../shared/wsl-env'
+import { parseWslPath } from '../../wsl/filesystem/unc-path-access'
+import { isWindowsGitBashShellPath } from '../../pty/shell-startup/git-bash'
+import type { LocalPtyLaunchPlan } from './local-pty-launch-plan'
+import {
+  DOLPHIN_CODEX_LAUNCH_PREFLIGHT_CMD_QUOTE_ENV,
+  resolveWindowsShellLaunchArgs
+} from '../windows-shell-args'
+import type { PtySpawnOptions } from '../pty-provider-contract'
+
+export function finalizeWindowsLocalPtySpawnEnvironment(args: {
+  spawn: PtySpawnOptions
+  plan: LocalPtyLaunchPlan
+  env: Record<string, string>
+}): void {
+  const { spawn, plan, env } = args
+  const codexHomeWslInfo = env.CODEX_HOME ? parseWslPath(env.CODEX_HOME) : null
+  if (pathWin32.basename(plan.shellPath).toLowerCase() === 'wsl.exe') {
+    if (codexHomeWslInfo) {
+      if (plan.launchWslDistro && plan.launchWslDistro !== codexHomeWslInfo.distro) {
+        delete env.CODEX_HOME
+        delete env.DOLPHIN_CODEX_HOME
+      } else {
+        env.CODEX_HOME = codexHomeWslInfo.linuxPath
+        env.DOLPHIN_CODEX_HOME = codexHomeWslInfo.linuxPath
+        // wsl.exe imports custom variables only through WSLENV.
+        addWslEnvKeys(env, ['CODEX_HOME', 'DOLPHIN_CODEX_HOME'])
+        if (!plan.launchWslDistro) {
+          const resolved = resolveWindowsShellLaunchArgs(
+            plan.shellPath,
+            plan.cwd,
+            plan.defaultCwd,
+            {
+              distro: codexHomeWslInfo.distro
+            }
+          )
+          plan.shellArgs = resolved.shellArgs
+          plan.effectiveCwd = resolved.effectiveCwd
+          plan.validationCwd = resolved.validationCwd
+          plan.startupCommandDeliveredInShellArgs =
+            resolved.startupCommandDeliveredInShellArgs === true
+        }
+      }
+    } else if (isHostCodexHomeForWsl(env.CODEX_HOME)) {
+      // Host-local CODEX_HOME cannot address WSL Codex; use the guest home.
+      delete env.CODEX_HOME
+      delete env.DOLPHIN_CODEX_HOME
+    } else if (env.CODEX_HOME) {
+      addWslEnvKeys(env, ['CODEX_HOME', 'DOLPHIN_CODEX_HOME'])
+    }
+    if (env.CLAUDE_CONFIG_DIR) {
+      // Managed Claude needs the guest config imported through WSLENV.
+      addWslEnvKeys(env, ['CLAUDE_CONFIG_DIR'])
+    }
+    if (env[CLAUDE_PROFILE_POINTER_ENV]) {
+      addWslEnvKeys(env, [CLAUDE_PROFILE_POINTER_ENV, CLAUDE_INJECTED_CONFIG_DIR_ENV])
+    }
+    if (leerEnvDolphin(DOLPHIN_HERMES_STARTUP_QUERY_ENV, env) !== undefined) {
+      // Why: wsl.exe drops custom Windows env vars; the startup wrapper needs this imported inside WSL.
+      addWslEnvKeys(env, [DOLPHIN_HERMES_STARTUP_QUERY_ENV])
+    }
+  } else if (codexHomeWslInfo || isWslCodexHomeForHost(env.CODEX_HOME)) {
+    // Windows cannot use guest Codex paths; clear the alias too or shell-ready would restore it.
+    delete env.CODEX_HOME
+    delete env.DOLPHIN_CODEX_HOME
+  }
+
+  const shellBasename = pathWin32.basename(plan.shellPath).toLowerCase()
+  const codexLaunchPreflightCommand = leerEnvDolphin('CODEX_LAUNCH_PREFLIGHT', env)
+  if (
+    codexLaunchPreflightCommand &&
+    (shellBasename === 'cmd.exe' || isWindowsGitBashShellPath(plan.shellPath))
+  ) {
+    if (shellBasename === 'cmd.exe') {
+      // node-pty escapes argv quotes; expand the preflight quote inside cmd.exe instead.
+      env[DOLPHIN_CODEX_LAUNCH_PREFLIGHT_CMD_QUOTE_ENV] = '"'
+    }
+    const resolved = resolveWindowsShellLaunchArgs(
+      plan.shellPath,
+      plan.cwd,
+      plan.defaultCwd,
+      plan.launchWslContext,
+      spawn.command,
+      codexLaunchPreflightCommand
+    )
+    plan.shellArgs = resolved.shellArgs
+    plan.effectiveCwd = resolved.effectiveCwd
+    plan.validationCwd = resolved.validationCwd
+    plan.startupCommandDeliveredInShellArgs = resolved.startupCommandDeliveredInShellArgs === true
+  }
+}

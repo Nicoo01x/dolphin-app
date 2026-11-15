@@ -1,0 +1,148 @@
+/*
+ * Las referencias vivas del chat: issue, PR, rama y commit.
+ *
+ * Son primas de las insignias (`insignias.css`) pero se distinguen a propósito: una insignia es
+ * un dato que se lee, una referencia es algo que se toca. La diferencia la hace el ícono adelante
+ * y que el cursor cambie, no un color más fuerte — con seis colores nuevos el párrafo se volvía
+ * un arbolito de Navidad.
+ */
+
+.dolphin-ref-marco {
+  position: relative;
+  display: inline-block;
+}
+
+.native-chat-markdown .dolphin-ref {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  padding: 0.05em 0.42em 0.05em 0.34em;
+  border-radius: 0.45em;
+  font-size: 0.94em;
+  font-weight: 500;
+  line-height: inherit;
+  white-space: nowrap;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  color: inherit;
+  transition:
+    background-color 120ms ease-out,
+    color 120ms ease-out;
+}
+
+.native-chat-markdown .dolphin-ref[role='button'] {
+  cursor: pointer;
+}
+
+.native-chat-markdown .dolphin-ref:hover {
+  background: color-mix(in srgb, currentColor 15%, transparent);
+}
+
+.native-chat-markdown .dolphin-ref:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+
+.dolphin-ref-icono {
+  width: 0.92em;
+  height: 0.92em;
+  flex: none;
+  opacity: 0.75;
+}
+
+/* Un color por clase, tomado del significado que ya tiene en la app: el issue abierto es celeste,
+   el PR es violeta, la rama es neutra y el commit es monoespaciado y apagado. */
+.native-chat-markdown .dolphin-ref[data-ref-clase='issue'] {
+  color: #4aa3df;
+  background: color-mix(in srgb, #4aa3df 13%, transparent);
+}
+.native-chat-markdown .dolphin-ref[data-ref-clase='issue']:hover {
+  background: color-mix(in srgb, #4aa3df 22%, transparent);
+}
+.native-chat-markdown .dolphin-ref[data-ref-clase='pr'] {
+  color: #a78bfa;
+  background: color-mix(in srgb, #a78bfa 13%, transparent);
+}
+.native-chat-markdown .dolphin-ref[data-ref-clase='pr']:hover {
+  background: color-mix(in srgb, #a78bfa 22%, transparent);
+}
+.native-chat-markdown .dolphin-ref[data-ref-clase='rama'],
+.native-chat-markdown .dolphin-ref[data-ref-clase='commit'] {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.88em;
+}
+
+/* La tarjeta. Flota sobre el texto y no empuja nada: `position: absolute` desde el marco. */
+.dolphin-ref-tarjeta {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  display: flex;
+  width: max-content;
+  max-width: 320px;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 12px;
+  padding: 8px 10px;
+  background: var(--popover, #16181d);
+  color: var(--popover-foreground, #e6e8ec);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.07),
+    0 12px 32px -10px rgb(0 0 0 / 0.75);
+  /* Que no se coma el hover de lo que hay debajo mientras aparece. */
+  pointer-events: none;
+  animation: dolphin-ref-asomar 140ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes dolphin-ref-asomar {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dolphin-ref-tarjeta {
+    animation: none;
+  }
+}
+
+.dolphin-ref-tarjeta-que {
+  font-size: 11px;
+  opacity: 0.55;
+}
+
+.dolphin-ref-tarjeta-titulo {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+.dolphin-ref-tarjeta-gris {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+/* Las etiquetas del issue, con el color que tienen en GitHub: dos etiquetas distintas
+   tienen que verse distintas de un saque, y el gris las igualaba todas. */
+.dolphin-ref-etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.dolphin-ref-etiqueta {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0 6px;
+  font-size: 11px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+/* Una entrada vieja de la cache no trae color: queda como estaba. */
+.dolphin-ref-etiqueta.dolphin-ref-sin-color {
+  border-color: color-mix(in srgb, currentColor 25%, transparent);
+  opacity: 0.6;
+}

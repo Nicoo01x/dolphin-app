@@ -1,0 +1,77 @@
+{
+  "name": "dolphin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Le pedís algo a un agente de código: Dolphin lo hace escribir en una rama propia, lo prueba fase por fase y te entrega la rama ya probada.",
+  "license": "MIT",
+  "author": "Nicolás Cabanillas",
+  "homepage": "https://github.com/Nicoo01x/dolphin-app#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nicoo01x/dolphin-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Nicoo01x/dolphin-app/issues"
+  },
+  "keywords": [
+    "claude-code",
+    "codex",
+    "coding-agent",
+    "agent-orchestration",
+    "git-worktree",
+    "ai-code-review",
+    "mcp",
+    "cli"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "bin": {
+    "dolphin": "bin/dolphin.mjs"
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "ui/dist/",
+    "ui/public/",
+    "scripts/preparar-consola.mjs"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/preparar-consola.mjs --sin-cortar",
+    "prepack": "npm run build && npm run ui:build",
+    "dev": "tsx src/cli.ts",
+    "dolphin": "tsx src/dolphin.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "ui": "tsx src/ui-cli.ts",
+    "sembrar": "tsx src/cli.ts",
+    "mirar": "tsx src/mirar.ts",
+    "smoke": "tsx scripts/smoke.ts",
+    "demo": "tsx scripts/demo.ts",
+    "ui:build": "node scripts/preparar-consola.mjs",
+    "ui:dev": "npm --prefix ui run dev",
+    "recordar": "tsx src/recordar-cli.ts",
+    "explorar": "tsx src/explorar-cli.ts",
+    "ideas": "tsx src/ideas-cli.ts",
+    "cola": "tsx src/cola-cli.ts",
+    "vigilar": "tsx src/vigilar-cli.ts",
+    "sonar": "tsx src/sonar-cli.ts",
+    "guardian": "tsx src/guardian-cli.ts",
+    "gif": "tsx scripts/gif-del-demo.ts",
+    "tablero": "tsx src/tablero-cli.ts",
+    "equipo": "tsx src/equipo-cli.ts",
+    "bots": "tsx src/bots-cli.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vite": "^7.3.7",
+    "vitest": "^5.0.5"
+  },
+  "optionalDependencies": {
+    "playwright-core": "^1.64.1"
+  }
+}

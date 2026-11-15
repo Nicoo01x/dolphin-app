@@ -1,0 +1,325 @@
+@import "tailwindcss";
+
+/* La dirección es **Linear** (linear.app), la referencia que eligió Nico el 01/11 después de mirar
+   zed.dev, ghostty.org, linear.app y bun.sh. De ahí salen, medidas sobre la página real:
+
+   - fondo casi negro NEUTRO (#08090a allá) en vez del azul noche, y la jerarquía por superficies
+     apenas más claras, nunca por líneas;
+   - una sola familia tipográfica, peso 500 en los títulos (Linear usa 510) con tracking negativo
+     fuerte (−0,022em) e interlineado 1,0 en los grandes;
+   - todo alineado a la IZQUIERDA, títulos enormes y cortos, y la explicación en su propia columna
+     a la derecha en vez de debajo y centrada;
+   - el botón principal es BLANCO: el acento casi no aparece en el chrome.
+
+   Lo que NO se copia: los rótulos monoespaciados tipo «FIG 0.1» y las versales con tracking, que
+   están en la lista de slop de Nico y son lo más imitable del sitio.
+
+   Lo anterior (hermes-agent: azul noche, marco celeste de 5 px, Instrument Serif, versales con
+   tracking) se fue entero el 01/11 con «la web no me gusta nada». */
+@theme {
+  /* El lienzo y sus superficies: cuatro escalones casi iguales. Lo que separa un bloque de otro es
+     el tono, no un filete. El negro lleva una pizca de azul —el de Linear es 8,9,10— porque
+     Dolphin es el mar; de cerca no se nota y de lejos la página no es gris. */
+  /* El sesgo frío es CONSTANTE: B − R = +5 en los cuatro escalones. Antes crecía (+5, +7, +9,
+     +12), que es lo que hace que una paleta oscura se vea sucia: cada superficie es de un azul
+     distinto y el ojo lo lee como suciedad aunque no sepa por qué. Medido en la categoría: Cursor
+     mantiene R − B = +8 constante (va cálido), Linear B − R = +2, Perplexity +6. Lo que importa
+     no es el número, es que no varíe. */
+  /* Claro desde el 09/11/2026 (Nico: «la web la quiero en blanco»). La pizca fría se mantiene:
+     el lienzo no es #fff sino un blanco con azul adentro, igual que antes el negro no era #000.
+     B − R = +3 constante en los cuatro escalones, la misma regla de antes. */
+  --color-lienzo: #fcfcfd;
+  --color-lienzo-2: #f6f7f9;
+  --color-lienzo-3: #eff1f4;
+  --color-lienzo-4: #e7e9ee;
+
+  /* El negro de la APP, que sigue siendo oscura. Todo lo que en la página representa una pantalla
+     de Dolphin —la ventana de la demo, las capturas, el tablero— se pinta con estos y no con el
+     lienzo: un sitio claro con la app adentro en oscuro es lo que hace qoder.com, y es lo honesto,
+     porque la app es oscura de verdad. */
+  --color-app: #07090c;
+  --color-app-2: #0c0e11;
+  --color-app-3: #111316;
+  --color-app-4: #17191c;
+  --color-app-tinta: rgb(247 248 248 / 0.9);
+  --color-app-tenue: rgb(247 248 248 / 0.64);
+  --color-app-apagado: rgb(247 248 248 / 0.52);
+  --color-app-espuma: rgb(247 248 248);
+
+  /* Los estados: UNA escalera de alfa y nada más, con progresión aritmética de +0,035. Es la
+     versión sistematizada de lo que Linear hace a ojo (0,016 / 0,02 / 0,03 / 0,04 / 0,05 / 0,08).
+     Ningún componente inventa su propio alfa, que es como terminan siete hovers distintos. */
+  --color-estado-1: rgb(11 13 16 / 0.035);
+  --color-estado-2: rgb(11 13 16 / 0.07);
+  --color-estado-3: rgb(11 13 16 / 0.105);
+
+  /* El acento. Se gasta en POQUÍSIMOS lugares: el foco, lo que está activo y lo que vive adentro
+     de las ilustraciones. El botón principal es blanco. Es el §12 del gusto de Nico: «la interfaz
+     no tiene colores, pero el mundo sí». */
+  /* En claro el celeste de antes (#19b9ff) no llega a 3:1 contra el blanco: no servía ni para el
+     anillo de foco, que es justo donde más tiene que verse. Este es el mismo azul bajado hasta
+     que cumple. */
+  --color-electrico: #0b7fc4;
+  /* El azul del agua en los dibujos. No es un segundo acento de interfaz: vive en las láminas. */
+  --color-marino: #1b6ca8;
+
+  /* UNA sola tinta con alfa, no cuatro grises elegidos a ojo.
+     Antes eran `#f7f8f8`, `#e3e5e8`, `#9ca3ae` y `#6f7681`: cuatro hues distintos —los dos
+     últimos tiran a azul y los dos primeros no— y eso es lo que hace que una escala de grises se
+     vea improvisada. Es lo que hacen los dos productos de la categoría: Cursor deriva sus cuatro
+     escalones de `#EDECEC` al 100/92/60/40 % con `color-mix`, Perplexity de `#DBDEE3` al
+     100/65/50/20 %.
+     Los porcentajes salen de medir el contraste contra `#07090c`, no de copiarlos: lo más apagado
+     que se LEE queda en 4,7:1, que es AA para texto chico. */
+  --color-espuma: rgb(11 13 16);
+  --color-tinta: rgb(11 13 16 / 0.88);
+  /* 6,6:1 — el texto corrido secundario. */
+  --color-tenue: rgb(11 13 16 / 0.62);
+  /* 4,7:1 — rótulos y metadatos, nunca texto largo. */
+  --color-apagado: rgb(11 13 16 / 0.5);
+  /* 2,4:1 — NO es un tono de texto: puntos, separadores y marcas. */
+  --color-tenue-2: rgb(11 13 16 / 0.22);
+  --color-celeste: #4a5058;
+
+  /* Los dos del portón, bajados para que se lean sobre claro (el verde de antes daba 1,8:1). */
+  --color-paso: #1f8a57;
+  --color-cayo: #c2402f;
+
+  /* Una sola familia en toda la página, como Linear. Satoshi y no Inter: es la voz de Dolphin en
+     la consola y Nico lo dejó dicho el 27/10. `--font-titular` queda apuntando al mismo lado para
+     no romper las páginas que todavía lo nombran. */
+  --font-titular: var(--fuente-texto), system-ui, sans-serif;
+  --font-texto: var(--fuente-texto), system-ui, sans-serif;
+  --font-codigo: var(--fuente-codigo), ui-monospace, monospace;
+
+  /* Radios anidados en la escala chica que pide una herramienta de desarrollo: ventana 20 →
+     caja 14 → fila 10. Cada interior es el exterior menos un escalón. */
+  --radius-ventana: 20px;
+  --radius-caja: 14px;
+  --radius-fila: 10px;
+
+  /* La home del 12/11/2026 va por otra escala, la de la referencia que eligió Nico (tarjeta blanca
+     sobre un paisaje): escena 32 → tarjeta 20 → control 12 → píldora. Cada interior es el exterior
+     menos un escalón, igual que la de arriba. */
+  --radius-escena: 32px;
+  --radius-tarjeta: 20px;
+  --radius-control: 12px;
+
+  /* DOS duraciones y un easing para todo el cromo, y nada más. Medido: Linear usa .1s y .16s con
+     `cubic-bezier(.25,.46,.45,.94)`; Cursor .14s y .25s con `cubic-bezier(.25,1,.5,1)`. Los dos
+     mueven 2 a 5 px y nunca más. Hoy la página tiene 51 transiciones y sólo 10 declaran duración:
+     las otras 41 corren con el default del navegador, que no es una decisión de nadie. */
+  --ease-firma: cubic-bezier(0.22, 1, 0.36, 1);
+  --duracion-rapida: 100ms;
+  --duracion-base: 160ms;
+
+  /* El tracking cambia de SIGNO según el tamaño: positivo abajo de 12 px, cero a 12-13, y cada vez
+     más negativo hacia arriba. Es lo que separa una tipografía bien usada de la misma tipografía
+     por defecto —Linear va de 0 a 12 px hasta −0,022em a 64, Cursor de +0,0044em a 11 px hasta
+     −0,0125em a 26— y es, literalmente, por qué una fuente buena puede verse barata. */
+  --tracking-micro: 0.0044em;
+  --tracking-chico: 0em;
+  --tracking-texto: -0.011em;
+  --tracking-titulo: -0.022em;
+  --tracking-enorme: -0.03em;
+}
+
+@layer base {
+  html {
+    background: var(--color-lienzo);
+    color: var(--color-tinta);
+    color-scheme: light;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    font-family: var(--font-texto);
+    font-size: 17px;
+    line-height: 1.6;
+  }
+  ::selection {
+    background: var(--color-espuma);
+    color: var(--color-lienzo);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-electrico);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  /* En el código cada carácter es el que se escribe: sin ligaduras, «--repo» no se vuelve una raya. */
+  code,
+  pre,
+  .font-codigo {
+    font-variant-ligatures: none;
+  }
+}
+
+@layer components {
+  /* La escala de títulos, en clases y no a mano en cada página: con `clamp` escrito doce veces,
+     a la tercera pantalla ya hay tres escalas distintas. */
+  .titulo-grande {
+    font-size: clamp(40px, 5.6vw, 64px);
+    line-height: 1;
+    letter-spacing: -0.028em;
+    font-weight: 500;
+    color: var(--color-espuma);
+    text-wrap: balance;
+  }
+  .titulo-seccion {
+    font-size: clamp(30px, 3.6vw, 46px);
+    line-height: 1.04;
+    letter-spacing: -0.026em;
+    font-weight: 500;
+    color: var(--color-espuma);
+    text-wrap: balance;
+  }
+  /* El párrafo que acompaña a un título de sección, en su columna de la derecha. */
+  .bajada {
+    font-size: clamp(18px, 1.5vw, 21px);
+    line-height: 1.45;
+    letter-spacing: -0.012em;
+    color: var(--color-tenue);
+    text-wrap: pretty;
+  }
+
+  /* El botón principal: pill blanca, como la de Linear. El feedback al tocarlo es obligatorio
+     (gusto de Nico §10) y es de presión al apretar, nunca de tamaño en hover. */
+  .boton-pill,
+  .boton-tonal {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 18px;
+    border-radius: 9999px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    transition:
+      background-color 140ms ease-out,
+      color 140ms ease-out,
+      transform 140ms var(--ease-firma);
+  }
+  .boton-pill:active,
+  .boton-tonal:active {
+    transform: scale(0.97);
+    transition-duration: 60ms;
+  }
+  .boton-pill {
+    background: var(--color-espuma);
+    color: var(--color-lienzo);
+  }
+  .boton-pill:hover {
+    background: #000;
+  }
+  /* El secundario: la misma pill, en superficie tonal y sin borde. */
+  .boton-tonal {
+    background: var(--color-lienzo-3);
+    color: var(--color-tinta);
+  }
+  .boton-tonal:hover {
+    background: var(--color-lienzo-4);
+    color: var(--color-espuma);
+  }
+
+  /* Algo que se corre de costado sin que se vea la barra: el tablero de la portada en el celular.
+     El scroll sigue estando —con el dedo, con la rueda y con el teclado—, lo que se va es la
+     barra, que atraviesa la pieza y la parte en dos. */
+  .sin-barra {
+    scrollbar-width: none;
+  }
+  .sin-barra::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* La ventana donde va una captura del producto. El anillo es casi la única línea de la página y
+     existe porque sin él una captura oscura se funde con el fondo oscuro. */
+  .ventana-captura {
+    border-radius: var(--radius-ventana);
+    overflow: hidden;
+    background: var(--color-app-2);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+      0 1px 2px rgba(11, 13, 16, 0.12),
+      0 24px 60px -24px rgba(11, 13, 16, 0.35);
+  }
+}
+
+@layer components {
+  /* La tarjeta de las escenas: blanca y sólida, como la de la referencia. La separa del paisaje
+     una sombra en cuatro capas (un canto casi invisible, una cercana nítida y dos lejanas difusas)
+     y no un borde. Sin desenfoque de fondo: sobre un óleo, el vidrio ensucia el texto. */
+  .tarjeta-escena {
+    background: #fff;
+    border-radius: var(--radius-tarjeta);
+    box-shadow:
+      0 0 0 1px rgb(11 13 16 / 0.04),
+      0 1px 2px rgb(11 13 16 / 0.06),
+      0 12px 32px -10px rgb(11 13 16 / 0.22),
+      0 40px 90px -30px rgb(11 13 16 / 0.35);
+  }
+  /* La línea finísima entre filas de la referencia: un canto de 1 px en sombra, no un borde que
+     sume al alto de la fila. */
+  .fila-escena + .fila-escena {
+    box-shadow: inset 0 1px 0 rgb(11 13 16 / 0.06);
+  }
+
+  /* Una captura real de la app sobre el paisaje (home/Marco.tsx). El canto claro de 1 px separa
+     la captura oscura del óleo oscuro; las dos sombras la despegan, una cerca y otra lejos. */
+  .marco-captura {
+    position: relative;
+    width: 100%;
+    box-shadow:
+      0 0 0 1px rgb(11 13 16 / 0.18),
+      0 2px 4px rgb(11 13 16 / 0.18),
+      0 18px 40px -12px rgb(11 13 16 / 0.42),
+      0 50px 110px -30px rgb(11 13 16 / 0.5);
+  }
+  /* El canto va arriba de la imagen: una sombra `inset` en el marco quedaría tapada por ella. */
+  .marco-captura::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+    pointer-events: none;
+  }
+}
+
+/* Lo único que se mueve solo en la home: el indicador «en curso» gira y el tilde se dibuja una vez.
+   Con «menos movimiento» el giro se apaga y el tilde aparece dibujado. */
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes trazar {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.girar {
+  animation: girar 0.9s linear infinite;
+  transform-origin: center;
+}
+.trazar {
+  stroke-dasharray: 1 1;
+  animation: trazar 260ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .girar,
+  .trazar {
+    animation: none;
+  }
+}
+
+/* Lenis: el scroll suave se apaga solo con prefers-reduced-motion (ver ScrollSuave). */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}

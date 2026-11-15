@@ -1,0 +1,267 @@
+# Instaladores de Dolphin para Windows, macOS y Linux, y la release de GitHub de donde los baja
+# la actualización automática.
+#
+# Cómo se usa (detalle en RELEASE.md):
+#   - Empujar un tag `vX.Y.Z` cuyo número sea el de `escritorio/package.json` → compila las tres
+#     plataformas, sube todo a UN borrador de release y lo publica cuando están todos los archivos.
+#   - Correrlo a mano (workflow_dispatch) → compila igual pero no publica nada: deja los
+#     instaladores como artefactos de la corrida. Sirve de ensayo antes de sacar una versión.
+#
+# Por qué un borrador primero y la publicación al final: `/releases/latest` es lo que lee la app
+# instalada (ver DOLPHIN_UPDATE_FEED en escritorio/src/shared/dolphin-brand.ts). Si la release se
+# hiciera pública cuando termina la primera plataforma, durante media hora las otras dos verían un
+# `latest*.yml` que nombra un instalador que todavía no existe, o ninguno.
+#
+# Lo que NO hace, a propósito:
+#   - No firma. Windows sale sin Authenticode (SmartScreen avisa) y macOS sin Developer ID ni
+#     notarización (Gatekeeper avisa). La firma de Windows se prende sola cuando están las variables
+#     del relevo a SignPath (DOLPHIN_WIN_SIGNPATH_RELAY / DOLPHIN_WIN_UNINSTALLER_RELAY_URL; ver
+#     `firmaDeVerdad` en escritorio/config/electron-builder.config.cjs) y la de macOS con
+#     DOLPHIN_MAC_RELEASE=1 más el certificado. Ninguna de las dos está puesta acá: sin ellas el
+#     build no declara un `publisherName` que no tiene, y la actualización de Windows no se rechaza
+#     a sí misma.
+#   - No arma la plantilla de `dolphind` para hosts remotos sin toolchain (son 8 ranuras, una por
+#     runner). Sin DOLPHIN_REQUIRE_DOLPHIND_TEMPLATE=1 el empaquetado la saltea limpio.
+#   - No compila Linux arm64: necesitaría otro runner. Cuando se sume, también va en
+#     `verify-release-required-assets.mjs`.
+
+name: Instaladores
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: instaladores-${{ github.ref }}
+  # Why no se cancela: una corrida cortada a la mitad deja un borrador con la mitad de los archivos.
+  cancel-in-progress: false
+
+env:
+  # Why vacío y explícito: los scripts de build suman su propio --max-old-space-size, y una
+  # variable heredada del runner choca con rolldown.
+  NODE_OPTIONS: ''
+
+jobs:
+  borrador:
+    name: Borrador de la release
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: El tag coincide con la versión del package.json
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./escritorio/package.json').version")"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::El tag es $GITHUB_REF_NAME pero escritorio/package.json dice $version. Se suben juntos: primero la versión, después el tag."
+            exit 1
+          fi
+
+      - name: Crear el borrador (o reusar el de una corrida anterior)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          estado="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft' 2>/dev/null || echo ausente)"
+          if [ "$estado" = false ]; then
+            echo "::error::La release $TAG ya está publicada. Una versión publicada no se vuelve a compilar: subí el número."
+            exit 1
+          fi
+          if [ "$estado" = true ]; then
+            # Why vaciarlo: este job corre cuando arranca una corrida entera (un tag nuevo o movido,
+            # o «Re-run all jobs»), y las tres plataformas vuelven a subir todo. Lo que quedó de la
+            # corrida anterior es de otro commit: mezclado, el borrador publicaría un .exe de uno y
+            # un .dmg de otro. «Re-run failed jobs» no pasa por acá y conserva lo que ya salió bien.
+            echo "Ya hay un borrador de $TAG: se vacía y las plataformas suben ahí."
+            gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' |
+              while IFS= read -r archivo; do
+                [ -n "$archivo" ] || continue
+                echo "  fuera $archivo"
+                gh release delete-asset "$TAG" "$archivo" --repo "$GITHUB_REPOSITORY" --yes
+              done
+            exit 0
+          fi
+          notas="docs/versiones/$TAG.md"
+          if [ ! -f "$notas" ]; then
+            notas="$RUNNER_TEMP/notas.md"
+            printf 'Dolphin %s.\n\nInstaladores para Windows, macOS y Linux. Cómo abrirlos sin firma: ver RELEASE.md.\n' "${TAG#v}" > "$notas"
+          fi
+          previa=()
+          case "$TAG" in *-*) previa=(--prerelease) ;; esac
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft --verify-tag \
+            --title "Dolphin ${TAG#v}" --notes-file "$notas" "${previa[@]}"
+
+  compilar:
+    name: Instalador de ${{ matrix.nombre }}
+    needs: borrador
+    # Why así: a mano no hay borrador (el job se saltea) y la compilación tiene que correr igual.
+    if: ${{ !cancelled() && (needs.borrador.result == 'success' || needs.borrador.result == 'skipped') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Why windows-2022 y no windows-latest: la imagen nueva trae un Visual Studio que node-gyp
+          # todavía no detecta, y la instalación de los módulos nativos se cae.
+          - nombre: Windows
+            runner: windows-2022
+            instalar: ''
+            empaquetar: --win nsis --x64
+            artefactos: |
+              escritorio/dist/dolphin-windows-setup.exe
+              escritorio/dist/dolphin-windows-setup.exe.blockmap
+              escritorio/dist/latest.yml
+          # Why un solo runner para las dos arquitecturas: así sale UN `latest-mac.yml` con los dos
+          # .zip adentro. Con un runner por arquitectura cada uno sube el suyo y el segundo pisa al
+          # primero, y la mitad de las Macs deja de ver las versiones nuevas.
+          - nombre: macOS
+            runner: macos-15
+            instalar: --cpu=current,x64,arm64
+            empaquetar: --mac
+            artefactos: |
+              escritorio/dist/dolphin-macos-*.dmg
+              escritorio/dist/dolphin-macos-*.zip
+              escritorio/dist/*.blockmap
+              escritorio/dist/latest-mac.yml
+          # Why el runner pelado y no un contenedor de Ubuntu 20.04: el cliente de portapapeles de
+          # Wayland se compila adentro de docker contra el piso de glibc, y docker no corre adentro
+          # de un contenedor de Actions. El piso lo sigue vigilando el afterPack.
+          - nombre: Linux
+            runner: ubuntu-latest
+            instalar: ''
+            empaquetar: --linux AppImage deb rpm --x64
+            artefactos: |
+              escritorio/dist/*.AppImage
+              escritorio/dist/*.deb
+              escritorio/dist/*.rpm
+              escritorio/dist/latest-linux.yml
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: bash
+        working-directory: escritorio
+    env:
+      PUBLICAR: ${{ startsWith(github.ref, 'refs/tags/v') && 'always' || 'never' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.14.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: escritorio/package.json
+          cache: pnpm
+          cache-dependency-path: escritorio/pnpm-lock.yaml
+
+      - name: Dependencias del sistema (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            python3-gi gir1.2-atspi-2.0 at-spi2-core xclip xdotool rpm libarchive-tools
+
+      # El lanzador de la CLI de Windows es Rust y el empaquetado lo compila.
+      - name: Rust para el lanzador de Windows
+        if: runner.os == 'Windows'
+        run: |
+          if ! command -v cargo >/dev/null 2>&1; then
+            rustup toolchain install stable --profile minimal
+            rustup default stable
+          fi
+          cargo --version
+
+      # Why reintentos: la descarga de Electron devuelve un 504 de vez en cuando y tira la corrida.
+      - name: Instalar dependencias
+        run: |
+          for intento in 1 2 3; do
+            pnpm install --frozen-lockfile ${{ matrix.instalar }} && exit 0
+            echo "::warning::pnpm install falló (intento $intento); reintentando."
+            sleep 20
+          done
+          exit 1
+
+      - name: Compilar la app
+        run: pnpm run build:release
+
+      - name: Runtime nativo de Electron
+        run: pnpm run ensure:electron-runtime
+
+      - name: Node fijado para las dos arquitecturas (macOS)
+        if: runner.os == 'macOS'
+        run: node config/scripts/dolphind-distribution/prebuilds/pinned-node-downloads.mjs darwin-arm64 darwin-x64
+
+      - name: Empaquetar y subir al borrador
+        env:
+          # El token de la corrida alcanza para subir a una release del mismo repo. La app instalada
+          # no lleva ninguno: lee la release pública.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pnpm exec electron-builder --config config/electron-builder.config.cjs \
+            ${{ matrix.empaquetar }} --publish "$PUBLICAR"
+
+      - name: Guardar los instaladores en la corrida
+        uses: actions/upload-artifact@v4
+        with:
+          name: dolphin-${{ matrix.nombre }}
+          path: ${{ matrix.artefactos }}
+          if-no-files-found: error
+
+  publicar:
+    name: Publicar la release
+    needs: [borrador, compilar]
+    if: ${{ !cancelled() && startsWith(github.ref, 'refs/tags/v') && needs.compilar.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Están todos los archivos que piden los manifiestos
+        run: node escritorio/config/scripts/release/publication/verify-release-required-assets.mjs "$TAG"
+
+      - name: Sacar del borrador
+        run: |
+          set -euo pipefail
+          case "$TAG" in
+            *-*) gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --prerelease=true ;;
+            *) gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --prerelease=false --latest ;;
+          esac
+
+      # Lo mismo que hace la app instalada: si esto no contesta la versión nueva, nadie la va a ver.
+      - name: La app ya ve la versión nueva
+        if: ${{ !contains(github.ref_name, '-') }}
+        run: |
+          set -euo pipefail
+          version="${TAG#v}"
+          base="https://github.com/$GITHUB_REPOSITORY/releases/latest/download"
+          for manifiesto in latest.yml latest-mac.yml latest-linux.yml; do
+            if ! contenido="$(curl -fsSL "$base/$manifiesto")"; then
+              echo "::error::No se pudo leer $base/$manifiesto. Si el repo sigue privado, la app instalada no puede ver ninguna versión: tiene que ser público."
+              exit 1
+            fi
+            if ! grep -q "^version: $version\$" <<<"$contenido"; then
+              echo "::error::$manifiesto no dice la versión $version."
+              exit 1
+            fi
+            echo "$manifiesto → $version"
+          done

@@ -1,0 +1,276 @@
+import { describe, expect, it } from 'vitest'
+import type { GlobalSettings } from '../global-settings-types'
+import type { Repo } from '../repo-types'
+import type { WorktreeMeta } from './meta-types'
+import type { Worktree } from './types'
+
+import { migrateExternalWorktreeVisibilityDefaults } from '../external-worktree-visibility'
+import {
+  applyMetadataFallbackVisibility,
+  buildKnownDolphinWorkspaceLayouts,
+  toDetectedWorktree,
+  EXTERNAL_WORKTREE_VISIBILITY_ROLLOUT_AT
+} from './ownership'
+
+function makeRepo(overrides: Partial<Repo> = {}): Repo {
+  return {
+    id: 'repo-1',
+    path: '/repos/app',
+    displayName: 'app',
+    badgeColor: '#000',
+    addedAt: EXTERNAL_WORKTREE_VISIBILITY_ROLLOUT_AT + 1,
+    kind: 'git',
+    ...overrides
+  }
+}
+
+function makeWorktree(overrides: Partial<Worktree> = {}): Worktree {
+  return {
+    id: `repo-1::${overrides.path ?? '/repos/app'}`,
+    repoId: 'repo-1',
+    path: '/repos/app',
+    head: 'abc',
+    branch: 'refs/heads/main',
+    isBare: false,
+    isMainWorktree: true,
+    displayName: 'main',
+    comment: '',
+    linkedIssue: null,
+    linkedPR: null,
+    linkedLinearIssue: null,
+    linkedGitLabMR: null,
+    linkedGitLabIssue: null,
+    isArchived: false,
+    isUnread: false,
+    isPinned: false,
+    sortOrder: 0,
+    lastActivityAt: 0,
+    workspaceStatus: 'todo',
+    ...overrides
+  }
+}
+
+function makeMeta(overrides: Partial<WorktreeMeta> = {}): WorktreeMeta {
+  return {
+    displayName: '',
+    comment: '',
+    linkedIssue: null,
+    linkedPR: null,
+    linkedLinearIssue: null,
+    linkedGitLabMR: null,
+    linkedGitLabIssue: null,
+    isArchived: false,
+    isUnread: false,
+    isPinned: false,
+    sortOrder: 0,
+    lastActivityAt: 0,
+    workspaceStatus: 'todo',
+    ...overrides
+  }
+}
+
+function makeSettings(overrides: Partial<GlobalSettings> = {}): GlobalSettings {
+  return {
+    workspaceDir: '/dolphin/workspaces',
+    nestWorkspaces: true,
+    workspaceDirHistory: [],
+    refreshLocalBaseRefOnWorktreeCreate: false,
+    localBaseRefSuggestionDismissed: false,
+    branchPrefix: 'none',
+    branchPrefixCustom: '',
+    theme: 'system',
+    appFontFamily: 'Geist',
+    editorAutoSave: false,
+    editorAutoSaveDelayMs: 1000,
+    editorMinimapEnabled: false,
+    markdownReviewToolsEnabled: true,
+    terminalFontSize: 14,
+    terminalFontFamily: 'monospace',
+    terminalFontWeight: 400,
+    terminalLineHeight: 1.2,
+    ...overrides
+  } as GlobalSettings
+}
+
+describe('worktree ownership classification', () => {
+  it('does not treat generic discovery metadata on nested workspace paths as Dolphin-managed', () => {
+    const repo = makeRepo({ externalWorktreeVisibility: 'hide' })
+    const settings = makeSettings()
+    const detected = toDetectedWorktree({
+      repo,
+      settings,
+      worktree: makeWorktree({
+        path: '/dolphin/workspaces/app/manual-git-worktree',
+        isMainWorktree: false
+      }),
+      meta: makeMeta({ displayName: 'manual-git-worktree' }),
+      knownDolphinLayouts: buildKnownDolphinWorkspaceLayouts(settings, repo)
+    })
+
+    expect(detected.ownership).toBe('external')
+    expect(detected.visible).toBe(false)
+  })
+
+  it('keeps selected linked checkouts visible without trusting Git main-worktree', () => {
+    const repo = makeRepo({ path: '/repos/app-linked', externalWorktreeVisibility: 'hide' })
+    const settings = makeSettings()
+    const selected = toDetectedWorktree({
+      repo,
+      settings,
+      worktree: makeWorktree({
+        path: '/repos/app-linked',
+        isMainWorktree: false
+      }),
+      knownDolphinLayouts: buildKnownDolphinWorkspaceLayouts(settings, repo)
+    })
+    const gitMain = toDetectedWorktree({
+      repo,
+      settings,
+      worktree: makeWorktree({
+        path: '/repos/app-main',
+        isMainWorktree: true
+      }),
+      knownDolphinLayouts: buildKnownDolphinWorkspaceLayouts(settings, repo)
+    })
+
+    expect(selected.visible).toBe(true)
+    expect(gitMain.visible).toBe(false)
+    expect(gitMain.ownership).toBe('external')
+  })
+})
+
+describe('external worktree visibility policy', () => {
+  it('materializes only implicit legacy visibility when adding the safe global default', () => {
+    const legacy = makeRepo({ externalWorktreeVisibilityLegacy: undefined })
+    const explicit = makeRepo({ id: 'explicit', externalWorktreeVisibility: 'hide' })
+    const inherited = makeRepo({ id: 'inherited', externalWorktreeVisibilityLegacy: false })
+
+    const migrated = migrateExternalWorktreeVisibilityDefaults(
+      [legacy, explicit, inherited],
+      undefined
+    )
+
+    expect(migrated.defaults).toEqual({ external: 'hide' })
+    expect(migrated.repos).toEqual([
+      expect.objectContaining({
+        id: legacy.id,
+        externalWorktreeVisibility: 'show',
+        externalWorktreeVisibilityLegacy: true
+      }),
+      explicit,
+      inherited
+    ])
+    expect(
+      migrateExternalWorktreeVisibilityDefaults(migrated.repos, migrated.defaults).changed
+    ).toBe(false)
+  })
+})
+
+describe('agent scratch worktrees', () => {
+  const scratchPath = '/repos/app/.claude/worktrees/agent-a04ccaaa55ddadb91'
+
+  it('applies built-in source preferences independently after legacy migration', () => {
+    const repo = makeRepo({
+      agentWorktreeVisibility: 'show',
+      worktreeVisibilitySourcePreferences: {
+        builtIn: { claude: 'hide', gsd: 'show' }
+      }
+    })
+    const settings = makeSettings()
+
+    expect(
+      toDetectedWorktree({
+        repo,
+        settings,
+        worktree: makeWorktree({ path: scratchPath, isMainWorktree: false }),
+        knownDolphinLayouts: buildKnownDolphinWorkspaceLayouts(settings, repo)
+      }).visible
+    ).toBe(false)
+    expect(
+      toDetectedWorktree({
+        repo,
+        settings,
+        worktree: makeWorktree({
+          path: '/repos/app/.gsd-workspaces/phase-1',
+          isMainWorktree: false
+        }),
+        knownDolphinLayouts: buildKnownDolphinWorkspaceLayouts(settings, repo)
+      }).visible
+    ).toBe(true)
+  })
+
+  it('lets a custom source override ordinary external visibility', () => {
+    const customPath = '/srv/team-worktrees/feature'
+    const repo = makeRepo({
+      externalWorktreeVisibility: 'show',
+      customWorktreeVisibilitySources: [{ id: 'team', rootPath: '/srv/team-worktrees' }],
+      worktreeVisibilitySourcePreferences: { custom: { team: 'hide' } }
+    })
+    const settings = makeSettings()
+    const detected = toDetectedWorktree({
+      repo,
+      settings,
+      worktree: makeWorktree({ path: customPath, isMainWorktree: false }),
+      knownDolphinLayouts: buildKnownDolphinWorkspaceLayouts(settings, repo)
+    })
+
+    expect(detected.visibilitySource).toEqual({ kind: 'custom', id: 'team' })
+    expect(detected.visible).toBe(false)
+    expect(applyMetadataFallbackVisibility(detected).visible).toBe(false)
+  })
+
+  it('keeps agent scratch hidden in the metadata fallback while revealing the rest', () => {
+    const repo = makeRepo()
+    const settings = makeSettings()
+    const layouts = buildKnownDolphinWorkspaceLayouts(settings, repo)
+    const scratch = toDetectedWorktree({
+      repo,
+      settings,
+      worktree: makeWorktree({ path: scratchPath, isMainWorktree: false }),
+      knownDolphinLayouts: layouts
+    })
+    const external = toDetectedWorktree({
+      repo,
+      settings,
+      worktree: makeWorktree({ path: '/scratch/manual', isMainWorktree: false }),
+      knownDolphinLayouts: layouts
+    })
+
+    expect(applyMetadataFallbackVisibility(scratch)).toMatchObject({
+      visible: false,
+      ownership: 'agent-scratch'
+    })
+    expect(applyMetadataFallbackVisibility(external)).toMatchObject({
+      visible: true,
+      ownership: 'unknown-legacy'
+    })
+  })
+
+  it('preserves an explicit scratch import in the metadata fallback', () => {
+    const repo = makeRepo({
+      externalWorktreeVisibility: 'hide',
+      importedExternalWorktreePaths: [scratchPath]
+    })
+    const settings = makeSettings()
+    const scratch = toDetectedWorktree({
+      repo,
+      settings,
+      worktree: makeWorktree({ path: scratchPath, isMainWorktree: false }),
+      knownDolphinLayouts: buildKnownDolphinWorkspaceLayouts(settings, repo)
+    })
+
+    expect(scratch).toMatchObject({ ownership: 'agent-scratch', visible: true })
+    expect(applyMetadataFallbackVisibility(scratch)).toBe(scratch)
+  })
+})
+
+describe('WSL workspace roots after the Dolphin rebrand', () => {
+  it('knows the Dolphin root where new worktrees go and the Dolphin one where old ones live', () => {
+    const repo = makeRepo({ path: '//wsl.localhost/Ubuntu/home/jin/src/app' })
+    const paths = buildKnownDolphinWorkspaceLayouts(makeSettings(), repo).map(
+      (layout) => layout.path
+    )
+    expect(paths).toContain('//wsl.localhost/Ubuntu/home/jin/dolphin/workspaces')
+    expect(paths).toContain('//wsl.localhost/Ubuntu/home/jin/dolphin/workspaces')
+  })
+})

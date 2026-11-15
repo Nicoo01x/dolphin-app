@@ -1,0 +1,94 @@
+import type { TuiAgent } from '../agent-launch/catalog/tui-agent'
+
+export type NativeChatTranscriptAgent =
+  | 'claude'
+  | 'codex'
+  | 'grok'
+  | 'omp'
+  | 'opencode'
+  | 'cursor'
+  | 'copilot'
+
+/** Agents whose transcripts the native chat view can parse and render. */
+export const NATIVE_CHAT_SUPPORTED_AGENT_LIST: readonly TuiAgent[] = [
+  'claude',
+  'openclaude',
+  'codex',
+  'grok',
+  'omp',
+  'opencode',
+  'opencode2',
+  'zcode',
+  'cursor',
+  'copilot'
+]
+
+export const NATIVE_CHAT_SUPPORTED_AGENTS: ReadonlySet<string> = new Set(
+  NATIVE_CHAT_SUPPORTED_AGENT_LIST
+)
+
+export function isNativeChatSupportedAgent(agent: string | null | undefined): boolean {
+  return agent != null && NATIVE_CHAT_SUPPORTED_AGENTS.has(agent)
+}
+
+/** Agents whose Model-A SSH transcript reader is not supported. A hook path alone
+ *  does not establish owning-host reads, so OMP remains gated even with metadata. */
+const SOLO_TRANSCRIPT_LOCAL: ReadonlySet<NativeChatTranscriptAgent> = new Set([
+  'grok',
+  'omp',
+  'opencode',
+  // Cursor y Copilot: su hook no dice dónde escribe el transcript —Cursor sólo da
+  // `conversation_id`—, así que el archivo se encuentra buscando por id en este disco, y eso no
+  // se puede hacer en el disco de otra máquina.
+  'cursor',
+  'copilot'
+])
+
+export function nativeChatRequiresLocalTranscript(agent: string | null | undefined): boolean {
+  const transcriptAgent = resolveNativeChatTranscriptAgent(agent)
+  return transcriptAgent !== null && SOLO_TRANSCRIPT_LOCAL.has(transcriptAgent)
+}
+
+/** Selector TUIs require key steps rather than pasted option labels. */
+export function shouldStepNativeChatAskAnswer(agent: string | null | undefined): boolean {
+  const transcriptAgent = resolveNativeChatTranscriptAgent(agent)
+  return (
+    transcriptAgent === 'claude' || transcriptAgent === 'codex' || transcriptAgent === 'opencode'
+  )
+}
+
+/** OMP's configurable keys and existing checkbox state cannot be replaced through PTY input. */
+export function nativeChatAskRequiresTerminal(agent: string | null | undefined): boolean {
+  return resolveNativeChatTranscriptAgent(agent) === 'omp'
+}
+
+/** OpenCode confirms an interrupt with a second Escape; Claude Code and Codex read Esc-Esc at an idle prompt as rewind. */
+export function nativeChatStopSendsSecondEscape(agent: string | null | undefined): boolean {
+  return resolveNativeChatTranscriptAgent(agent) === 'opencode'
+}
+
+export function resolveNativeChatTranscriptAgent(
+  agent: string | null | undefined
+): NativeChatTranscriptAgent | null {
+  // OpenClaude writes Claude transcripts but retains distinct launch/UI identity.
+  if (agent === 'claude' || agent === 'openclaude') {
+    return 'claude'
+  }
+  if (agent === 'opencode' || agent === 'opencode2' || agent === 'zcode') {
+    return 'opencode'
+  }
+  if (
+    agent === 'codex' ||
+    agent === 'grok' ||
+    agent === 'omp' ||
+    agent === 'cursor' ||
+    agent === 'copilot'
+  ) {
+    return agent
+  }
+  return null
+}
+
+export function nativeChatApprovalAcceptKey(agent: string | null | undefined): string {
+  return resolveNativeChatTranscriptAgent(agent) === 'opencode' ? '\r' : '1'
+}

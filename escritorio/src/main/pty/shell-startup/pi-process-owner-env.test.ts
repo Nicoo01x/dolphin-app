@@ -1,0 +1,61 @@
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { createDaemonPtyEnvironment } from '../../daemon/pty-subprocess/spawn-environment'
+import {
+  createAgentStatusExtensionHarness,
+  AGENT_STATUS_EXTENSION_SELF_PID
+} from '../../pi/agent-status-extension-test-harness'
+
+const ownerEnv = {
+  DOLPHIN_PI_STATUS_OWNED: String(AGENT_STATUS_EXTENSION_SELF_PID - 1),
+  DOLPHIN_PRIME_AGENT_STATUS_OWNED: String(AGENT_STATUS_EXTENSION_SELF_PID - 1),
+  DOLPHIN_PI_TITLE_MARKER_OWNED: String(AGENT_STATUS_EXTENSION_SELF_PID - 1)
+}
+const terminalEnv = {
+  DOLPHIN_PANE_KEY: 'new-tab:new-leaf',
+  DOLPHIN_TAB_ID: 'new-tab',
+  DOLPHIN_WORKTREE_ID: 'folder:workspace',
+  DOLPHIN_AGENT_LAUNCH_TOKEN: 'new-launch',
+  DOLPHIN_AGENT_HOOK_PORT: '4321',
+  DOLPHIN_AGENT_HOOK_TOKEN: 'receiver-token',
+  DOLPHIN_PI_SOURCE_AGENT_DIR: 'user-config',
+  KEEP_ME: 'terminal-value'
+}
+
+afterEach(() => vi.unstubAllEnvs())
+
+describe('independent daemon terminal Pi ownership', () => {
+  it.each(['pi', 'omp', 'prime-agent'] as const)(
+    'lets %s register hooks without weakening suppression of its own children',
+    async (kind) => {
+      for (const [key, value] of Object.entries(ownerEnv)) {
+        vi.stubEnv(key, value)
+      }
+      const env = createDaemonPtyEnvironment({
+        sessionId: 'fresh-terminal',
+        cols: 80,
+        rows: 24,
+        env: terminalEnv
+      })
+
+      for (const [key, value] of Object.entries(ownerEnv)) {
+        expect(env[key]).toBeUndefined()
+        expect(process.env[key]).toBe(value)
+      }
+      expect(env).toMatchObject(terminalEnv)
+
+      const parent = createAgentStatusExtensionHarness({ kind, env })
+      expect(parent.handlers.before_agent_start).toBeTypeOf('function')
+      await parent.callHook('before_agent_start', { prompt: 'new turn' })
+      expect(parent.fetchMock).toHaveBeenCalledOnce()
+
+      const child = createAgentStatusExtensionHarness({
+        kind,
+        env: parent.processEnv,
+        pid: AGENT_STATUS_EXTENSION_SELF_PID + 1
+      })
+      expect(child.handlers).toEqual({})
+      parent.reload()
+      expect(parent.handlers.before_agent_start).toBeTypeOf('function')
+    }
+  )
+})

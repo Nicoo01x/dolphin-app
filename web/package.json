@@ -1,0 +1,33 @@
+{
+  "name": "dolphin-web",
+  "private": true,
+  "version": "0.1.0",
+  "description": "La web de Dolphin: el océano donde trabajan tus agentes.",
+  "scripts": {
+    "dev": "next dev --port 5310",
+    "build": "next build && node scripts/revisar-export.mjs",
+    "start": "npx serve out -l 5311",
+    "typecheck": "tsc --noEmit",
+    "publicar": "node scripts/publicar.mjs",
+    "novedades": "node scripts/novedades.mjs",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@types/three": "^0.186.0",
+    "lenis": "^1.3.27",
+    "motion": "^14.7.1",
+    "next": "^16.4.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "postcss": "^8",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9"
+  }
+}

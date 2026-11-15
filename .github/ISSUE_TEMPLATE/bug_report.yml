@@ -1,0 +1,69 @@
+name: Bug report
+description: Something in Dolphin does not work as it should.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Search the [open issues](https://github.com/Nicoo01x/dolphin-app/issues) first, in case it is already there.
+        Security problems do not go here: follow [SECURITY.md](https://github.com/Nicoo01x/dolphin-app/blob/main/SECURITY.md).
+  - type: dropdown
+    id: part
+    attributes:
+      label: Where does it happen?
+      options:
+        - Desktop app
+        - CLI or terminal app (dolphin)
+        - Local web console (dolphin ui)
+        - Installer or update
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you saw, and what you expected instead. Paste error messages as text.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Tasks and pick an issue
+        2. Press Start with Codex selected
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Dolphin version
+      description: In the desktop app, Help, then About Dolphin (on macOS, the Dolphin menu). For the CLI built from source, the commit you built.
+      placeholder: "1.6.0, or a commit hash"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Linux
+    validations:
+      required: true
+  - type: input
+    id: agent
+    attributes:
+      label: Agent CLI and version
+      description: Only if the problem involves an agent.
+      placeholder: "Claude Code 2.x, Codex 0.x, ..."
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Remove paths, user names, tokens or anything else you do not want public before pasting.
+      render: text

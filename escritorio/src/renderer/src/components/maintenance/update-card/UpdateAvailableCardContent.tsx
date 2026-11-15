@@ -1,0 +1,217 @@
+import { X } from 'lucide-react'
+import type { ChangelogData } from '../../../../../shared/update-status-types'
+import { Button } from '../../ui/button'
+import { useTranslate } from '@/i18n/use-translate'
+import { openAppHttpLink } from '@/lib/browser/navigation/app-http-link-open'
+
+function isAnimatedGif(url: string | undefined): boolean {
+  return typeof url === 'string' && url.toLowerCase().endsWith('.gif')
+}
+
+/** macOS sin firma: la versión existe, pero se baja y se reemplaza a mano. */
+function MacManualDownloadNote(): React.JSX.Element {
+  const t = useTranslate()
+  return (
+    <p className="text-xs leading-relaxed text-muted-foreground">
+      {t(
+        'auto.components.UpdateCard.macManualDownload',
+        'This Mac cannot install it by itself yet: download the new .dmg and replace Dolphin in Applications.'
+      )}
+    </p>
+  )
+}
+
+function UpdateButtonLabel({ manualDownload }: { manualDownload: boolean }): React.JSX.Element {
+  const t = useTranslate()
+  return (
+    <>
+      {manualDownload
+        ? t('auto.components.UpdateCard.47126bcf57', 'Download Manually')
+        : t('auto.components.UpdateCard.ec8fe71cfc', 'Update')}
+    </>
+  )
+}
+
+/** A package manager owns this install: the release is real but Dolphin can never apply it here. */
+function ExternallyManagedNote(): React.JSX.Element {
+  const t = useTranslate()
+  return (
+    <p className="text-xs leading-relaxed text-muted-foreground">
+      {t(
+        'auto.components.UpdateCard.7f1a4c9e02',
+        'Your system package manager installed Dolphin, so update it from there — Dolphin cannot install this release itself.'
+      )}
+    </p>
+  )
+}
+
+export function UpdateAvailableRichContent({
+  release,
+  releasesBehind,
+  prefersReducedMotion,
+  mediaFailed,
+  mediaLoaded,
+  onMediaError,
+  onMediaLoad,
+  onUpdate,
+  onClose,
+  externallyManaged = false,
+  manualDownload = false
+}: {
+  release: NonNullable<ChangelogData['release']>
+  releasesBehind: number | null
+  prefersReducedMotion: boolean
+  mediaFailed: boolean
+  mediaLoaded: boolean
+  onMediaError: () => void
+  onMediaLoad: () => void
+  onUpdate: () => void
+  onClose: () => void
+  externallyManaged?: boolean
+  manualDownload?: boolean
+}): React.JSX.Element {
+  const t = useTranslate()
+  const showMedia =
+    release.mediaUrl && !mediaFailed && !(prefersReducedMotion && isAnimatedGif(release.mediaUrl))
+  return (
+    <div className="flex flex-col gap-3 p-4">
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="text-sm font-semibold">
+          {t('auto.components.UpdateCard.f58b5c57a6', 'New:')} {release.title}
+        </h3>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7 shrink-0 min-w-[44px] min-h-[44px] -m-2"
+          onClick={onClose}
+          aria-label={t('auto.components.UpdateCard.318d3b4bc7', 'Dismiss update')}
+        >
+          <X className="size-3.5" />
+        </Button>
+      </div>
+      {showMedia && (
+        <div className="relative overflow-hidden rounded-md">
+          {!mediaLoaded && (
+            <div
+              className="w-full bg-muted/50 animate-pulse rounded-md"
+              style={{ aspectRatio: '16/9' }}
+            />
+          )}
+          <img
+            src={release.mediaUrl}
+            alt=""
+            className={`w-full rounded-md ${mediaLoaded ? '' : 'absolute inset-0'}`}
+            style={!mediaLoaded ? { visibility: 'hidden' } : undefined}
+            onError={onMediaError}
+            onLoad={onMediaLoad}
+          />
+        </div>
+      )}
+      <p className="text-sm text-muted-foreground">
+        {release.description}
+        {releasesBehind !== null && releasesBehind > 1 && (
+          <>
+            {' '}
+            <button
+              type="button"
+              className="text-xs text-muted-foreground/70 underline hover:text-foreground inline"
+              onClick={(event) => openAppHttpLink(release.releaseNotesUrl, { event })}
+            >
+              {t(
+                'auto.components.UpdateCard.moreSinceLastUpdate',
+                '+{{count}} more since your last update',
+                { count: releasesBehind - 1 }
+              )}
+            </button>
+          </>
+        )}
+      </p>
+      <button
+        type="button"
+        className="text-xs text-muted-foreground underline hover:text-foreground self-start"
+        onClick={(event) => openAppHttpLink(release.releaseNotesUrl, { event })}
+      >
+        {t('auto.components.UpdateCard.aad383aecc', 'Read the full release notes')}
+      </button>
+      {externallyManaged ? (
+        <ExternallyManagedNote />
+      ) : (
+        <>
+          {manualDownload && <MacManualDownloadNote />}
+          <Button variant="default" size="sm" onClick={onUpdate} className="w-full cursor-pointer">
+            <UpdateButtonLabel manualDownload={manualDownload} />
+          </Button>
+        </>
+      )}
+    </div>
+  )
+}
+
+export function UpdateAvailableSimpleContent({
+  version,
+  releaseUrl,
+  onUpdate,
+  onClose,
+  externallyManaged = false,
+  manualDownload = false
+}: {
+  version: string
+  releaseUrl?: string
+  onUpdate: () => void
+  onClose: () => void
+  externallyManaged?: boolean
+  manualDownload?: boolean
+}): React.JSX.Element {
+  const t = useTranslate()
+  return (
+    <div className="flex flex-col gap-2.5 p-3.5">
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="text-sm font-semibold">
+          {t('auto.components.UpdateCard.9abc59f814', 'Update Available')}
+        </h3>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7 shrink-0 min-w-[44px] min-h-[44px] -m-2"
+          onClick={onClose}
+          aria-label={t('auto.components.UpdateCard.318d3b4bc7', 'Dismiss update')}
+        >
+          <X className="size-3.5" />
+        </Button>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        {t('auto.components.UpdateCard.05ad78a6d1', 'Dolphin v{{value0}} is ready.', {
+          value0: version
+        })}
+      </p>
+      {externallyManaged ? (
+        <ExternallyManagedNote />
+      ) : manualDownload ? (
+        <MacManualDownloadNote />
+      ) : (
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          {t('auto.components.UpdateCard.fdd4a364fa', "Sessions won't be interrupted.")}
+        </p>
+      )}
+      {releaseUrl && (
+        <button
+          type="button"
+          className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground self-start"
+          onClick={(event) => openAppHttpLink(releaseUrl, { event })}
+        >
+          {t('auto.components.UpdateCard.44324ef542', 'Release notes')}
+        </button>
+      )}
+      {!externallyManaged && (
+        <Button
+          variant="default"
+          size="sm"
+          onClick={onUpdate}
+          className="mt-0.5 w-full cursor-pointer"
+        >
+          <UpdateButtonLabel manualDownload={manualDownload} />
+        </Button>
+      )}
+    </div>
+  )
+}

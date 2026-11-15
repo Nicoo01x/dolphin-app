@@ -1,0 +1,88 @@
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { AgentHookServer } from '../../agent-hook-server'
+import type { ClaudeStatusLineRateLimits } from '../../../../../shared/claude-statusline-rate-limits'
+
+describe('AgentHookServer /statusline/claude', () => {
+  let server: AgentHookServer
+
+  beforeEach(async () => {
+    server = new AgentHookServer()
+    await server.start({ env: 'production' })
+  })
+
+  afterEach(() => {
+    server.stop()
+  })
+
+  function post(body: string, token?: string): Promise<Response> {
+    const env = server.buildPtyEnv()
+    return fetch(`http://127.0.0.1:${env.DOLPHIN_AGENT_HOOK_PORT}/statusline/claude`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Dolphin-Agent-Hook-Token': token ?? env.DOLPHIN_AGENT_HOOK_TOKEN
+      },
+      body
+    })
+  }
+
+  it('exports only the Dolphin hook namespace to PTYs', () => {
+    const env = server.buildPtyEnv()
+
+    // El prefijo viejo es el del upstream: el renombre masivo del 08/11 lo había vuelto DOLPHIN y
+    // el test exigía que no existiera justo el prefijo que sí exportamos.
+    const legacyHookPrefix = `${['ORCA', 'AGENT', 'HOOK'].join('_')}_`
+    expect(Object.keys(env).filter((key) => key.startsWith(legacyHookPrefix))).toEqual([])
+    expect(env).toMatchObject({
+      DOLPHIN_AGENT_HOOK_PORT: expect.any(String),
+      DOLPHIN_AGENT_HOOK_TOKEN: expect.any(String)
+    })
+  })
+
+  it('forwards parsed rate limits to the statusline listener', async () => {
+    const events: ClaudeStatusLineRateLimits[] = []
+    server.setClaudeStatusLineListener((event) => {
+      events.push(event)
+    })
+
+    const payload = JSON.stringify({
+      rate_limits: {
+        five_hour: { used_percentage: 12.5, resets_at: 1738425600 },
+        seven_day: { used_percentage: 40, resets_at: 1712059200 }
+      }
+    })
+    const body = new URLSearchParams({
+      paneKey: 'pane-1',
+      configDir: '/home/dev/managed',
+      payload
+    }).toString()
+
+    await expect(post(body)).resolves.toMatchObject({ status: 204 })
+    expect(events).toEqual([
+      {
+        configDir: '/home/dev/managed',
+        fiveHour: { used_percentage: 12.5, resets_at: 1738425600 },
+        sevenDay: { used_percentage: 40, resets_at: 1712059200 }
+      }
+    ])
+  })
+
+  it('rejects posts with a bad token and ignores payloads without rate limits', async () => {
+    const events: ClaudeStatusLineRateLimits[] = []
+    server.setClaudeStatusLineListener((event) => {
+      events.push(event)
+    })
+
+    await expect(post('payload={}', 'wrong-token')).resolves.toMatchObject({ status: 403 })
+
+    const noLimits = new URLSearchParams({
+      paneKey: 'pane-1',
+      payload: JSON.stringify({ context_window: { used_percentage: 8 } })
+    }).toString()
+    await expect(post(noLimits)).resolves.toMatchObject({ status: 204 })
+
+    await expect(post('payload=not-json')).resolves.toMatchObject({ status: 204 })
+
+    expect(events).toEqual([])
+  })
+})

@@ -1,0 +1,328 @@
+/*
+ * La piel de Dolphin: la capa de variables (paso 1 de docs/reforma-de-la-interfaz.md).
+ *
+ * Por qué un archivo aparte: main.css es de la base y cambia todos los días. Acá se redefinen las
+ * variables que la base ya lee —superficies, tinta, bordes, radios, tiempos— y así la app cambia de
+ * piel sin tocar sus componentes. main.css importa esta hoja AL FINAL: Tailwind 4 resuelve el
+ * @import en el lugar donde está escrito, así que todo lo de acá queda después de lo de la base y le
+ * gana por orden, con los mismos selectores y sin trucos de especificidad.
+ *
+ * Quién gana sobre quién (de más fuerte a más débil):
+ *   1. Un tema de plugin de la base (Ajustes → Apariencia): pinta sus tokens en línea sobre <html>.
+ *   2. El tema por perillas de Dolphin, si está prendido: también en línea, y se aparta solo
+ *      cuando hay tema de plugin (interface-appearance-style.ts).
+ *   3. Esta piel: lo que se ve recién instalada la app.
+ *   4. Los valores de la base en main.css, que quedan debajo como red.
+ * Por eso las reglas de abajo leen los tokens de la base (--popover, --foreground…) y no los
+ * primitivos --dolphin-*: así siguen a un tema de plugin o a las perillas si alguien los elige.
+ *
+ * Medidas: docs/cursor-medido/para-dolphin.md (disciplina de Cursor, nunca su marca ni su azul).
+ */
+
+/* ── Radios y tiempos de la escala de Tailwind ─────────────────────────────────────────────────
+   --radius sigue en 10px: con los multiplicadores de la base ya da 6 (sm, controles chicos) y 8 (md,
+   filas y botones), que son las dos clases más usadas. Sólo se corrigen lg/xl a 12 (tarjetas) y
+   2xl a 20 (caja protagonista). El 14 de los flotantes no tiene clase propia: lo pone esta hoja
+   con --dolphin-radio-flotante, porque los menús de la base usan rounded-md también en sus filas. */
+@theme inline {
+  --radius-lg: calc(var(--radius) * 1.2);
+  --radius-xl: calc(var(--radius) * 1.2);
+  --radius-2xl: calc(var(--radius) * 2);
+  /* Sólo los flotantes llevan sombra: tres capas cortas al 12 %, nada de halos largos. */
+  --shadow-floating:
+    0 3px 8px rgb(0 0 0 / 0.12), 0 2px 5px rgb(0 0 0 / 0.12), 0 1px 1px rgb(0 0 0 / 0.12);
+}
+
+/* Toda transición sin duración explícita pasa de 150 a 100 ms: el hover de la app entera. */
+@theme {
+  --default-transition-duration: 100ms;
+}
+
+/* ── Tema claro (y los primitivos que no cambian entre temas) ───────────────────────────────── */
+:root {
+  /* Superficies: lienzo casi blanco, paneles un tono abajo, flotantes en blanco con sombra. Es la
+     lógica del oscuro invertida: tres tonos casi iguales y el límite lo hace el tono, no la
+     línea. */
+  --dolphin-lienzo: #fcfcfc;
+  --dolphin-panel: #f5f5f5;
+  --dolphin-elevado: #ffffff;
+  /* Tinta única #181818. Los niveles van opacos (compuestos sobre blanco) para que el contraste no
+     dependa de qué hay debajo. El 60 % se corre a 67 % (#636363) y el 36 % a 50 % (#949494): en
+     claro los valores literales no llegan a AA sobre el velo de hover ni a 3:1 sobre el lienzo. */
+  --dolphin-tinta: #181818;
+  --dolphin-tinta-74: #545454;
+  --dolphin-tinta-60: #636363;
+  /* Sólo para tiempos y números secundarios: nunca para texto que haya que leer. */
+  --dolphin-tinta-36: #949494;
+  --dolphin-sobre-tinta: #f0f0f0;
+  --dolphin-velo-hover: rgb(24 24 24 / 0.06);
+  --dolphin-velo-activo: rgb(24 24 24 / 0.08);
+  --dolphin-anillo: rgb(24 24 24 / 0.06);
+  --dolphin-borde-control: rgb(24 24 24 / 0.12);
+  /* Sale de --foreground y no de la tinta fija: así sigue a un tema de plugin o a las perillas. */
+  --dolphin-borde-foco: color-mix(in srgb, var(--foreground) 20%, transparent);
+  /* Opaco a propósito: la base usa bg-muted en columnas sticky (la grilla de CSV) y un velo dejaría
+     ver lo que pasa por debajo. */
+  --dolphin-chip: #ededed;
+
+  --dolphin-radio-protagonista: calc(var(--radius) * 2);
+  --dolphin-radio-flotante: calc(var(--radius) * 1.4);
+  --dolphin-radio-tarjeta: calc(var(--radius) * 1.2);
+  --dolphin-radio-fila: calc(var(--radius) * 0.8);
+  --dolphin-radio-control: calc(var(--radius) * 0.6);
+  --dolphin-radio-pill: 9999px;
+
+  --dolphin-dur-hover: 100ms;
+  --dolphin-dur-foco: 150ms;
+  --dolphin-dur-presion: 50ms;
+  --dolphin-ease-salida: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --dolphin-presion: 0.98;
+  --dolphin-sombra-flotante:
+    0 3px 8px rgb(0 0 0 / 0.12), 0 2px 5px rgb(0 0 0 / 0.12), 0 1px 1px rgb(0 0 0 / 0.12);
+
+  /* Los tokens de la base, apuntados a la piel. */
+  --background: var(--dolphin-lienzo);
+  --foreground: var(--dolphin-tinta);
+  /* El editor es lienzo: donde se trabaja, el tono más quieto. */
+  --editor-surface: var(--background);
+  --card: var(--dolphin-panel);
+  --card-foreground: var(--dolphin-tinta);
+  --popover: var(--dolphin-elevado);
+  --popover-foreground: var(--dolphin-tinta);
+  /* Sin vidrio: los flotantes son opacos. Leen --popover y no el primitivo para que las perillas,
+     que no escriben estos dos, igual los arrastren. */
+  --floating-surface: var(--popover);
+  --dialog-surface: var(--popover);
+  --primary: var(--dolphin-tinta);
+  --primary-foreground: var(--dolphin-sobre-tinta);
+  --secondary: var(--dolphin-velo-activo);
+  --secondary-foreground: var(--dolphin-tinta);
+  --muted: var(--dolphin-chip);
+  --muted-foreground: var(--dolphin-tinta-60);
+  --accent: var(--dolphin-velo-activo);
+  --accent-foreground: var(--dolphin-tinta);
+  /* El borde por defecto pasa a anillo casi invisible: así los ~1.600 bordes de la base dejan de
+     leerse como líneas sin tocar un componente. Los inputs usan --input, que queda visible. */
+  --border: var(--dolphin-anillo);
+  --input: var(--dolphin-borde-control);
+  /* Foco en tinta, sin acento: el nivel del 36 %, que llega a 3:1 como pide un indicador. */
+  --ring: var(--dolphin-tinta-36);
+  --sidebar: var(--dolphin-panel);
+  --sidebar-foreground: var(--dolphin-tinta);
+  --sidebar-primary: var(--dolphin-tinta);
+  --sidebar-primary-foreground: var(--dolphin-sobre-tinta);
+  --sidebar-accent: var(--dolphin-velo-activo);
+  --sidebar-accent-foreground: var(--dolphin-tinta);
+  --sidebar-border: var(--dolphin-anillo);
+  --sidebar-ring: var(--dolphin-tinta-36);
+  --worktree-sidebar: var(--dolphin-panel);
+  --worktree-sidebar-foreground: var(--dolphin-tinta);
+  --worktree-sidebar-accent: var(--dolphin-velo-activo);
+  --worktree-sidebar-accent-foreground: var(--dolphin-tinta);
+  --worktree-sidebar-border: var(--dolphin-anillo);
+  --worktree-sidebar-ring: var(--dolphin-tinta-36);
+  /* El divisor entre paneles partidos se queda visible (es lo único que separa dos terminales del
+     mismo tono, y la base exige 3:1 para que se encuentre); sólo pierde el tinte zinc. */
+  --split-divider: #8a8a8a;
+  --split-divider-hover: var(--dolphin-tinta-60);
+
+  /* El cromo de confianza de los plugins (ventanas de permisos) también en la piel, opaco. */
+  --dolphin-security-background: var(--dolphin-lienzo);
+  --dolphin-security-foreground: var(--dolphin-tinta);
+  --dolphin-security-card: var(--dolphin-panel);
+  --dolphin-security-card-foreground: var(--dolphin-tinta);
+  --dolphin-security-popover: var(--dolphin-elevado);
+  --dolphin-security-popover-foreground: var(--dolphin-tinta);
+  --dolphin-security-primary: var(--dolphin-tinta);
+  --dolphin-security-primary-foreground: var(--dolphin-sobre-tinta);
+  --dolphin-security-secondary: var(--dolphin-chip);
+  --dolphin-security-secondary-foreground: var(--dolphin-tinta);
+  --dolphin-security-muted: var(--dolphin-chip);
+  --dolphin-security-muted-foreground: var(--dolphin-tinta-60);
+  --dolphin-security-accent: #e6e6e6;
+  --dolphin-security-accent-foreground: var(--dolphin-tinta);
+  --dolphin-security-border: #e8e8e8;
+  --dolphin-security-input: #dcdcdc;
+  --dolphin-security-ring: var(--dolphin-tinta-36);
+  --dolphin-security-floating-surface: var(--dolphin-elevado);
+  --dolphin-security-dialog-surface: var(--dolphin-elevado);
+}
+
+/* ── Tema oscuro ─────────────────────────────────────────────────────────────────────────────── */
+.dark {
+  --dolphin-lienzo: #101010;
+  --dolphin-panel: #161616;
+  --dolphin-elevado: #1e1e1e;
+  /* Tinta #f0f0f0 con 74 / 60 / 36 % compuestos sobre el panel (los mismos que midió Cursor). */
+  --dolphin-tinta: #f0f0f0;
+  --dolphin-tinta-74: #b7b7b7;
+  --dolphin-tinta-60: #989898;
+  --dolphin-tinta-36: #636363;
+  --dolphin-sobre-tinta: #181818;
+  --dolphin-velo-hover: rgb(240 240 240 / 0.06);
+  --dolphin-velo-activo: rgb(240 240 240 / 0.08);
+  --dolphin-anillo: rgb(240 240 240 / 0.06);
+  --dolphin-borde-control: rgb(240 240 240 / 0.12);
+  /* --dolphin-borde-foco no se repite: el de :root ya se calcula con el --foreground oscuro. */
+  /* Un escalón sobre los tres planos, incluso sobre el flotante (#1e1e1e). */
+  --dolphin-chip: #262626;
+
+  --background: var(--dolphin-lienzo);
+  --foreground: var(--dolphin-tinta);
+  --editor-surface: var(--background);
+  --card: var(--dolphin-panel);
+  --card-foreground: var(--dolphin-tinta);
+  --popover: var(--dolphin-elevado);
+  --popover-foreground: var(--dolphin-tinta);
+  --floating-surface: var(--popover);
+  --dialog-surface: var(--popover);
+  --primary: var(--dolphin-tinta);
+  --primary-foreground: var(--dolphin-sobre-tinta);
+  --secondary: var(--dolphin-velo-activo);
+  --secondary-foreground: var(--dolphin-tinta);
+  --muted: var(--dolphin-chip);
+  --muted-foreground: var(--dolphin-tinta-60);
+  --accent: var(--dolphin-velo-activo);
+  --accent-foreground: var(--dolphin-tinta);
+  --border: var(--dolphin-anillo);
+  --input: var(--dolphin-borde-control);
+  --ring: var(--dolphin-tinta-36);
+  --sidebar: var(--dolphin-panel);
+  --sidebar-foreground: var(--dolphin-tinta);
+  /* La base tenía acá un azul (#1447e6): sin acento de color. */
+  --sidebar-primary: var(--dolphin-tinta);
+  --sidebar-primary-foreground: var(--dolphin-sobre-tinta);
+  --sidebar-accent: var(--dolphin-velo-activo);
+  --sidebar-accent-foreground: var(--dolphin-tinta);
+  --sidebar-border: var(--dolphin-anillo);
+  --sidebar-ring: var(--dolphin-tinta-36);
+  /* La base levantaba la barra de worktrees a #2a2a2a; acá es panel, igual que la barra derecha, y el
+     límite con el lienzo lo hace el tono. */
+  --worktree-sidebar: var(--dolphin-panel);
+  --worktree-sidebar-foreground: var(--dolphin-tinta);
+  --worktree-sidebar-accent: var(--dolphin-velo-activo);
+  --worktree-sidebar-accent-foreground: var(--dolphin-tinta);
+  --worktree-sidebar-border: var(--dolphin-anillo);
+  --worktree-sidebar-ring: var(--dolphin-tinta-36);
+  --split-divider: var(--dolphin-tinta-36);
+  --split-divider-hover: var(--dolphin-tinta-60);
+
+  /* El chat va sobre el lienzo (la base lo levantaba un 5 %). El compositor, con un velo del 6 % sobre
+     el lienzo, cae en #1d1d1d ≈ el tono elevado; se deja como velo y no como #1e1e1e fijo porque
+     el chat puede tomar la paleta de la terminal y tiene que seguirla. */
+  --chat-canvas-mix: 0%;
+  --chat-user-mix: 6%;
+  --chat-composer-mix: 6%;
+  --chat-composer-border-mix: 6%;
+
+  --dolphin-security-background: var(--dolphin-lienzo);
+  --dolphin-security-foreground: var(--dolphin-tinta);
+  --dolphin-security-card: var(--dolphin-panel);
+  --dolphin-security-card-foreground: var(--dolphin-tinta);
+  --dolphin-security-popover: var(--dolphin-elevado);
+  --dolphin-security-popover-foreground: var(--dolphin-tinta);
+  --dolphin-security-primary: var(--dolphin-tinta);
+  --dolphin-security-primary-foreground: var(--dolphin-sobre-tinta);
+  --dolphin-security-secondary: var(--dolphin-chip);
+  --dolphin-security-secondary-foreground: var(--dolphin-tinta);
+  --dolphin-security-muted: var(--dolphin-chip);
+  --dolphin-security-muted-foreground: var(--dolphin-tinta-60);
+  --dolphin-security-accent: #2f2f2f;
+  --dolphin-security-accent-foreground: var(--dolphin-tinta);
+  --dolphin-security-border: rgb(240 240 240 / 0.08);
+  --dolphin-security-input: rgb(240 240 240 / 0.14);
+  --dolphin-security-ring: var(--dolphin-tinta-36);
+  --dolphin-security-floating-surface: var(--dolphin-elevado);
+  --dolphin-security-dialog-surface: var(--dolphin-elevado);
+}
+
+/* ── Tipografía ───────────────────────────────────────────────────────────────────────────────
+   Inter (interfaz) y Satoshi (títulos) ya vienen de main.css y de DEFAULT_APP_FONT_FAMILY. Acá
+   sólo la base: 13/18 como la herramienta de trabajo que es. En @layer base para que cualquier
+   clase de tamaño de un componente le siga ganando. La interlínea va sin unidad (18/13) para que
+   un texto de 11 heredado quede más apretado y no más suelto: no desborda filas de alto fijo. */
+@layer base {
+  body {
+    font-size: 13px;
+    line-height: calc(18 / 13);
+    letter-spacing: -0.08px;
+  }
+}
+
+/* ── Lo que las variables no alcanzan ────────────────────────────────────────────────────────────
+   Sin capa a propósito: tiene que ganarle a las clases que la base escribió fijas en sus componentes
+   (border-black/14, dark:border-white/14, la sombra con brillo interior, backdrop-blur-2xl).
+   Sólo lo imprescindible; el resto de la reforma va en los pasos 2 a 8. */
+
+/* Flotantes: radio 14, anillo al 6 %, sombra de tres capas y sin vidrio. */
+:is(
+  [data-slot='popover-content'],
+  [data-slot='dropdown-menu-content'],
+  [data-slot='dropdown-menu-sub-content'],
+  [data-slot='context-menu-content'],
+  [data-slot='context-menu-sub-content'],
+  [data-slot='select-content'],
+  [data-slot='hover-card-content'],
+  [data-slot='dialog-content']
+) {
+  border-radius: var(--dolphin-radio-flotante);
+  border-color: var(--border);
+  box-shadow: var(--dolphin-sombra-flotante);
+  backdrop-filter: none;
+  /* Entran en 100 ms con la curva de salida, como los menús de Cursor (eran 150 ms). */
+  --tw-animation-duration: var(--dolphin-dur-hover);
+  --tw-ease: var(--dolphin-ease-salida);
+}
+
+/* La hoja lateral va pegada al borde: no se le cambia el radio, sólo el borde y la sombra. */
+[data-slot='sheet-content'] {
+  border-color: var(--border);
+  box-shadow: var(--dolphin-sombra-flotante);
+  backdrop-filter: none;
+}
+
+/* Un input tiene que seguir viéndose como input: borde de control al 12 % que sube al 20 % en el
+   foco, en 150 ms. El anillo de foco de 3 px de shadcn se queda: es lo que ve quien usa teclado. */
+:is([data-slot='input'], [data-slot='textarea'], [data-slot='select-trigger']) {
+  transition-property: color, background-color, border-color, box-shadow;
+  transition-duration: var(--dolphin-dur-foco);
+}
+
+:is([data-slot='input'], [data-slot='textarea'], [data-slot='select-trigger']):focus-visible:not(
+    [aria-invalid='true']
+  ) {
+  border-color: var(--dolphin-borde-foco);
+}
+
+/* Presión: el botón se hunde a .98 en 50 ms y vuelve con la transición de siempre (100 ms). La
+   duración va en :active porque una transición usa la del estado al que llega. */
+[data-slot='button']:active:not(:disabled) {
+  transform: scale(var(--dolphin-presion));
+  transition-duration: var(--dolphin-dur-presion);
+  transition-timing-function: var(--dolphin-ease-salida);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='button']:active:not(:disabled) {
+    transform: none;
+  }
+
+  /* Los flotantes sólo aparecen por opacidad: sin zoom ni desplazamiento. */
+  :is(
+    [data-slot='popover-content'],
+    [data-slot='dropdown-menu-content'],
+    [data-slot='dropdown-menu-sub-content'],
+    [data-slot='context-menu-content'],
+    [data-slot='context-menu-sub-content'],
+    [data-slot='select-content'],
+    [data-slot='hover-card-content'],
+    [data-slot='dialog-content']
+  ) {
+    --tw-enter-scale: 1;
+    --tw-exit-scale: 1;
+    --tw-enter-translate-x: 0;
+    --tw-enter-translate-y: 0;
+    --tw-exit-translate-x: 0;
+    --tw-exit-translate-y: 0;
+  }
+}

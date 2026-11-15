@@ -1,0 +1,194 @@
+import { randomUUID } from 'node:crypto'
+import type { Page } from '@stablyai/playwright-test'
+import { alternateScreenFixtureScript } from './alternate-screen-fixture-script'
+import { expect, test } from './helpers/dolphin-app'
+import { stageNodeScriptForTerminal } from './helpers/run-node-script-in-terminal'
+import { parkHiddenTabBehindDecoy } from './helpers/terminal-hidden-parking'
+import {
+  ensureTerminalVisible,
+  getActiveTabId,
+  getBrowserTabs,
+  waitForActiveWorktree,
+  waitForSessionReady
+} from './helpers/store'
+import {
+  getTerminalContent,
+  sendToTerminal,
+  waitForActivePanePtyId,
+  waitForActiveTerminalManager
+} from './helpers/terminal'
+import { nodeTerminalCommand } from './terminal-node-command'
+import { waitForPtyShellEcho } from './terminal-pty-readiness'
+
+const PARKING_DELAY_MS = Number(process.env.DOLPHIN_E2E_TERMINAL_PARKING_DELAY_MS) || 500
+
+test.use({
+  dolphinAppExtraEnv: { DOLPHIN_E2E_TERMINAL_PARKING_DELAY_MS: String(PARKING_DELAY_MS) }
+})
+
+type LinkProbe = { clientX: number; clientY: number; tabId: string }
+
+async function locateLink(page: Page, label: string): Promise<LinkProbe> {
+  return page.evaluate((label) => {
+    const state = window.__store?.getState()
+    const tabId = state?.activeTabId ?? null
+    const manager = tabId ? window.__paneManagers?.get(tabId) : null
+    const pane = manager?.getActivePane?.() ?? manager?.getPanes?.()[0] ?? null
+    const screen = pane?.terminal.element?.querySelector<HTMLElement>('.xterm-screen')
+    if (!tabId || !pane || !screen) {
+      throw new Error('active terminal pane unavailable')
+    }
+
+    const buffer = pane.terminal.buffer.active
+    for (let row = pane.terminal.rows - 1; row >= 0; row -= 1) {
+      const line = buffer.getLine(buffer.viewportY + row)
+      const col = line?.translateToString(true).lastIndexOf(label) ?? -1
+      if (col >= 0) {
+        const rect = screen.getBoundingClientRect()
+        return {
+          clientX: rect.left + (col + label.length / 2) * (rect.width / pane.terminal.cols),
+          clientY: rect.top + (row + 0.5) * (rect.height / pane.terminal.rows),
+          tabId
+        }
+      }
+    }
+    throw new Error('OSC 8 label not visible in terminal viewport')
+  }, label)
+}
+
+async function readLinkState(
+  page: Page,
+  tabId: string,
+  label: string
+): Promise<{
+  bufferType: string
+  serializedUri: boolean
+  underlined: boolean
+  uri: string | null
+}> {
+  return page.evaluate(
+    ({ label, tabId }) => {
+      const manager = window.__paneManagers?.get(tabId)
+      const pane = manager?.getActivePane?.() ?? manager?.getPanes?.()[0] ?? null
+      if (!pane) {
+        throw new Error('terminal pane unavailable')
+      }
+      const buffer = pane.terminal.buffer.active
+      for (let row = buffer.viewportY; row < buffer.viewportY + pane.terminal.rows; row += 1) {
+        const line = buffer.getLine(row)
+        const col = line?.translateToString(true).lastIndexOf(label) ?? -1
+        if (col < 0) {
+          continue
+        }
+        const cell = line?.getCell(col) as
+          | (ReturnType<NonNullable<typeof line>['getCell']> & {
+              extended?: { urlId?: number }
+            })
+          | undefined
+        const linkId = cell?.extended?.urlId ?? 0
+        const terminal = pane.terminal as unknown as {
+          _core?: {
+            _oscLinkService?: { getLinkData: (id: number) => { uri: string } | undefined }
+          }
+        }
+        const uri = linkId
+          ? (terminal._core?._oscLinkService?.getLinkData(linkId)?.uri ?? null)
+          : null
+        return {
+          bufferType: buffer.type,
+          serializedUri: uri ? pane.serializeAddon.serialize().includes(uri) : false,
+          underlined: !!cell?.isUnderline(),
+          uri
+        }
+      }
+      throw new Error('OSC 8 label disappeared from terminal buffer')
+    },
+    { label, tabId }
+  )
+}
+
+async function activateTerminalTab(page: Page, tabId: string): Promise<void> {
+  await page.evaluate((tabId) => {
+    const state = window.__store?.getState()
+    if (!state) {
+      throw new Error('Dolphin store unavailable')
+    }
+    state.setActiveTabType('terminal', window.__store?.getState().activeWorktreeId ?? null)
+    state.setActiveTab(tabId)
+  }, tabId)
+  await expect.poll(() => getActiveTabId(page)).toBe(tabId)
+  await waitForActiveTerminalManager(page, 30_000)
+}
+
+test('restores and opens an OSC 8 link after its terminal is cold-parked', async ({ appPage }) => {
+  await waitForSessionReady(appPage)
+  const worktreeId = await waitForActiveWorktree(appPage)
+  await appPage.evaluate(async () => {
+    await window.__store?.getState().updateSettings({
+      openLinksInApp: true,
+      openLinksInAppPreferencePrompted: true
+    })
+  })
+  await ensureTerminalVisible(appPage)
+  await waitForActiveTerminalManager(appPage, 30_000)
+  const tabId = await getActiveTabId(appPage)
+  if (!tabId) {
+    throw new Error('No active terminal tab')
+  }
+  const ptyId = await waitForActivePanePtyId(appPage)
+  await waitForPtyShellEcho(appPage, ptyId, 15_000)
+
+  const label = `#${randomUUID().slice(0, 6)}`
+  const url = `https://example.com/dolphin-osc8-${randomUUID()}`
+  const linkedOutput = `\x1b[?1049h\x1b[2J\x1b[H\x1b]8;id=cold-park;${url}\x1b\\${label}\x1b]8;;\x1b\\\n`
+  // Stage to avoid PowerShell escape mangling (#8521) and keep the readiness label out of command echo.
+  // Use nodeTerminalCommand instead of bare-node staged.command to pin Windows CI’s executable.
+  const staged = stageNodeScriptForTerminal(alternateScreenFixtureScript(linkedOutput), {
+    prefix: 'dolphin-osc8-cold-park'
+  })
+  try {
+    await sendToTerminal(appPage, ptyId, `${nodeTerminalCommand([staged.scriptPath])}\r`)
+    await expect.poll(() => getTerminalContent(appPage, 4_000)).toContain(label)
+
+    const baselineProbe = await locateLink(appPage, label)
+    await appPage.mouse.move(baselineProbe.clientX, baselineProbe.clientY)
+    await expect
+      .poll(() => readLinkState(appPage, tabId, label))
+      .toMatchObject({
+        bufferType: 'alternate',
+        serializedUri: true,
+        underlined: true,
+        uri: url
+      })
+
+    await parkHiddenTabBehindDecoy(appPage, worktreeId, tabId, {
+      parkDelayMs: PARKING_DELAY_MS
+    })
+    await activateTerminalTab(appPage, tabId)
+    await expect.poll(() => getTerminalContent(appPage, 4_000)).toContain(label)
+
+    const restoredProbe = await locateLink(appPage, label)
+    await appPage.mouse.move(restoredProbe.clientX, restoredProbe.clientY)
+    await expect
+      .poll(() => readLinkState(appPage, tabId, label))
+      .toMatchObject({
+        bufferType: 'alternate',
+        serializedUri: true,
+        underlined: true,
+        uri: url
+      })
+
+    const isMac = await appPage.evaluate(() => navigator.userAgent.includes('Mac'))
+    const modifier = isMac ? 'Meta' : 'Control'
+    await appPage.keyboard.down(modifier)
+    await appPage.mouse.down()
+    await appPage.mouse.up()
+    await appPage.keyboard.up(modifier)
+    await expect
+      .poll(async () => (await getBrowserTabs(appPage, worktreeId)).some((tab) => tab.url === url))
+      .toBe(true)
+  } finally {
+    await sendToTerminal(appPage, ptyId, '\x03').catch(() => undefined)
+    staged.cleanup()
+  }
+})

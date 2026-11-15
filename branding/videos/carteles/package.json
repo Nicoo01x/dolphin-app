@@ -1,0 +1,22 @@
+{
+  "name": "dolphin-carteles",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Los videos de los carteles de función de Dolphin (y los mismos clips para la web).",
+  "scripts": {
+    "estudio": "remotion studio",
+    "render": "node scripts/render.mjs",
+    "publicar": "node scripts/publicar.mjs",
+    "lint": "tsc"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.533",
+    "remotion": "4.0.533"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "typescript": "5.9.3"
+  }
+}

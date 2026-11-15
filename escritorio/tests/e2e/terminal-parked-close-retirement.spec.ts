@@ -1,0 +1,94 @@
+import type { Page } from '@stablyai/playwright-test'
+import { randomUUID } from 'node:crypto'
+import { test, expect } from './helpers/dolphin-app'
+import { ensureTerminalVisible, waitForActiveWorktree, waitForSessionReady } from './helpers/store'
+import { parkHiddenTabBehindDecoy } from './helpers/terminal-hidden-parking'
+import {
+  execInTerminal,
+  getTerminalContent,
+  waitForActiveTerminalManager,
+  waitForPaneIdentitySnapshot
+} from './helpers/terminal'
+import { nodeTerminalCommand } from './terminal-node-command'
+
+const PARKING_DELAY_MS = Number(process.env.DOLPHIN_E2E_TERMINAL_PARKING_DELAY_MS) || 500
+
+test.use({
+  dolphinAppExtraEnv: { DOLPHIN_E2E_TERMINAL_PARKING_DELAY_MS: String(PARKING_DELAY_MS) }
+})
+
+async function hasPtySession(page: Page, ptyId: string): Promise<boolean> {
+  return page.evaluate(async (id) => {
+    const sessions = await window.api.pty.listSessions()
+    return sessions.some((session) => session.id === id)
+  }, ptyId)
+}
+
+async function createActiveTerminalTab(page: Page, worktreeId: string): Promise<void> {
+  const tabId = await page.evaluate((id) => {
+    const store = window.__store
+    if (!store) {
+      throw new Error('window.__store is unavailable')
+    }
+    const state = store.getState()
+    const tab = state.createTab(id, undefined, undefined, { activate: true })
+    state.setActiveTab(tab.id)
+    state.setActiveTabType('terminal', store.getState().activeWorktreeId)
+    return tab.id
+  }, worktreeId)
+
+  await waitForActiveTerminalManager(page, 30_000)
+  expect((await waitForPaneIdentitySnapshot(page, 1)).tabId).toBe(tabId)
+}
+
+test('closing a parked terminal tab retires its exact PTY session', async ({ appPage }) => {
+  await waitForSessionReady(appPage)
+  const worktreeId = await waitForActiveWorktree(appPage)
+  await ensureTerminalVisible(appPage)
+  await waitForActiveTerminalManager(appPage, 30_000)
+
+  const snapshot = await waitForPaneIdentitySnapshot(appPage, 1)
+  const tabId = snapshot.tabId
+  const ptyId = snapshot.panes[0]?.ptyId
+  if (!ptyId) {
+    throw new Error('active terminal pane did not bind a PTY')
+  }
+
+  const tab = appPage.locator(`[data-testid="sortable-tab"][data-tab-id="${tabId}"]`)
+  await expect(tab).toBeVisible()
+
+  const marker = `PARKED_CLOSE_READY_${randomUUID()}`
+  const keepAliveScript = `process.stdout.write(${JSON.stringify(`${marker}\n`)}); setInterval(() => {}, 1000)`
+  await execInTerminal(appPage, ptyId, nodeTerminalCommand(['-e', keepAliveScript]))
+  await expect
+    .poll(() => getTerminalContent(appPage), {
+      timeout: 10_000,
+      message: 'long-lived terminal child did not print its ready marker'
+    })
+    .toContain(marker)
+  await expect.poll(() => hasPtySession(appPage, ptyId), { timeout: 10_000 }).toBe(true)
+
+  // Hide B most recently so it takes the warm exemption while decoy C makes A parkable.
+  await createActiveTerminalTab(appPage, worktreeId)
+  await parkHiddenTabBehindDecoy(appPage, worktreeId, tabId, {
+    parkDelayMs: PARKING_DELAY_MS
+  })
+  // Require PTY survival through parking so early session death cannot satisfy close retirement.
+  await expect.poll(() => hasPtySession(appPage, ptyId), { timeout: 10_000 }).toBe(true)
+
+  await appPage.evaluate((id) => {
+    const store = window.__store
+    if (!store) {
+      throw new Error('window.__store is unavailable')
+    }
+    store.getState().closeTab(id)
+  }, tabId)
+
+  await expect
+    .poll(() => hasPtySession(appPage, ptyId), {
+      timeout: 15_000,
+      message: `parked tab close did not retire PTY ${ptyId}`
+    })
+    .toBe(false)
+  await expect(tab).toHaveCount(0)
+})

@@ -1,0 +1,14 @@
+id: claude-chat-entrypoint-callers
+snapshots:
+  "import { withDolphinClaudeChatEntrypoint as stamp } from './claude-chat-entrypoint'":
+    labels:
+      - source: withDolphinClaudeChatEntrypoint
+        style: primary
+        start: 9
+        end: 37
+  'withDolphinClaudeChatEntrypoint(env, platform)':
+    labels:
+      - source: withDolphinClaudeChatEntrypoint
+        style: primary
+        start: 0
+        end: 28

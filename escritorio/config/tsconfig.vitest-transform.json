@@ -1,0 +1,12 @@
+{
+  // Dolphin no tiene cloud/: las referencias de la base a cloud/apps y cloud/packages se sacaron
+  // porque oxc corta toda transformación si una referencia no existe.
+  "files": [],
+  "include": [],
+  "compilerOptions": { "useDefineForClassFields": true },
+  "references": [
+    { "path": "../src/packages/process-host/tsconfig.json" },
+    { "path": "./tsconfig.node.json" },
+    { "path": "./tsconfig.web.json" }
+  ]
+}

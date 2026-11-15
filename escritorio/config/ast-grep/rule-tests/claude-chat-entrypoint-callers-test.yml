@@ -1,0 +1,6 @@
+id: claude-chat-entrypoint-callers
+valid:
+  - 'stripInheritedClaudeSessionEnv(env)'
+invalid:
+  - 'withDolphinClaudeChatEntrypoint(env, platform)'
+  - "import { withDolphinClaudeChatEntrypoint as stamp } from './claude-chat-entrypoint'"

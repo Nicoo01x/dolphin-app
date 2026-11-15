@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "plugins": [
+    {
+      "pluginKey": "stablyai.dolphin-archivos",
+      "path": "stablyai.dolphin-archivos",
+      "contentHash": "c6cee0af415b16f165eca1789d0530a432af4174d0e387c824202ce24a4f7cea"
+    },
+    {
+      "pluginKey": "stablyai.dolphin-github-vscode-theme",
+      "path": "stablyai.dolphin-github-vscode-theme",
+      "contentHash": "c40df7c25ff251f8b84c8dc465f0041082a5c97ce586bc8ac8f8bc999a91f099"
+    },
+    {
+      "pluginKey": "stablyai.dolphin-tema-mar",
+      "path": "stablyai.dolphin-tema-mar",
+      "contentHash": "245e15e300087bb8c1c906988af8562f82d6c1d3632871611fd7d07c8b09c5aa"
+    },
+    {
+      "pluginKey": "stablyai.dolphin-vscode-default-themes",
+      "path": "stablyai.dolphin-vscode-default-themes",
+      "contentHash": "7d96e3cbb81b850b46e65de2414c7e7089e9a8385db31bbda2772fe4937e5d67"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "title": "The Dolphin Model",
+  "defaultOpen": true,
+  "pages": [
+    "worktrees",
+    "dolphin-yaml",
+    "tabs-panes-splits",
+    "agents-sessions",
+    "session-restore",
+    "quick-open"
+  ]
+}

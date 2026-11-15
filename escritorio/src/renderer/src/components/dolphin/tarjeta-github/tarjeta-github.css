@@ -1,0 +1,123 @@
+/*
+ * La tarjeta de GitHub del chat de Dolphin.
+ *
+ * Monocromo como el resto de la app: el texto va en tinta y el color sólo dice ESTADO, en puntos,
+ * pastillas chicas y las dos barras (cambios y checks). Los tonos son los de GitHub para que «verde
+ * abierto, violeta mergeado» no haya que aprenderlo de nuevo; en oscuro, un paso más claros.
+ */
+/* Los tonos (`--tg-*`, `[data-tono]`) son los de la tira de estado: ../tira/tira.css. */
+
+/* La pastilla de estado: fondo del tono al 14 %, punto lleno y texto en tinta (AA siempre). */
+.dolphin-tg-pastilla {
+  background: color-mix(in srgb, var(--tono) 14%, transparent);
+}
+
+.dolphin-tg-punto {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--tono, currentColor);
+}
+
+/* El box tonal: un escalón de tinta sobre el flotante, sin borde. */
+.dolphin-tg-box {
+  background: var(--tg-velo);
+  border-radius: var(--dolphin-radio-fila, 8px);
+}
+
+.dolphin-tg-hueso {
+  background: var(--tg-hueso);
+  border-radius: var(--dolphin-radio-control, 6px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dolphin-tg-hueso {
+    animation: dolphin-tg-latido 1.2s ease-in-out infinite alternate;
+  }
+
+  /* Las barras se revelan de izquierda a derecha al entrar, sin deformar las celdas. */
+  .dolphin-tg-crece {
+    animation: dolphin-tg-revelar 180ms var(--tg-curva) both;
+  }
+}
+
+@keyframes dolphin-tg-latido {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.45;
+  }
+}
+
+@keyframes dolphin-tg-revelar {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Los avatares apilados se separan con un anillo del color del flotante, no con una línea. */
+.dolphin-tg-pila > * + * {
+  margin-left: -5px;
+}
+.dolphin-tg-pila > * {
+  box-shadow: 0 0 0 2px var(--popover);
+  border: 0;
+}
+
+/* El estado de cada revisor, como una muesca en la esquina de su avatar. */
+.dolphin-tg-muesca {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--tono);
+  box-shadow: 0 0 0 1.5px var(--popover);
+}
+
+.dolphin-tg-titulo {
+  overflow-wrap: break-word;
+  hyphens: none;
+}
+
+.dolphin-tg[data-clic]:hover .dolphin-tg-titulo {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--foreground) 36%, transparent);
+  text-underline-offset: 2px;
+}
+
+/*
+ * El flotante que la contiene es el hover card de la base (NativeChatLinkPeek). Sin capa y con :has
+ * para ganarle a sus clases sin tocar su componente: el padding lo pone la tarjeta, y la entrada
+ * es la de Dolphin —opacidad y 2 px, sin zoom— con salida sin animación.
+ */
+[data-slot='hover-card-content']:has(> .dolphin-tg) {
+  padding: 0;
+  width: 384px;
+  max-width: calc(100vw - 16px);
+  --tw-enter-scale: 1;
+  --tw-enter-translate-x: 0;
+  --tw-enter-translate-y: 2px;
+}
+[data-slot='hover-card-content'][data-side='bottom']:has(> .dolphin-tg) {
+  --tw-enter-translate-y: -2px;
+}
+[data-slot='hover-card-content'][data-state='closed']:has(> .dolphin-tg) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='hover-card-content']:has(> .dolphin-tg) {
+    --tw-enter-translate-y: 0;
+  }
+  [data-slot='hover-card-content'][data-side='bottom']:has(> .dolphin-tg) {
+    --tw-enter-translate-y: 0;
+  }
+}

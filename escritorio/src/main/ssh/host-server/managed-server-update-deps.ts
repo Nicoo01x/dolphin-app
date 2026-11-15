@@ -1,0 +1,34 @@
+import { getAppEnvironment } from '../../../shared/app-environment'
+import type { ManagedServerUpdateDeps } from './managed-server-update-check'
+import { autoUpdateManagedDolphindEnvironment } from '../../managed-server/lifecycle/dolphind-managed-auto-update'
+import { requireManagedDolphindTargetStore } from '../../managed-server/lifecycle/dolphind-managed-runtime-context'
+import {
+  dolphindUpdateFailedThisLaunch,
+  recordDolphindUpdateFailedThisLaunch
+} from '../../managed-server/lifecycle/dolphind-managed-update-failure-memory'
+
+export function managedServerUpdateDeps(userDataPath: string): ManagedServerUpdateDeps {
+  const registry = requireManagedDolphindTargetStore()
+  const appVersion = getAppEnvironment().getVersion()
+  return {
+    autoUpdate: (environmentId, options) =>
+      autoUpdateManagedDolphindEnvironment(userDataPath, { environmentId, appVersion, ...options }),
+    // Re-read the store: caller snapshots may predate an overlapping check's failure.
+    recordedUpdateFailure: (target) => {
+      const failure = (registry.getTarget(target.id) ?? target).managedServerUpdateFailure
+      return failure?.appVersion === appVersion ? failure.reason : null
+    },
+    // Only attempted failures suppress retry; keep launch-only state out of peer-published SshTarget.
+    failedThisLaunch: (target) => dolphindUpdateFailedThisLaunch({ kind: 'ssh', id: target.id }),
+    recordUpdateFailure: (target, reason) => {
+      recordDolphindUpdateFailedThisLaunch(
+        { kind: 'ssh', id: target.id },
+        { code: 'dolphind_update_failed', reason }
+      )
+      registry.updateTarget(target.id, { managedServerUpdateFailure: { reason, appVersion } })
+    },
+    clearUpdateFailure: (target) => {
+      registry.updateTarget(target.id, { managedServerUpdateFailure: undefined })
+    }
+  }
+}

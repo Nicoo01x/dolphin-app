@@ -1,0 +1,521 @@
+@import "tailwindcss";
+
+/* ───────────────────────────────────────────────────────────
+   dolphin — el tema de la consola
+
+   Neutro oscuro de punta a punta, al nivel de prolijidad de un
+   orquestador serio: fondo #0a0a0a, superficie #171717, bordes
+   translúcidos. El color NO decora: señala — verde pasó, rojo
+   murió, ámbar corriendo. Satoshi para lo que titula, Inter para
+   todo lo demás. Nada se pide a internet.
+   ─────────────────────────────────────────────────────────── */
+
+@font-face {
+  font-family: "Satoshi";
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fuentes/satoshi-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Satoshi";
+  font-weight: 900;
+  font-display: swap;
+  src: url("/fuentes/satoshi-900.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fuentes/inter-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter";
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fuentes/inter-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02AF, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* La de la app de escritorio (OFL 1.1, licencia en /fuentes/GEIST-OFL.txt): embebida, el texto va
+   en la misma letra que el resto de la app. */
+@font-face {
+  font-family: "Geist";
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fuentes/geist-variable.woff2") format("woff2");
+}
+
+:root {
+  /* La base, medida del DOLPHIN real (shadcn neutro oscuro). */
+  --background: #0a0a0a;
+  --foreground: #f0f0f0;
+  --card: #171717;
+  --card-foreground: #f0f0f0;
+  --popover: #171717;
+  --popover-foreground: #f0f0f0;
+  --primary: #e5e5e5;
+  --primary-foreground: #171717;
+  --secondary: #262626;
+  --secondary-foreground: #f0f0f0;
+  --muted: #262626;
+  --muted-foreground: #acacac;
+  --accent: #404040;
+  --accent-foreground: #f0f0f0;
+  --destructive: #c2524a;
+  --destructive-foreground: #fafafa;
+  --border: rgb(255 255 255 / 0.07);
+  --input: rgb(255 255 255 / 0.15);
+  --ring: #737373;
+  --radius: 0.625rem;
+
+  /* Lo semántico de dolphin: estados de un universo. Medidos contra cada
+     superficie del tema: el verde y el rojo de antes (#4e9a6a, #c2524a)
+     no llegaban a AA como texto (el rojo daba 3,9:1 sobre la tarjeta). Son
+     el mismo tono con más luz: ≥ 4,6:1 hasta sobre el fondo del hover. */
+  --paso: #5fb07c;
+  --murio: #e5776d;
+  --corriendo: #d4a300;
+  /* Las insignias de los textos de los agentes (ver lib/insignias.ts): cada clase de dato con su
+     color, para separarlas de un vistazo. En oscuro, el tono claro de cada color (≥ 7:1). */
+  --insignia-mezcla: 20%;
+  --insignia-plata: #6ee7b7;
+  --insignia-porcentaje: #c4b5fd;
+  --insignia-tiempo: #5eead4;
+  --insignia-cantidad: #f9a8d4;
+  --insignia-codigo: #a5b4fc;
+  --insignia-cita: #fde047;
+  --insignia-claude: #f0a585;
+  --insignia-gemini: #93c5fd;
+  /* Lo que se marca sin ser un estado (reusada, en revisión, una idea): claro y
+     neutro. El chrome de Dolphin es monocromo —Nico, 12/10: «no me gusta el azul
+     neón»—; el color queda para los estados y para la escena (el delfín y el mar). */
+  --escribiendo: #d4d4d4;
+
+  /* La escena (el mar de puntos y el delfín). */
+  --escena: #a8cdea;
+
+  /* El color con significado (Nico, 28/10: «color con significado»): el chrome sigue en blanco y
+     negro, y lo que tiene un estado lleva SU color, siempre el mismo en todas las vistas. Las cinco
+     columnas del tablero: una idea es violeta, para hacer es azul, haciendo es el ámbar de lo que
+     corre, para revisar es turquesa (te espera a vos) y hecho es el verde de lo que salió bien. Un
+     bug es el rojo de lo que falló. Cada uno ≥ 7:1 como texto sobre el fondo. */
+  --idea: #b9a6f7;
+  --hacer: #93b7e6;
+  --revisar: #6fd0d6;
+
+  /* La sintaxis del diff (ver lib/resaltar.ts). Es la única parte de la consola donde el color
+     NO significa un estado: significa qué es cada cosa, como en un editor. La familia es la de
+     un tema oscuro de editor, corrida hacia los azules del resto de la app para que un diff no
+     parezca una ventana pegada de otro programa. */
+  --sintaxis-comentario: #7d8aa0;
+  --sintaxis-cadena: #b8d9a0;
+  --sintaxis-numero: #d2b48c;
+  --sintaxis-palabra: #c3a0e8;
+  --sintaxis-constante: #7fc4e8;
+  --sintaxis-tipo: #6fd0d6;
+  --sintaxis-funcion: #e8d69a;
+  --sintaxis-propiedad: #a8c7e8;
+  --sintaxis-operador: #c9b6a0;
+
+  /* El vidrio de las superficies, como en DOLPHIN: la tarjeta a medias y lo de atrás
+     desenfocado, con un brillo fino arriba. */
+  --vidrio: color-mix(in srgb, var(--card) 72%, transparent);
+  --vidrio-sombra: 0 16px 36px -14px rgb(0 0 0 / 0.55);
+  /* Una ventana flotante (el Master Prompt): luz en el canto de arriba, sombra larga abajo. */
+  --flotante-luz: linear-gradient(180deg, rgb(255 255 255 / 0.04), transparent 38%);
+  --flotante-sombra: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 1px 1px rgb(0 0 0 / 0.5), 0 24px 48px -16px rgb(0 0 0 / 0.7), 0 64px 120px -32px rgb(0 0 0 / 0.9);
+  --escena-espuma: #fafafa;
+  --escena-punto: #fafafa;
+}
+
+/* Claro: cuando la consola vive adentro de la app de escritorio en tema claro
+   (?tema=claro). «Blanco con negro o negro con blanco» (Nico, 12/10): el mismo
+   monocromo invertido. La tarjeta es un escalón más oscura que el fondo, como en
+   el oscuro es uno más clara. Los estados, con menos luz: medidos como texto sobre
+   la tarjeta (#f5f5f5) y el hover (#ebebeb), todos ≥ 4,5:1. */
+:root[data-tema="claro"] {
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --card: #f5f5f5;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #171717;
+  --primary-foreground: #fafafa;
+  --secondary: #ebebeb;
+  --secondary-foreground: #0a0a0a;
+  --muted: #ebebeb;
+  --muted-foreground: #5c5c5c;
+  --accent: #e0e0e0;
+  --accent-foreground: #0a0a0a;
+  --destructive: #b3362b;
+  --destructive-foreground: #fafafa;
+  --border: #00000012;
+  --input: #0000001f;
+  --ring: #8a8a8a;
+
+  --paso: #1d7343;
+  --murio: #b3362b;
+  --corriendo: #8a6a00;
+  --escribiendo: #3d3d3d;
+  /* Las insignias en claro: el tono oscuro de cada color, AA sobre su propio fondo (≥ 5:1). */
+  --insignia-mezcla: 13%;
+  --insignia-plata: #047857;
+  --insignia-porcentaje: #6d28d9;
+  --insignia-tiempo: #0f766e;
+  --insignia-cantidad: #be185d;
+  --insignia-codigo: #4338ca;
+  --insignia-cita: #854d0e;
+  --insignia-claude: #9a3412;
+  --insignia-gemini: #1d4ed8;
+
+  /* El celeste del delfín, más hondo: el pastel se perdía contra el blanco. */
+  --escena: #5e98c4;
+
+  /* Los colores con significado en claro: el tono hondo de cada uno, ≥ 4,5:1 sobre la tarjeta. */
+  --idea: #6a4bd0;
+  --hacer: #2f62a6;
+  --revisar: #0e7178;
+
+  /* La sintaxis en claro: los mismos tonos, hondos. Un tema de editor oscuro sobre fondo blanco
+     se lava y deja el código ilegible, que es justo lo contrario de para qué está el color. */
+  --sintaxis-comentario: #5a6878;
+  --sintaxis-cadena: #2d6a3f;
+  --sintaxis-numero: #8a5a1f;
+  --sintaxis-palabra: #7322a8;
+  --sintaxis-constante: #0b5f8a;
+  --sintaxis-tipo: #0e7178;
+  --sintaxis-funcion: #8a6a00;
+  --sintaxis-propiedad: #2f62a6;
+  --sintaxis-operador: #6b5b45;
+
+  --vidrio: color-mix(in srgb, #ffffff 74%, transparent);
+  --vidrio-sombra: 0 16px 36px -16px rgb(0 0 0 / 0.18);
+  --flotante-luz: linear-gradient(180deg, rgb(255 255 255 / 0.7), transparent 38%);
+  --flotante-sombra: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 1px 2px rgb(0 0 0 / 0.08), 0 24px 48px -16px rgb(0 0 0 / 0.22), 0 64px 120px -32px rgb(0 0 0 / 0.3);
+  --escena-espuma: #3d3d3d;
+  --escena-punto: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-paso: var(--paso);
+  --color-murio: var(--murio);
+  --color-corriendo: var(--corriendo);
+  --color-escribiendo: var(--escribiendo);
+  --color-idea: var(--idea);
+  --color-hacer: var(--hacer);
+  --color-revisar: var(--revisar);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Satoshi", "Inter", system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace;
+
+  --animate-entra: entra 150ms ease-out;
+  --animate-pulso-vivo: pulso-vivo 2s ease-in-out infinite;
+
+  @keyframes entra {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes pulso-vivo {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+  }
+}
+
+@layer components {
+  /* Una insignia de un texto de agente: el color de su clase, y de fondo ese mismo color apenas.
+     El tinte es el color base de la clase; la tinta, su versión legible en el tema. */
+  .insignia {
+    color: var(--insignia-tinta, var(--foreground));
+    background: color-mix(in oklab, var(--insignia-tinte, var(--foreground)) var(--insignia-mezcla), transparent);
+  }
+  .insignia[data-insignia="plata"] { --insignia-tinte: #10b981; --insignia-tinta: var(--insignia-plata); }
+  .insignia[data-insignia="porcentaje"] { --insignia-tinte: #8b5cf6; --insignia-tinta: var(--insignia-porcentaje); }
+  .insignia[data-insignia="tiempo"] { --insignia-tinte: #14b8a6; --insignia-tinta: var(--insignia-tiempo); }
+  .insignia[data-insignia="cantidad"] { --insignia-tinte: #ec4899; --insignia-tinta: var(--insignia-cantidad); }
+  .insignia[data-insignia="codigo"] { --insignia-tinte: #6366f1; --insignia-tinta: var(--insignia-codigo); }
+  .insignia[data-insignia="cita"] { --insignia-tinte: #eab308; --insignia-tinta: var(--insignia-cita); }
+  /* Los modelos con el color de su marca; los de marca monocroma quedan en el tono del texto. */
+  .insignia[data-insignia="modelo"][data-marca="Claude"] { --insignia-tinte: #d97757; --insignia-tinta: var(--insignia-claude); }
+  .insignia[data-insignia="modelo"][data-marca="Gemini"] { --insignia-tinte: #4285f4; --insignia-tinta: var(--insignia-gemini); }
+
+  /* Lo que el texto nombra del proyecto y se puede abrir (ver lib/referencias.ts).
+     Prima de la insignia, pero se distingue a propósito: una insignia es un dato que se lee y una
+     referencia es algo que se toca. La diferencia la hace el ícono de adelante y que el cursor
+     cambie, no un color más saturado — con cuatro colores nuevos el párrafo se vuelve un
+     arbolito. El issue toma el celeste que ya usa la lista para «abierto», y el PR el violeta. */
+  .referencia {
+    color: var(--referencia-tinta, var(--muted-foreground));
+    background: color-mix(in oklab, var(--referencia-tinte, var(--foreground)) 12%, transparent);
+    transition: background-color 120ms ease-out;
+  }
+  a.referencia {
+    cursor: pointer;
+  }
+  a.referencia:hover {
+    background: color-mix(in oklab, var(--referencia-tinte, var(--foreground)) 22%, transparent);
+  }
+  .referencia[data-ref="issue"] { --referencia-tinte: #3b82f6; --referencia-tinta: #93c5fd; }
+  .referencia[data-ref="pr"] { --referencia-tinte: #8b5cf6; --referencia-tinta: #c4b5fd; }
+  .referencia[data-ref="rama"],
+  .referencia[data-ref="commit"] { --referencia-tinte: var(--foreground); --referencia-tinta: var(--muted-foreground); }
+
+  :root[data-tema="claro"] .referencia[data-ref="issue"] { --referencia-tinta: #1d4ed8; }
+  :root[data-tema="claro"] .referencia[data-ref="pr"] { --referencia-tinta: #6d28d9; }
+
+  /* Una superficie de vidrio: lo de atrás (el mar de puntos) se ve desenfocado. */
+  .vidrio {
+    background: var(--vidrio);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    backdrop-filter: blur(24px) saturate(1.4);
+    /* Sin anillo ni filo de luz: la superficie se separa por tono y sombra, no por línea. */
+    box-shadow: var(--vidrio-sombra);
+  }
+
+  /* «Ni llegó a esta fase»: rayado, no vacío — ausencia con textura. */
+  .celda-rayada {
+    background: repeating-linear-gradient(135deg, var(--secondary) 0 3px, transparent 3px 6px);
+  }
+
+  /* La fase que está corriendo AHORA: un barrido dorado que viaja, como
+     una aguja de actividad — no un bloque mostaza parpadeando. */
+  .celda-corriendo {
+    background:
+      linear-gradient(
+        100deg,
+        color-mix(in srgb, var(--corriendo) 16%, var(--secondary)) 20%,
+        color-mix(in srgb, var(--corriendo) 72%, var(--secondary)) 50%,
+        color-mix(in srgb, var(--corriendo) 16%, var(--secondary)) 80%
+      )
+      0 0 / 220% 100%;
+    animation: celda-barrido 1.3s linear infinite;
+  }
+  @keyframes celda-barrido {
+    from { background-position: 200% 0; }
+    to { background-position: -20% 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .celda-corriendo {
+      animation: none;
+      background: color-mix(in srgb, var(--corriendo) 45%, var(--secondary));
+    }
+  }
+
+  /* Apretar se siente: baja un píxel, se achica apenas y vuelve con resorte. Es
+     el «Press Depth» de 21st.dev. */
+  .presionable {
+    transition:
+      transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      background-color 150ms ease-out,
+      color 150ms ease-out;
+  }
+  .presionable:active:not(:disabled) {
+    transform: translateY(1px) scale(0.97);
+    transition-duration: 60ms;
+  }
+
+  /* La escala de títulos, una sola para todas las vistas (ver components/Pagina.tsx). */
+  .titulo-vista {
+    font-family: var(--font-display);
+    font-size: 22px;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+  .titulo-seccion {
+    font-family: var(--font-display);
+    font-size: 15px;
+    line-height: 1.3;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+
+  /* Un dato con estado, en su color (ver --idea, --hacer, --revisar…): el color de texto es el del
+     estado y el fondo, ese mismo color apenas. Se elige con style={{"--tono": "var(--idea)"}}. */
+  .con-tono {
+    color: var(--tono);
+    background: color-mix(in oklab, var(--tono) 14%, transparent);
+  }
+  .punto-tono {
+    background: var(--tono);
+  }
+
+  /* La sintaxis del diff (ver lib/resaltar.ts). Una clase por tipo de pedazo; `normal` no lleva
+     ninguna y hereda el color de la línea, que es lo que ya distingue agregado de quitado. */
+  .sx-comentario {
+    color: var(--sintaxis-comentario);
+    font-style: italic;
+  }
+  .sx-cadena {
+    color: var(--sintaxis-cadena);
+  }
+  .sx-numero {
+    color: var(--sintaxis-numero);
+  }
+  .sx-palabra {
+    color: var(--sintaxis-palabra);
+  }
+  .sx-constante {
+    color: var(--sintaxis-constante);
+  }
+  .sx-tipo {
+    color: var(--sintaxis-tipo);
+  }
+  .sx-funcion {
+    color: var(--sintaxis-funcion);
+  }
+  .sx-propiedad {
+    color: var(--sintaxis-propiedad);
+  }
+  .sx-operador {
+    color: var(--sintaxis-operador);
+  }
+  /* Una superficie grande de un estado (una columna del tablero): la tarjeta, apenas teñida. */
+  .superficie-tono {
+    background: color-mix(in oklab, var(--tono) 6%, var(--card));
+  }
+  /* Lo que se apoya sobre una superficie (una tarjeta en su columna): siempre un tono más hacia el
+     frente — más claro en oscuro, blanco en claro. */
+  .ficha {
+    background: var(--secondary);
+  }
+  .ficha:hover {
+    background: var(--accent);
+  }
+  :root[data-tema="claro"] .ficha {
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  }
+  :root[data-tema="claro"] .ficha:hover {
+    background: #fafafa;
+  }
+
+  /* Una tira que se desliza sin mostrar la barra de desplazamiento. */
+  .sin-barra { scrollbar-width: none; }
+  .sin-barra::-webkit-scrollbar { display: none; }
+
+  /* La marca mientras hay una siembra corriendo: cada tanto, un salto de
+     delfín — sube inclinándose, cruza la cresta y entra de nariz. Una
+     sola animación de personalidad, y solo cuando pasa algo de verdad. */
+  .delfin-saltando {
+    animation: delfin-salto 3.2s ease-in-out infinite;
+    transform-origin: 50% 72%;
+  }
+  @keyframes delfin-salto {
+    0%, 62%, 100% { transform: translateY(0) rotate(0deg); }
+    70% { transform: translateY(-22%) rotate(-11deg); }
+    78% { transform: translateY(-30%) rotate(3deg); }
+    86% { transform: translateY(-10%) rotate(10deg); }
+    93% { transform: translateY(2%) rotate(-2deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .delfin-saltando { animation: none; }
+  }
+}
+
+@layer base {
+  /* Las barras de scroll del tema: finas y oscuras. Las de fábrica de
+     Windows eran una columna gris clara en medio de la consola. El color
+     se hereda solo; el ancho no, por eso va en `*`. */
+  * { border-color: var(--border); scrollbar-width: thin; }
+  html {
+    background: var(--background);
+    color-scheme: dark;
+  }
+  html[data-tema="claro"] {
+    color-scheme: light;
+  }
+  /* Los logos que vienen en blanco (pensados para el oscuro) desaparecían sobre blanco: en claro, en negro. */
+  html[data-tema="claro"] img:is([src$="/dolphin.svg"], [src$="/logos/openai.svg"], [src$="/logos/copilot.svg"], [src$="/logos/grok.svg"], [src$="/logos/ollama.svg"], [src$="/logos/qwen.svg"], [src$="/dolphin-blanco-128.png"]) {
+    filter: invert(1);
+  }
+  html {
+    scrollbar-color: color-mix(in srgb, var(--foreground) 16%, transparent) transparent;
+  }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.025em; }
+  button { font-family: inherit; }
+  /* En el código, «=>» es igual a «=>»: sin ligaduras que lo vuelvan una flecha. */
+  code, pre, kbd, .font-mono { font-variant-ligatures: none; }
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+  /* El título de una vista recibe el foco al cambiar de vista (para el lector de pantalla): sin anillo,
+     que no es un control. */
+  h1[tabindex="-1"]:focus { outline: none; }
+
+  /* El dedo necesita 44 px: lo mide el propio tester de pantalla de dolphin
+     (la persona «pulgar»). Con puntero grueso, todo lo que se toca crece
+     a 48 —el estándar de Android, y un margen para que una tarjeta que
+     todavía está entrando no lo deje en 43,9—; con mouse, la consola conserva su densidad. Va con min-* y
+     no con height para no pisarle el tamaño a nadie: solo lo agranda. El
+     switch se resuelve aparte, porque crecer le deformaría el dibujo. */
+  @media (pointer: coarse) {
+    :where(button:not([role="switch"]), a[href], select, [role="button"], input:not([type="checkbox"], [type="radio"], [type="hidden"])) {
+      min-height: 48px;
+      min-width: 48px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ───────────────────────────────────────────────────────────
+   Adentro de la app de escritorio (Nico, 23/10: «parecen dos apps distintas»): el texto va en
+   Geist, la letra del resto de la app; los títulos siguen en Satoshi, que es la voz de Dolphin.
+   Fuera de las capas a propósito: le gana a la base y a las utilidades sin !important.
+   ─────────────────────────────────────────────────────────── */
+html[data-embebida] {
+  --font-sans: "Geist", "Inter", system-ui, sans-serif;
+}
+html[data-embebida] body,
+html[data-embebida] .font-sans {
+  font-family: "Geist", "Inter", system-ui, sans-serif;
+}
+
+/* ───────────────────────────────────────────────────────────
+   Todo campo de texto muestra dónde está el foco (antes varios tenían `outline-none` y, con el
+   teclado, no se sabía dónde se escribía). Fuera de las capas a propósito: le gana a esa utilidad.
+   Un campo que vive adentro de una caja que ya marca el foco (el compositor) lleva data-sin-anillo.
+   ─────────────────────────────────────────────────────────── */
+:is(input:not([type="checkbox"], [type="radio"]), textarea, select):focus-visible:not([data-sin-anillo]) {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}

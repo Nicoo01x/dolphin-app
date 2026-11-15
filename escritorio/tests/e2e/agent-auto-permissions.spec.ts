@@ -1,0 +1,94 @@
+import { test, expect } from './helpers/dolphin-app'
+import { waitForSessionReady } from './helpers/store'
+
+test.use({ seedTestRepo: false })
+
+test('global Auto preserves other agents’ choices and the single permission setting persists', async ({
+  appPage
+}) => {
+  await waitForSessionReady(appPage)
+  await appPage.getByRole('button', { name: 'Settings', exact: true }).click()
+  await appPage.getByRole('button', { name: 'Agents', exact: true }).click()
+  const permissions = appPage.getByRole('button', { name: 'Permissions', exact: true })
+  const group = appPage.getByRole('group', { name: 'Permissions', exact: true })
+  const others = appPage.getByRole('button', { name: 'Permissions for other agents' })
+  const othersGroup = appPage.getByRole('group', { name: 'Permissions for other agents' })
+  const readPermissions = () =>
+    appPage.evaluate(async () => {
+      const settings = await window.api.settings.get()
+      return {
+        default: settings.agentPermissionDefault,
+        claude: settings.agentPermissionOverrides?.claude ?? settings.agentPermissionDefault,
+        codex: settings.agentPermissionOverrides?.codex ?? settings.agentPermissionDefault,
+        grok: settings.agentPermissionOverrides?.grok ?? settings.agentPermissionDefault,
+        opencode: settings.agentPermissionOverrides?.opencode ?? settings.agentPermissionDefault
+      }
+    })
+
+  await permissions.click()
+  await group.getByRole('menuitemradio', { name: /^Full access\b/ }).click()
+  await expect(others).toHaveCount(0)
+  await permissions.click()
+  await group.getByRole('menuitemradio', { name: /^Approve for me\b/ }).click()
+  await permissions.click()
+  await expect(group.getByRole('menuitemradio', { name: /^Approve for me\b/ })).toHaveAttribute(
+    'aria-checked',
+    'true'
+  )
+  await group.getByRole('menuitemradio', { name: /^Approve for me\b/ }).press('Escape')
+  // Fresh profiles keep OpenCode on its own settings, so the agents without Auto differ.
+  await expect(others).toHaveText('Mixed')
+  await expect.poll(readPermissions).toEqual({
+    default: 'auto',
+    claude: 'auto',
+    codex: 'auto',
+    grok: 'full-access',
+    opencode: 'own'
+  })
+
+  await others.click()
+  await othersGroup.getByRole('menuitemradio', { name: /^Each agent's own settings\b/ }).click()
+  await expect.poll(readPermissions).toEqual({
+    default: 'auto',
+    claude: 'auto',
+    codex: 'auto',
+    grok: 'own',
+    opencode: 'own'
+  })
+
+  await appPage.reload()
+  await appPage.waitForFunction(() => Boolean(window.__store))
+  await waitForSessionReady(appPage)
+  await appPage.getByRole('button', { name: 'Agents', exact: true }).click()
+  await permissions.click()
+  await expect(group.getByRole('menuitemradio', { name: /^Approve for me\b/ })).toHaveAttribute(
+    'aria-checked',
+    'true'
+  )
+  await group.getByRole('menuitemradio', { name: /^Approve for me\b/ }).press('Escape')
+  await expect(others).toHaveText("Each agent's own settings")
+  await others.click()
+  await expect(
+    othersGroup.getByRole('menuitemradio', { name: /^Each agent's own settings\b/ })
+  ).toHaveAttribute('aria-checked', 'true')
+  await othersGroup
+    .getByRole('menuitemradio', { name: /^Each agent's own settings\b/ })
+    .press('Escape')
+  await expect.poll(readPermissions).toEqual({
+    default: 'auto',
+    claude: 'auto',
+    codex: 'auto',
+    grok: 'own',
+    opencode: 'own'
+  })
+
+  await permissions.click()
+  await group.getByRole('menuitemradio', { name: /^Each agent's own settings\b/ }).click()
+  await expect.poll(readPermissions).toEqual({
+    default: 'own',
+    claude: 'own',
+    codex: 'own',
+    grok: 'own',
+    opencode: 'own'
+  })
+})

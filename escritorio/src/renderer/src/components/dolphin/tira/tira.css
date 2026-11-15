@@ -1,0 +1,71 @@
+/*
+ * La tira de estado: segmentos chicos uno al lado del otro, cada uno del color de lo que pasó. La
+ * usan la tarjeta de GitHub (los checks de un PR) y el tablero (el portón de una rama): el mismo
+ * lenguaje en los dos lados, así «verde pasó, rojo rebotó» se aprende una sola vez.
+ *
+ * Los tonos son los de GitHub; en oscuro, un paso más claros. Es el único color de la interfaz y
+ * dice estado, nunca decora.
+ */
+:is(.dolphin-tg, .dolphin-tira) {
+  --tg-verde: #1a7f37;
+  --tg-violeta: #8250df;
+  --tg-rojo: #cf222e;
+  --tg-ambar: #9a6700;
+  --tg-gris: var(--muted-foreground);
+  --tg-velo: color-mix(in srgb, var(--foreground) 4%, transparent);
+  --tg-hueso: color-mix(in srgb, var(--foreground) 9%, transparent);
+  --tg-curva: cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+:is(.dark, [data-native-chat-scheme='dark']) :is(.dolphin-tg, .dolphin-tira) {
+  --tg-verde: #3fb950;
+  --tg-violeta: #a371f7;
+  --tg-rojo: #f85149;
+  --tg-ambar: #d29922;
+}
+
+:is(.dolphin-tg, .dolphin-tira) [data-tono] {
+  --tono: var(--tg-gris);
+}
+:is(.dolphin-tg, .dolphin-tira) [data-tono='verde'] {
+  --tono: var(--tg-verde);
+}
+:is(.dolphin-tg, .dolphin-tira) [data-tono='violeta'] {
+  --tono: var(--tg-violeta);
+}
+:is(.dolphin-tg, .dolphin-tira) [data-tono='rojo'] {
+  --tono: var(--tg-rojo);
+}
+:is(.dolphin-tg, .dolphin-tira) [data-tono='ambar'] {
+  --tono: var(--tg-ambar);
+}
+/* Lo que todavía no pasó: un casillero apenas marcado, no un gris que parezca un resultado. */
+:is(.dolphin-tg, .dolphin-tira) [data-tono='hueso'] {
+  --tono: var(--tg-hueso);
+}
+
+.dolphin-tira-segmento {
+  transition: background-color 160ms var(--tg-curva);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Al entrar, la tira se revela de izquierda a derecha sin deformar las celdas. */
+  .dolphin-tira-crece {
+    animation: dolphin-tira-revelar 180ms var(--tg-curva) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dolphin-tira-segmento {
+    transition: none;
+  }
+}
+
+@keyframes dolphin-tira-revelar {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}

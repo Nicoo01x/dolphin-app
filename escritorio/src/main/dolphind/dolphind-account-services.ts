@@ -1,0 +1,131 @@
+import type { Store } from '../persistence/loading-store/store'
+import type { DolphinRuntimeService } from '../runtime/dolphin-runtime'
+import type {
+  GetSelectedCodexHomePath,
+  PrepareClaudeAuth,
+  PrepareCodexSessionResume
+} from '../ipc/pty/host-env/types'
+import type {
+  AiVaultPrepareSessionResumeArgs,
+  AiVaultPrepareSessionResumeResult
+} from '../../shared/ai-vault/resume/ai-vault-resume-preparation'
+import type { ClaudeStatusLineRateLimits } from '../../shared/claude-statusline-rate-limits'
+import { resolveTuiAgentLaunchEnv } from '../../shared/agent-launch/choices/tui-agent-launch-defaults'
+import { createProviderAccountServices } from '../providers/accounts/provider-account-services'
+import { createCodexRuntimeHomeLaunchPreparation } from '../codex/configuration/homes/codex-runtime-home-launch-preparation'
+import { createCodexSessionResumeLaunchPreparation } from '../codex/history/resume/codex-session-resume-launch-preparation'
+import { prepareCodexAiVaultSessionResume } from '../codex/history/resume/codex-ai-vault-session-resume'
+import { resolveHostCodexSessionSourceHome } from '../codex/history/rollouts/codex-session-source-home'
+import { resolveHostAgentBaseEnvironment } from '../runtime/agent-session/environment/structured-agent-shell-environment'
+import { isWslHostDolphindProcess } from '../ipc/wsl-guest-windows-drive-path'
+import type { DolphindRuntimeCleanup } from './dolphind-runtime-lifetime'
+
+type StructuredLaunchInput = { launchEnv: NodeJS.ProcessEnv }
+
+type DolphindAccountServices = {
+  prepareCodexHome: ReturnType<typeof createCodexRuntimeHomeLaunchPreparation>
+  prepareClaudeAuth: PrepareClaudeAuth
+  /** Pin auto-resume to the account home that recorded the session. */
+  prepareCodexSessionResume: PrepareCodexSessionResume
+  runtimeDeps: {
+    onUsageLimit: (provider: 'claude' | 'codex', resetsAt?: number, accountId?: string) => void
+    prepareCodexStructuredLaunch: (input: StructuredLaunchInput) => Promise<string | null>
+    resolveCodexStructuredLaunchHome: (input: StructuredLaunchInput) => string | null
+    prepareCodexCatalogProbeHome: (homePath: string) => void
+    prepareAiVaultSessionResume: (
+      args: AiVaultPrepareSessionResumeArgs
+    ) => Promise<AiVaultPrepareSessionResumeResult>
+  }
+  listCodexSessionHomes: () => string[]
+  attachToRuntime: (
+    runtime: Pick<
+      DolphinRuntimeService,
+      'setAccountServices' | 'setCommitMessageAgentEnvironmentResolvers'
+    >
+  ) => void
+}
+
+/** WSL accounts remain desktop-owned, including pushed CODEX_HOME and structured launch selection. */
+export function createDolphindAccountServices(args: {
+  store: Store
+  setClaudeStatusLineListener: (
+    listener: ((event: ClaudeStatusLineRateLimits) => void) | null
+  ) => void
+  registerCleanup: (cleanup: DolphindRuntimeCleanup) => void
+  /** Client-provided account homes override host selection, as for PTYs. */
+  clientCodexHomes: {
+    selectLaunchHome: GetSelectedCodexHomePath
+    readLaunchHome: (launchEnv?: NodeJS.ProcessEnv) => string | null
+  }
+  isWslHost?: () => boolean
+}): DolphindAccountServices | null {
+  if ((args.isWslHost ?? isWslHostDolphindProcess)()) {
+    return null
+  }
+  const { store, clientCodexHomes } = args
+  const services = createProviderAccountServices(store, {
+    setClaudeStatusLineListener: args.setClaudeStatusLineListener
+  })
+  args.registerCleanup(() => {
+    services.rateLimits.stop()
+    args.setClaudeStatusLineListener(null)
+  })
+  const { codexRuntimeHome } = services
+  const prepareCodexHome = createCodexRuntimeHomeLaunchPreparation({
+    getRuntimeHome: () => codexRuntimeHome,
+    getSettings: () => store.getSettings()
+  })
+  const prepareClaudeAuth: PrepareClaudeAuth = (target) =>
+    services.claudeRuntimeAuth.prepareForClaudeLaunch(target)
+  const resumeLaunch = createCodexSessionResumeLaunchPreparation({
+    getRuntimeHome: () => codexRuntimeHome,
+    getSettings: () => store.getSettings()
+  })
+  return {
+    prepareCodexHome,
+    prepareClaudeAuth,
+    // Client-owned sessions live outside the host’s trusted home list.
+    prepareCodexSessionResume: async (resumeArgs) =>
+      clientCodexHomes.readLaunchHome(resumeArgs.launchEnv)
+        ? null
+        : resumeLaunch.prepareCodexSessionResumeForLaunch(resumeArgs),
+    runtimeDeps: {
+      onUsageLimit: services.accountQuotaRotation.notifyUsageLimit.bind(
+        services.accountQuotaRotation
+      ),
+      // Why no resolveClaudeAccountId/resolveCodexAccountId here: the runtime already resolves a
+      // managed account from the same store, so these were a second copy of that lookup that the
+      // constructor silently dropped — it never declared them.
+      prepareCodexStructuredLaunch: async ({ launchEnv }) =>
+        (await clientCodexHomes.selectLaunchHome(undefined, launchEnv)) ??
+        prepareCodexHome(undefined, launchEnv),
+      resolveCodexStructuredLaunchHome: ({ launchEnv }) =>
+        clientCodexHomes.readLaunchHome(launchEnv) ??
+        codexRuntimeHome.resolveHostCodexHomePathForLaunchReadOnly(launchEnv),
+      prepareCodexCatalogProbeHome: (homePath) =>
+        codexRuntimeHome.prepareHostCodexHomeForReadOnlyAppServer(
+          homePath,
+          resolveTuiAgentLaunchEnv('codex', store.getSettings())
+        ),
+      prepareAiVaultSessionResume: (resumeArgs) =>
+        prepareCodexAiVaultSessionResume(resumeArgs, {
+          runtimeHome: codexRuntimeHome,
+          systemCodexHomePath: resolveHostCodexSessionSourceHome(store.getSettings()),
+          preparePinnedLaunchHome: (home) => resumeLaunch.prepareCodexPinnedLaunchHome(home)
+        })
+    },
+    listCodexSessionHomes: () => codexRuntimeHome.getHostCodexHomePathsForSessionDiscovery(),
+    attachToRuntime: (runtime) => {
+      runtime.setAccountServices({
+        claudeAccounts: services.claudeAccounts,
+        codexAccounts: services.codexAccounts,
+        rateLimits: services.rateLimits
+      })
+      runtime.setCommitMessageAgentEnvironmentResolvers({
+        prepareForCodexLaunch: prepareCodexHome,
+        prepareForClaudeLaunch: prepareClaudeAuth,
+        resolveBaseEnvironment: () => resolveHostAgentBaseEnvironment(store.getSettings())
+      })
+    }
+  }
+}

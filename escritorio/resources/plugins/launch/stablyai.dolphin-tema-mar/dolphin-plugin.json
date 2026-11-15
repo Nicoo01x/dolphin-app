@@ -1,0 +1,17 @@
+{
+  "manifestVersion": 2,
+  "id": "dolphin-tema-mar",
+  "publisher": "stablyai",
+  "name": "Mar",
+  "version": "1.0.0",
+  "execution": "data",
+  "description": "El tema de la casa: el azul del mar con el que Dolphin se dibuja a sí mismo, para la app y para la terminal.",
+  "engines": {
+    "dolphin": ">=1.4.245"
+  },
+  "contributes": {
+    "themes": [{ "id": "mar", "title": "Mar", "path": "themes/mar.json" }],
+    "terminalThemes": [{ "id": "mar", "title": "Mar", "path": "themes/mar-terminal.json" }]
+  },
+  "capabilities": []
+}

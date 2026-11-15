@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# Desde el 26/10 el escritorio vive en dolphin-app/escritorio y git corre el hook desde la raiz.
+if [ -d escritorio ]; then cd escritorio || exit 1; fi
+pnpm exec lint-staged

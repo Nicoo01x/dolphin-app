@@ -1,0 +1,106 @@
+import { randomUUID } from 'node:crypto'
+import { DOLPHIND_NODE_RUNTIME_IDENTITY } from '../../../shared/dolphind-node-runtime-identity'
+import { DOLPHIND_NODE_RUNTIME_MARKER_FILENAME } from '../../../shared/dolphind-artifacts'
+import {
+  DOLPHIND_PROFILE_PREFLIGHT_FLAG,
+  DOLPHIND_PROFILE_PREFLIGHT_TIMEOUT_MS,
+  parseDolphindProfilePreflight,
+  type DolphindProfilePreflightResponse
+} from '../../../shared/dolphind-profile-preflight'
+import { assertPosixDolphindHost } from './dolphind-remote-host-support'
+import {
+  dolphindWindowsNodeCommandLine,
+  dolphindWindowsSlotOpCommand,
+  readDolphindWindowsEncodedAnswer
+} from './dolphind-remote-windows-node'
+import { readWindowsDolphindSlotEntry } from './dolphind-remote-launch-windows'
+import { DOLPHIND_WINDOWS_RUNTIME_MARKER } from '../host-state/dolphind-windows-host-script'
+import {
+  dolphindNodeSlotRuntimeCommand,
+  selectDolphindSlotEntryCommand
+} from './dolphind-remote-runtime'
+import { execCommand } from '../../ssh/remote-exec/remote-exec-command'
+import { quotePosixShell } from '../../../shared/shell/launch/shell-argument-quoting'
+import {
+  isWindowsRemoteHost,
+  joinRemotePath,
+  type RemoteHostPlatform
+} from '../../ssh/remote-host/ssh-remote-platform'
+import type { DolphindHostTransport } from './dolphind-host-transport'
+
+export function dolphindProfilePreflightCommand(
+  host: RemoteHostPlatform,
+  directory: string,
+  nonce: string,
+  probeDaemonsUnder?: string
+): string {
+  assertPosixDolphindHost(host)
+  // New candidates always use pinned Node; host Node fallback could mask an incomplete slot.
+  const marker = quotePosixShell(
+    joinRemotePath(host, directory, DOLPHIND_NODE_RUNTIME_MARKER_FILENAME)
+  )
+  const launch = [
+    'DOLPHIN_BACKGROUND_LAUNCH=1',
+    '"$dolphind_runtime"',
+    '"$dolphind_entry"',
+    DOLPHIND_PROFILE_PREFLIGHT_FLAG,
+    quotePosixShell(nonce),
+    ...(probeDaemonsUnder === undefined ? [] : [quotePosixShell(probeDaemonsUnder)])
+  ].join(' ')
+  return `[ -e ${marker} ] || exit 78; ${dolphindNodeSlotRuntimeCommand(host, directory)}${selectDolphindSlotEntryCommand(host, directory)}; ${launch}`
+}
+
+/** Qualify the candidate; given the served data root, it also names the daemon generations alive there. */
+export async function preflightInstalledDolphind(options: {
+  conn: DolphindHostTransport
+  host: RemoteHostPlatform
+  remoteInstallDir: string
+  probeDaemonsUnder?: string
+  fullVersion: string
+  signal?: AbortSignal
+}): Promise<DolphindProfilePreflightResponse> {
+  const nonce = randomUUID()
+  const command = isWindowsRemoteHost(options.host)
+    ? await windowsDolphindProfilePreflightCommand(options, nonce)
+    : dolphindProfilePreflightCommand(
+        options.host,
+        options.remoteInstallDir,
+        nonce,
+        options.probeDaemonsUnder
+      )
+  const output = await execCommand(options.conn, command, {
+    signal: options.signal,
+    timeoutMs: DOLPHIND_PROFILE_PREFLIGHT_TIMEOUT_MS,
+    wrapCommand: !isWindowsRemoteHost(options.host)
+  })
+  return parseDolphindProfilePreflight(output, nonce, DOLPHIND_NODE_RUNTIME_IDENTITY, options.fullVersion)
+}
+
+// Windows uses plain argv; dolphind opens no window and needs no background-launch environment.
+async function windowsDolphindProfilePreflightCommand(
+  options: {
+    conn: DolphindHostTransport
+    host: RemoteHostPlatform
+    remoteInstallDir: string
+    probeDaemonsUnder?: string
+    signal?: AbortSignal
+  },
+  nonce: string
+): Promise<string> {
+  const { host, remoteInstallDir } = options
+  const slotAnswer = await execCommand(
+    options.conn,
+    dolphindWindowsSlotOpCommand(host, remoteInstallDir, 'slot-runtime', [remoteInstallDir]),
+    { signal: options.signal, wrapCommand: false }
+  )
+  const runtime = readDolphindWindowsEncodedAnswer(slotAnswer, DOLPHIND_WINDOWS_RUNTIME_MARKER)
+  if (!runtime) {
+    throw new Error('The Windows host did not name the runtime this dolphind slot needs.')
+  }
+  return dolphindWindowsNodeCommandLine(runtime, [
+    readWindowsDolphindSlotEntry(slotAnswer, host, remoteInstallDir),
+    DOLPHIND_PROFILE_PREFLIGHT_FLAG,
+    nonce,
+    ...(options.probeDaemonsUnder === undefined ? [] : [options.probeDaemonsUnder])
+  ])
+}

@@ -1,0 +1,41 @@
+{
+  "manifestVersion": 2,
+  "id": "dolphin-archivos",
+  "publisher": "stablyai",
+  "name": "Archivos",
+  "description": "El menú + crea algo más que un markdown: un script, un TypeScript, un Python o un JSON, con lo mínimo escrito.",
+  "version": "1.0.0",
+  "execution": "data",
+  "engines": {
+    "dolphin": ">=1.4.245"
+  },
+  "contributes": {
+    "newFiles": [
+      {
+        "id": "typescript",
+        "title": "New TypeScript file",
+        "extension": ".ts",
+        "template": "plantillas/archivo.ts"
+      },
+      {
+        "id": "python",
+        "title": "New Python file",
+        "extension": ".py",
+        "template": "plantillas/archivo.py"
+      },
+      {
+        "id": "shell",
+        "title": "New shell script",
+        "extension": ".sh",
+        "template": "plantillas/script.sh"
+      },
+      {
+        "id": "json",
+        "title": "New JSON file",
+        "extension": ".json",
+        "template": "plantillas/archivo.json"
+      }
+    ]
+  },
+  "capabilities": []
+}

@@ -1,0 +1,108 @@
+import { leerEnvDolphin } from '../../../shared/dolphin-env'
+import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join } from 'node:path'
+import { expect, it } from 'vitest'
+import { runProcess } from '@dolphin/process-host'
+import { removeTree } from '../../../shared/windows-transient-lock-removal'
+import { buildWslExecArgs } from '../../../shared/wsl-login-shell-command'
+import { installFakeAppEnvironment } from '../../../../config/scripts/test-runtime/environment/vitest-host-ports-setup'
+import { addDolphinWslInteropEnv } from '../../pty/shell-startup/wsl-dolphin-env'
+import { getManagedWslCliDir } from './wsl-managed-cli'
+import { buildLocalShellReadyWrapperFiles } from '../../providers/local-pty/local-pty-shell-ready-wrapper-fileset'
+
+// Explicit opt-in: never require a developer's WSL installation for unit tests.
+const enabled = process.platform === 'win32' && leerEnvDolphin('TEST_MANAGED_WSL') === '1'
+const FIXTURE_CLI =
+  'if(process.argv.includes("--exit"))process.exit(23); console.error("bridge stderr"); console.log(JSON.stringify({argv:process.argv.slice(2),owner:process.env.DOLPHIN_USER_DATA_PATH,handle:process.env.DOLPHIN_TERMINAL_HANDLE}))'
+
+async function withManagedCli(
+  run: (fixture: {
+    env: Record<string, string>
+    guestRoot: string
+    root: string
+    userDataPath: string
+    wsl: (args: string[], input?: string) => ReturnType<typeof runProcess>
+  }) => Promise<void>
+): Promise<void> {
+  const root = mkdtempSync(join(tmpdir(), "dolphin WSL's managed CLI "))
+  const distro = leerEnvDolphin('TEST_WSL_DISTRO') || undefined
+  const userDataPath = join(root, 'user data 张三 O\u2019Brien')
+  const env: Record<string, string> = { DOLPHIN_BACKGROUND_LAUNCH: '1' }
+  for (const [key, value] of Object.entries(process.env)) {
+    if (value !== undefined) {
+      env[key] = value
+    }
+  }
+  const wsl = (args: string[], input?: string) =>
+    runProcess({
+      program: 'wsl.exe',
+      args: buildWslExecArgs(distro, args),
+      env,
+      cwd: root,
+      input,
+      timeoutMs: 30_000
+    })
+  const snapshot = () =>
+    wsl([
+      'sh',
+      '-c',
+      'for file in "$HOME/.profile" "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.zshrc" "$HOME/.zprofile" "$HOME/.zshenv" "$HOME/.local/bin/dolphin" "$HOME/.local/bin/dolphin-ide" "$HOME/.local/bin/dolphin-dev" "$HOME/.local/share/dolphin/dolphin-wsl-bridge.ps1"; do if [ -f "$file" ]; then sha256sum "$file"; fi; done; printf "PATH=%s\\n" "$PATH"'
+    ])
+  try {
+    const before = await snapshot()
+    expect(before.code, before.stderr).toBe(0)
+    mkdirSync(join(root, 'out', 'cli'), { recursive: true })
+    writeFileSync(join(root, 'out', 'cli', 'index.js'), FIXTURE_CLI)
+    for (const [path, content] of buildLocalShellReadyWrapperFiles(join(root, 'wrapper'))) {
+      mkdirSync(dirname(path), { recursive: true })
+      writeFileSync(path, content)
+    }
+    const translated = await wsl(['wslpath', '-u', root])
+    expect(translated.code, translated.stderr).toBe(0)
+    installFakeAppEnvironment({ getPath: () => userDataPath, getAppPath: () => root })
+    const directory = getManagedWslCliDir({ isPackaged: false, userDataPath })
+    expect(directory).not.toBeNull()
+    Object.assign(env, {
+      DOLPHIN_WSL_CLI_DIR: directory ?? '',
+      DOLPHIN_CLI_COMMAND: 'dolphin-dev',
+      DOLPHIN_TERMINAL_HANDLE: 'term_managed_fixture'
+    })
+    addDolphinWslInteropEnv(env)
+    await run({ env, guestRoot: translated.stdout.trim(), root, userDataPath, wsl })
+    expect((await snapshot()).stdout).toBe(before.stdout)
+  } finally {
+    await removeTree(root)
+  }
+}
+
+// Why a PTY: the zsh restore runs from the first-prompt hook, which `zsh -c` never reaches.
+it.skipIf(!enabled)(
+  'executes the managed bridge from an interactive zsh after .zshrc resets PATH',
+  (ctx) =>
+    withManagedCli(async ({ guestRoot, root, userDataPath, wsl }) => {
+      if ((await wsl(['sh', '-c', 'command -v zsh && command -v script'])).code !== 0) {
+        ctx.skip()
+      }
+      writeFileSync(join(root, '.zshrc'), 'export PATH=/usr/bin:/bin\n')
+      const result = await wsl(
+        [
+          'env',
+          `HOME=${guestRoot}`,
+          'PATH=/usr/bin:/bin',
+          `ZDOTDIR=${guestRoot}/wrapper/zsh`,
+          'script',
+          '-qec',
+          'zsh -l',
+          '/dev/null'
+        ],
+        `dolphin-dev "two words" > "$HOME/zsh-out"; print -r -- "path=$PATH" >> "$HOME/zsh-out"; exit\n`
+      )
+      expect(result.code, result.stderr).toBe(0)
+      const output = await wsl(['cat', `${guestRoot}/zsh-out`])
+      expect(output.stdout).toContain('"argv":["two words"]')
+      expect(output.stdout).toContain(JSON.stringify(userDataPath))
+      expect(output.stdout).toMatch(/path=\/mnt\/.*wsl-managed-cli\/[0-9a-f]{20}:\/usr\/bin:\/bin/)
+    }),
+  90_000
+)

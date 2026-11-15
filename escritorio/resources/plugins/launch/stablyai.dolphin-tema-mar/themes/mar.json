@@ -1,0 +1,22 @@
+{
+  "base": "dark",
+  "tokens": {
+    "--background": "#07090c",
+    "--foreground": "#f7f8f8",
+    "--muted-foreground": "#f7f8f89e",
+    "--primary": "#19b9ff",
+    "--primary-foreground": "#07090c",
+    "--accent": "#1b6ca8",
+    "--accent-foreground": "#f7f8f8",
+    "--border": "#f7f8f81f",
+    "--chat-user-message": "#111316",
+    "--chat-inline-code": "#17191c",
+    "--chat-code-block": "#0c0e11"
+  },
+  "background": {
+    "path": "themes/fondo.png",
+    "opacity": 0.85,
+    "size": "cover",
+    "position": "center"
+  }
+}

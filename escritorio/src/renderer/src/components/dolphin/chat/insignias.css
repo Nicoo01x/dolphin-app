@@ -1,0 +1,170 @@
+/*
+ * Insignias en el texto del agente: cada clase de dato con su color, para separarlas de un vistazo
+ * (pedido de Nico, 23/10: «tiene que tener colores y todo»). El texto de cada una pasa AA sobre el
+ * fondo del chat en claro y en oscuro; el fondo es un tinte del mismo color. El oscuro sigue la
+ * misma regla que la variante `dark` de la app: la app en oscuro, salvo un chat que se pidió claro.
+ */
+.native-chat-markdown span[data-insignia] {
+  display: inline-block;
+  padding: 0 0.32em;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+  color: var(--insignia-texto);
+  background: color-mix(in srgb, var(--insignia-tinte) 14%, transparent);
+}
+
+.native-chat-markdown span[data-insignia='porcentaje'] {
+  --insignia-tinte: #7c3aed;
+  --insignia-texto: #6d28d9;
+}
+.native-chat-markdown span[data-insignia='plata'] {
+  --insignia-tinte: #059669;
+  --insignia-texto: #047857;
+}
+.native-chat-markdown span[data-insignia='tiempo'] {
+  --insignia-tinte: #0891b2;
+  --insignia-texto: #0e7490;
+}
+.native-chat-markdown span[data-insignia='cantidad'] {
+  --insignia-tinte: #db2777;
+  --insignia-texto: #be185d;
+}
+/* El tamaño de un commit: el verde y el rojo de un diff, que es donde todo el mundo ya los lee.
+   El verde no es el de «plata» a propósito: son dos cosas distintas y el de git es más frío. */
+.native-chat-markdown span[data-insignia='agregado'] {
+  --insignia-tinte: #16a34a;
+  --insignia-texto: #15803d;
+}
+.native-chat-markdown span[data-insignia='quitado'] {
+  --insignia-tinte: #dc2626;
+  --insignia-texto: #b91c1c;
+}
+/* Una cita no es un dato: va en el color del texto, con un fondo apenas marcado y sin negrita
+   (en amarillo sobre naranja gritaba más que todo el mensaje). */
+.native-chat-markdown span[data-insignia='cita'] {
+  color: inherit;
+  font-weight: 500;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+/* Nombrar a un modelo trae su logo (pedido de Nico, 30/10). El chip va neutro y no naranja: el logo
+   ya dice de quién es, y nueve marcas con su color cada una contra un tinte naranja es un semáforo.
+   El logo va de fondo en un ::before y no en un <img>: el texto lo arma un plugin de markdown y el
+   sanitizador del chat solo deja pasar atributos, no etiquetas nuevas. */
+.native-chat-markdown span[data-insignia='modelo'] {
+  color: inherit;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+/* Un color se muestra, no se describe. El chip va neutro —el color lo lleva la muestra— porque
+   pintar el fondo con el color de la paleta vuelve ilegible justo a los oscuros y a los claros. */
+.native-chat-markdown span[data-insignia='color'] {
+  color: inherit;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+/* El anillo interior es lo que le da forma a un color casi igual al fondo: #121212 sobre el chat
+   oscuro o #fff sobre el claro, sin él, son un hueco. */
+.native-chat-markdown .insignia-muestra {
+  display: inline-block;
+  width: 0.72em;
+  height: 0.72em;
+  vertical-align: -0.04em;
+  margin-right: 0.34em;
+  border-radius: 0.2em;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 35%, transparent);
+}
+
+.native-chat-markdown span[data-marca]::before {
+  content: '';
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  /* Alineado con la línea de base del texto, no con su caja: si no, el logo baila renglón a renglón. */
+  vertical-align: -0.12em;
+  margin-right: 0.3em;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.native-chat-markdown span[data-marca='claude']::before {
+  background-image: url('./logos/claude.svg');
+}
+.native-chat-markdown span[data-marca='openai']::before {
+  background-image: url('./logos/openai.svg');
+}
+.native-chat-markdown span[data-marca='gemini']::before {
+  background-image: url('./logos/gemini.svg');
+}
+.native-chat-markdown span[data-marca='deepseek']::before {
+  background-image: url('./logos/deepseek.svg');
+}
+.native-chat-markdown span[data-marca='qwen']::before {
+  background-image: url('./logos/qwen.svg');
+}
+.native-chat-markdown span[data-marca='mistral']::before {
+  background-image: url('./logos/mistral.svg');
+}
+.native-chat-markdown span[data-marca='grok']::before {
+  background-image: url('./logos/grok.svg');
+}
+.native-chat-markdown span[data-marca='ollama']::before {
+  background-image: url('./logos/ollama.svg');
+}
+.native-chat-markdown span[data-marca='copilot']::before {
+  background-image: url('./logos/copilot.svg');
+}
+
+/* Los que son de un solo trazo negro se pierden sobre el chat oscuro: ahí van invertidos. */
+:is(.dark, [data-native-chat-scheme='dark'])
+  .native-chat-markdown
+  span:is([data-marca='openai'], [data-marca='grok'], [data-marca='ollama'])::before {
+  filter: invert(1);
+}
+[data-native-chat-scheme='light']
+  .native-chat-markdown
+  span:is([data-marca='openai'], [data-marca='grok'], [data-marca='ollama'])::before {
+  filter: none;
+}
+
+:is(.dark, [data-native-chat-scheme='dark'])
+  .native-chat-markdown
+  span[data-insignia='porcentaje'] {
+  --insignia-texto: #c4b5fd;
+}
+:is(.dark, [data-native-chat-scheme='dark']) .native-chat-markdown span[data-insignia='plata'] {
+  --insignia-texto: #6ee7b7;
+}
+:is(.dark, [data-native-chat-scheme='dark']) .native-chat-markdown span[data-insignia='tiempo'] {
+  --insignia-texto: #67e8f9;
+}
+:is(.dark, [data-native-chat-scheme='dark']) .native-chat-markdown span[data-insignia='cantidad'] {
+  --insignia-texto: #f9a8d4;
+}
+:is(.dark, [data-native-chat-scheme='dark']) .native-chat-markdown span[data-insignia='agregado'] {
+  --insignia-texto: #86efac;
+}
+:is(.dark, [data-native-chat-scheme='dark']) .native-chat-markdown span[data-insignia='quitado'] {
+  --insignia-texto: #fca5a5;
+}
+
+/* Un chat que se pidió claro dentro de la app en oscuro vuelve a los colores claros. */
+[data-native-chat-scheme='light'] .native-chat-markdown span[data-insignia='porcentaje'] {
+  --insignia-texto: #6d28d9;
+}
+[data-native-chat-scheme='light'] .native-chat-markdown span[data-insignia='plata'] {
+  --insignia-texto: #047857;
+}
+[data-native-chat-scheme='light'] .native-chat-markdown span[data-insignia='tiempo'] {
+  --insignia-texto: #0e7490;
+}
+[data-native-chat-scheme='light'] .native-chat-markdown span[data-insignia='cantidad'] {
+  --insignia-texto: #be185d;
+}
+[data-native-chat-scheme='light'] .native-chat-markdown span[data-insignia='agregado'] {
+  --insignia-texto: #15803d;
+}
+[data-native-chat-scheme='light'] .native-chat-markdown span[data-insignia='quitado'] {
+  --insignia-texto: #b91c1c;
+}

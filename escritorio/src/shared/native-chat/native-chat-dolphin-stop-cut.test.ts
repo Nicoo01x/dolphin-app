@@ -1,0 +1,152 @@
+import { describe, expect, it } from 'vitest'
+import { agentSessionFailureFact } from '../agent-session/failures/agent-session-failure'
+import { agentSessionFailureWords } from '../agent-session/failures/agent-session-failure-words'
+import { agentJournalItemKey } from '../agent-session/journal/agent-session-journal-item-key'
+import type { AgentJournalRenderItem } from '../agent-session/journal/agent-session-journal-types'
+import type { AgentJournalTurnOutcome } from '../agent-status/lifecycle/agent-turn-outcome'
+import { withNativeChatCutTurnNotices } from './transcript/native-chat-cut-turn-notice'
+import {
+  latestNativeChatDolphinStopCut,
+  dolphinShutdownRowClientMessageId
+} from './native-chat-dolphin-stop-cut'
+
+const turnId = agentJournalItemKey({ provider: 'codex', threadId: 't', turnId: 'cut', ordinal: 1 })
+
+function userMessage(sequence: number): AgentJournalRenderItem {
+  return {
+    itemId: agentJournalItemKey({ provider: 'dolphin', clientMessageId: `user-${sequence}` }),
+    revision: 1,
+    sequence,
+    observedAt: sequence,
+    body: { kind: 'message', role: 'user', blocks: [{ type: 'text', text: 'go' }] }
+  }
+}
+
+function cutTurn(outcome?: AgentJournalTurnOutcome): AgentJournalRenderItem {
+  return {
+    itemId: turnId,
+    revision: 2,
+    sequence: 2,
+    observedAt: 2,
+    body: {
+      kind: 'turn',
+      turnId: 'cut',
+      state: 'interrupted',
+      startedAt: 1,
+      completedAt: 5,
+      ...(outcome ? { outcome } : {})
+    }
+  }
+}
+
+/** Host stop row with current words/fact and an optional newer cause. */
+function stopRow(dolphinStop: { cause: string } | undefined, scoped = true): AgentJournalRenderItem {
+  return {
+    itemId: agentJournalItemKey({
+      provider: 'dolphin',
+      clientMessageId: dolphinShutdownRowClientMessageId('session-1', 3, 'gen-1')
+    }),
+    revision: 1,
+    sequence: 3,
+    observedAt: 6,
+    body: {
+      kind: 'status',
+      ...agentSessionFailureWords(agentSessionFailureFact('providerExited'), {
+        agentName: 'Codex',
+        surface: 'row'
+      }),
+      tone: 'error',
+      ...(dolphinStop === undefined ? {} : { dolphinStop })
+    },
+    ...(scoped ? { turnScope: { kind: 'turn' as const, turnItemId: turnId } } : {})
+  }
+}
+
+const update = { cause: 'update' }
+
+describe('a client that predates the cause', () => {
+  it("reads the host row as the cut turn's one explanation and adds none of its own", () => {
+    const items = [userMessage(1), cutTurn(), stopRow(update)]
+    const read = withNativeChatCutTurnNotices(items, { agentName: 'Codex' })
+    expect(read).toBe(items)
+    expect(read.filter((item) => item.body.kind === 'status')).toHaveLength(1)
+  })
+})
+
+describe('the cut Continue answers', () => {
+  it('is the latest turn when a Dolphin stop cut it and nothing was sent since', () => {
+    expect(
+      latestNativeChatDolphinStopCut([userMessage(1), cutTurn(), stopRow(update)], [])
+    ).toEqual({
+      turnItemId: turnId,
+      cause: 'update'
+    })
+  })
+
+  it('is gone once a message follows the cut', () => {
+    expect(
+      latestNativeChatDolphinStopCut(
+        [userMessage(1), cutTurn(), stopRow(update), userMessage(4)],
+        []
+      )
+    ).toBeNull()
+  })
+
+  it('stays for a steer the cut turn took, which asked for nothing new', () => {
+    const steer: AgentJournalRenderItem = {
+      ...userMessage(4),
+      turnScope: { kind: 'turn', turnItemId: turnId }
+    }
+    expect(
+      latestNativeChatDolphinStopCut([userMessage(1), cutTurn(), stopRow(update), steer], [])
+    ).toEqual({ turnItemId: turnId, cause: 'update' })
+  })
+
+  it('stays across a conversation command run after the cut, and its turn', () => {
+    const command: AgentJournalRenderItem = {
+      ...userMessage(4),
+      body: {
+        kind: 'message',
+        role: 'user',
+        blocks: [{ type: 'text', text: '/context' }],
+        command: { name: 'context' }
+      }
+    }
+    const commandTurn: AgentJournalRenderItem = {
+      itemId: agentJournalItemKey({ provider: 'codex', threadId: 't', turnId: 'cmd', ordinal: 1 }),
+      revision: 1,
+      sequence: 5,
+      observedAt: 7,
+      body: {
+        kind: 'turn',
+        turnId: 'cmd',
+        state: 'completed',
+        outcome: 'success',
+        userItemId: command.itemId
+      }
+    }
+    expect(
+      latestNativeChatDolphinStopCut(
+        [userMessage(1), cutTurn(), stopRow(update), command, commandTurn],
+        []
+      )
+    ).toEqual({ turnItemId: turnId, cause: 'update' })
+  })
+
+  it('is gone while a send is on its way', () => {
+    expect(
+      latestNativeChatDolphinStopCut(
+        [userMessage(1), cutTurn(), stopRow(update)],
+        [{ dispatchState: 'pending' }]
+      )
+    ).toBeNull()
+  })
+
+  it("is none for a stop with no Dolphin cause, a person's Stop, or an unscoped row", () => {
+    expect(latestNativeChatDolphinStopCut([cutTurn(), stopRow(undefined)], [])).toBeNull()
+    expect(
+      latestNativeChatDolphinStopCut([cutTurn('cancellation'), stopRow(update)], [])
+    ).toBeNull()
+    expect(latestNativeChatDolphinStopCut([cutTurn(), stopRow(update, false)], [])).toBeNull()
+  })
+})

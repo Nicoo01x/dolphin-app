@@ -1,0 +1,6 @@
+id: claude-entrypoint-key-owner
+valid:
+  - "const binary = 'dolphin'"
+invalid:
+  - "env[CLAUDE_ENTRYPOINT_ENV] = 'dolphin'"
+  - "import { CLAUDE_ENTRYPOINT_ENV as key } from './claude-chat-entrypoint'"

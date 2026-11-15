@@ -1,0 +1,11 @@
+# Type errors per file under tests/ (tsc -p config/tsconfig.e2e.json).
+# This is a RATCHET: counts may only go DOWN. Fix the errors in a file you touch.
+# Prune after a fix: pnpm check:e2e-typecheck-ratchet --prune
+1 tests/e2e/__mocks__/mobile-structured-options.ts # importa mobile/src, que Dolphin no tiene (test de la base sin tocar)
+1 tests/e2e/__mocks__/native-chat-ssh-delivery.ts # importa mobile/src, que Dolphin no tiene (test de la base sin tocar)
+1 tests/e2e/headless-serve-mobile-native-chat-identity.spec.ts # importa mobile/src, que Dolphin no tiene (test de la base sin tocar)
+1 tests/e2e/helpers/paired-mobile-client.ts # importa mobile/src, que Dolphin no tiene (test de la base sin tocar)
+14 tests/e2e/helpers/phone-feed-list.ts # importa mobile/src, que Dolphin no tiene
+1 tests/e2e/nested-agent-idle-session-owner.spec.ts # importa mobile/src, que Dolphin no tiene
+1 tests/e2e/paired-mobile-desktop-mirror-workspace-visibility.spec.ts # importa mobile/src, que Dolphin no tiene (test de la base sin tocar)
+1 tests/e2e/structured-chat-tab-lifetime.test-fixture.ts # importa mobile/src, que Dolphin no tiene (test de la base sin tocar)

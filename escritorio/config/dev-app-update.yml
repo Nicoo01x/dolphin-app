@@ -1,0 +1,4 @@
+provider: github
+owner: Nicoo01x
+repo: dolphin-app
+updaterCacheDirName: dolphin-updater

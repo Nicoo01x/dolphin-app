@@ -1,0 +1,12 @@
+{
+  "name": "dolphin-agent-plugins",
+  "owner": { "name": "Dolphin" },
+  "description": "Repository-local plugins for coding agents working in Dolphin",
+  "plugins": [
+    {
+      "name": "dolphin-typescript",
+      "source": "./dolphin-typescript",
+      "description": "TypeScript 7 diagnostics and code navigation from the repo's own compiler"
+    }
+  ]
+}

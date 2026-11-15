@@ -1,0 +1,18 @@
+node_modules
+dist
+.nico-loop
+.dolphin
+
+ui/tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# La web: lo que genera Next
+web/.next
+web/out
+web/next-env.d.ts
+
+# Las capturas del CLI: se regeneran con scripts/capturar-tui.ts, no se versionan.
+.capturas
+
+# La configuración local de Claude Code (permisos, skills, memoria): es de cada máquina.
+.claude/

@@ -1,0 +1,4 @@
+{
+  "extends": "./.dolphin/types/tsconfig.json",
+  "include": ["src"]
+}

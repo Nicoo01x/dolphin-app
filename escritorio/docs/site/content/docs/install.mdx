@@ -1,0 +1,135 @@
+---
+title: Install
+description: Download Dolphin for macOS, Windows, or Linux, and opt into RC builds.
+---
+
+import { Callout } from '@/components/docs/prose'
+
+## Download
+
+<div className="my-4 rounded-md border border-border bg-card p-4 md:hidden">
+  <p className="mb-3 text-sm text-muted-foreground">
+    Dolphin is a desktop app. Download the latest build for your platform from GitHub:
+  </p>
+  <a
+    href="https://github.com/Nicoo01x/dolphin-app/releases/latest"
+    className="inline-flex min-h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+  >
+    Download latest release
+  </a>
+</div>
+
+<ul className="hidden md:block">
+  <li>
+    **macOS:** [Apple
+    Silicon](https://github.com/Nicoo01x/dolphin-app/releases/latest/download/dolphin-macos-arm64.dmg)
+    ·
+    [Intel](https://github.com/Nicoo01x/dolphin-app/releases/latest/download/dolphin-macos-x64.dmg)
+  </li>
+  <li>
+    **Windows:**
+    [installer](https://github.com/Nicoo01x/dolphin-app/releases/latest/download/dolphin-windows-setup.exe)
+  </li>
+  <li>
+    **Linux:** AppImage
+    [x64](https://github.com/Nicoo01x/dolphin-app/releases/latest/download/dolphin-linux.AppImage) ·
+    [arm64](https://github.com/Nicoo01x/dolphin-app/releases/latest/download/dolphin-linux-arm64.AppImage)
+    · [.deb](https://github.com/Nicoo01x/dolphin-app/releases) ·
+    [.rpm](https://github.com/Nicoo01x/dolphin-app/releases) — see [Linux](#linux) for which to pick
+  </li>
+  <li>Older versions: [GitHub Releases](https://github.com/Nicoo01x/dolphin-app/releases).</li>
+</ul>
+
+### Homebrew (macOS)
+
+There is no Homebrew cask yet: Dolphin is not published to a tap. Install it from the GitHub Releases
+links above, or build it from source — see the repository README.
+
+## First launch
+
+On first launch Dolphin will:
+
+- Ask for access to your home directory so it can add repos.
+- Offer to import `~/.claude`, `~/.codex`, and Ghostty terminal settings if present.
+- Drop you on an empty landing screen where you add your first repo.
+
+## Updates
+
+Dolphin auto-updates by default, tracking the **stable** channel. Stable releases are vetted; **RC (release candidate)** builds ship new features first, often daily.
+
+On Linux, whether Dolphin can apply an update itself depends on which package you installed. See [Linux](#linux) before you pick one.
+
+There is no permanent in-app opt-in for the RC channel. Modifier clicks on **Check for Updates** ([Settings → General → Updates](/docs/settings), or the app / Help menu):
+
+| Modifier                                               | Effect                                                                            |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| **Shift+click**                                        | Include the latest **RC** prerelease                                              |
+| **Cmd+click** (macOS) / **Ctrl+click** (Windows/Linux) | Latest **perf**-tagged prerelease                                                 |
+| **Option+click** (macOS only)                          | Pick a **validated local macOS build** that passes Dolphin’s compatibility checks |
+
+You can still download any build directly from the [GitHub Releases page](https://github.com/Nicoo01x/dolphin-app/releases).
+
+<Callout title="Don't like the current update">
+  Older versions are always available on the [GitHub Releases
+  page](https://github.com/Nicoo01x/dolphin-app/releases). Dolphin will not force-downgrade your
+  worktree data if you go back.
+</Callout>
+
+## Platform notes
+
+### macOS
+
+Signed and notarized. On first launch, macOS may still ask you to confirm — that's normal for Electron-based apps.
+
+### Windows
+
+The default shell can be set to PowerShell or CMD under [Settings → Terminal](/docs/settings). Most users want PowerShell.
+
+### Linux
+
+Each published release ships three Linux packages — an **AppImage**, a **`.deb`**, and an **`.rpm`** — for both x64 and arm64. They contain the same app. What differs is how updates reach you, so pick on that.
+
+| Package      | Pick it when                                                 | Updates                                                              |
+| ------------ | ------------------------------------------------------------ | -------------------------------------------------------------------- |
+| **AppImage** | You want Dolphin to update itself, like on macOS and Windows | Dolphin downloads and applies the update in place                    |
+| **`.deb`**   | You manage software with `apt` on Debian or Ubuntu           | Dolphin tells you a version is out and hands you the install command |
+| **`.rpm`**   | You manage software with `dnf`, `yum`, or `zypper`           | Same as `.deb`                                                       |
+
+The AppImage has a stable download link per architecture — [`dolphin-linux.AppImage`](https://github.com/Nicoo01x/dolphin-app/releases/latest/download/dolphin-linux.AppImage) for x64 and [`dolphin-linux-arm64.AppImage`](https://github.com/Nicoo01x/dolphin-app/releases/latest/download/dolphin-linux-arm64.AppImage) for arm64 — and needs `chmod +x` before its first run, because GitHub release assets carry no permission bits. The `.deb` and `.rpm` filenames carry the version and architecture, and the two formats spell architecture differently (`dolphin_<version>_amd64.deb` or `_arm64.deb`; `dolphin-<version>.x86_64.rpm` or `.aarch64.rpm`), so take those from the [Releases page](https://github.com/Nicoo01x/dolphin-app/releases) rather than a fixed URL.
+
+#### How updating works
+
+**The AppImage self-updates.** Choose it if you want automatic updates. Dolphin checks for a new release, you click **Update**, and it replaces the AppImage in place — the same flow as macOS and Windows.
+
+**The `.deb` and `.rpm` do not self-update.** Dolphin still notices the new version and downloads the package, then gives you a **Copy Install Command** button. Copy it rather than retyping it: Dolphin resolves every program to an absolute path in a trusted system directory and single-quotes the package path, so what you paste looks like this:
+
+```
+/usr/bin/sudo /usr/bin/apt -o Binary::file::APT::Sandbox::User=root install -- '/home/you/.cache/<updater-cache>/pending/dolphin_1.4.194_amd64.deb'
+```
+
+Which package manager appears depends on what your system actually has: `apt`, else `dpkg -i`, for a `.deb`; `zypper`, `dnf`, `yum`, then `rpm -Uvh` for an `.rpm`. The download directory follows `XDG_CACHE_HOME` when that is set and falls back to `~/.cache` when it is not.
+
+**Quit Dolphin before you run the command**, then reopen it once the install finishes. You are replacing the files of a running application, and the package manager cannot swap them safely underneath a live process. Dolphin deliberately never escalates privileges to do this for you: installing a system package needs root, `dolphin serve` runs as an unprivileged user, and a headless machine has no authentication agent to prompt. VS Code and Signal make the same call on `.deb`.
+
+**A distro-managed build is left alone.** If you are running a repackaged Dolphin — an AUR build, a Nix derivation — Dolphin sees that no package manager it can drive owns this install and stops offering a download it could never apply. It still reports that a new version exists, so you can update the way you normally would.
+
+<Callout title="There is no signed apt/yum repository">
+  Dolphin does not publish one, so your OS package manager does not own Dolphin updates the way it
+  owns everything else: `.deb` and `.rpm` updates are the manual step described above.
+</Callout>
+
+#### The CLI command is `dolphin`
+
+The [Dolphin CLI](/docs/cli/reference) installs as `dolphin` on Linux, exactly as it does on macOS and
+Windows.
+
+- The `.deb` and `.rpm` put `dolphin` on your `PATH` at install time, as `/usr/bin/dolphin`.
+- With the AppImage, register the CLI from [Settings → General → Dolphin CLI](/docs/settings). That installs `~/.local/bin/dolphin`.
+- Inside Dolphin's own terminals, bare `dolphin` works: Dolphin puts a shim on the `PATH` of the terminals it manages.
+- On a headless host, a packaged `dolphin serve` writes `dolphin` into `~/.local/bin` as it starts, unless a file it does not own already holds that name. It writes that _during_ startup, so it is never what starts the server — the first launch is always [`dolphin serve`](/docs/remote-servers).
+
+Verify it with:
+
+```
+command -v dolphin
+```

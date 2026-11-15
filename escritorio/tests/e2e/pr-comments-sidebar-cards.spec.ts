@@ -1,0 +1,149 @@
+import { test, expect } from './helpers/dolphin-app'
+import { openChecks } from './helpers/source-control-ai-generation'
+import { seedPRCommentsSidebarFixture } from './helpers/pr-comments-sidebar-fixture'
+import { waitForActiveWorktree, waitForSessionReady } from './helpers/store'
+
+test.describe('PR comments sidebar cards view', () => {
+  test.beforeEach(async ({ appPage }) => {
+    await waitForSessionReady(appPage)
+    await waitForActiveWorktree(appPage)
+  })
+
+  test('can switch from grouped to chronological timeline order', async ({ appPage }) => {
+    const { worktreeId } = await seedPRCommentsSidebarFixture(appPage)
+    await openChecks(appPage, worktreeId)
+
+    await expect(appPage.getByText('Needs review · 1')).toBeVisible({ timeout: 10_000 })
+    await appPage.getByRole('button', { name: 'Comment display options' }).click()
+    await appPage.getByRole('menuitemradio', { name: 'Timeline' }).click()
+
+    await expect(appPage.getByText('Needs review · 1')).toHaveCount(0)
+    await expect(appPage.getByText('Already fixed upstream.')).toBeVisible()
+
+    const comments = [
+      appPage.getByText('Already fixed upstream.'),
+      appPage.getByText('Please update this handler before merge.'),
+      appPage.getByText('LGTM on the overall approach.')
+    ]
+    const positions = await Promise.all(
+      comments.map(async (comment) => {
+        const box = await comment.boundingBox()
+        if (!box) {
+          throw new Error(`Comment not visible: ${await comment.textContent()}`)
+        }
+        return box.y
+      })
+    )
+
+    expect(positions[0]).toBeLessThan(positions[1])
+    expect(positions[1]).toBeLessThan(positions[2])
+  })
+
+  test('adds reactions to conversation and review-thread comments', async ({
+    appPage
+  }, testInfo) => {
+    const { worktreeId } = await seedPRCommentsSidebarFixture(appPage)
+    await openChecks(appPage, worktreeId)
+    await expect(appPage.getByText('Needs review · 1')).toBeVisible({ timeout: 10_000 })
+
+    const reviewThreadCard = appPage.getByTestId('pr-comment-group').filter({
+      hasText: 'Please update this handler before merge.'
+    })
+    const threadReactionButton = reviewThreadCard.getByRole('button', { name: 'Add reaction' })
+    await appPage.screenshot({ path: testInfo.outputPath('reaction-before.png') })
+    await threadReactionButton.click()
+    await expect(appPage.getByRole('group', { name: 'Add reaction' })).toBeFocused()
+    await expect(appPage.getByRole('button', { name: 'Add rocket reaction' })).toBeVisible()
+    await appPage.screenshot({
+      path: testInfo.outputPath('reaction-picker.png'),
+      animations: 'disabled'
+    })
+    await appPage.getByRole('button', { name: 'Add rocket reaction' }).click()
+    await expect(appPage.getByRole('group', { name: 'Add reaction' })).toBeHidden()
+    const selectedRocket = reviewThreadCard.getByRole('button', { name: '1 rocket reaction' })
+    await expect(selectedRocket).toHaveAttribute('aria-pressed', 'true')
+    await selectedRocket.focus()
+    await expect(selectedRocket).toBeFocused()
+    await appPage.screenshot({
+      path: testInfo.outputPath('reaction-after.png'),
+      animations: 'disabled'
+    })
+    await selectedRocket.press('Enter')
+    await expect(selectedRocket).toHaveCount(0)
+    await expect(threadReactionButton).toBeFocused()
+
+    const conversationCard = appPage.getByTestId('pr-comment-group').filter({
+      hasText: 'LGTM on the overall approach.'
+    })
+    const conversationReactionButton = conversationCard.getByRole('button', {
+      name: 'Add reaction'
+    })
+    await conversationReactionButton.click()
+    const conversationPicker = appPage.getByRole('group', { name: 'Add reaction' }).last()
+    const heartReactionButton = conversationPicker.getByRole('button', {
+      name: 'Add heart reaction'
+    })
+    await expect(heartReactionButton).toBeVisible()
+    await heartReactionButton.evaluate((element) => (element as HTMLElement).click())
+    await expect(
+      conversationCard.getByRole('button', { name: '1 heart reaction' })
+    ).toHaveAttribute('aria-pressed', 'true')
+    await expect(appPage.getByRole('button', { name: 'Add rocket reaction' })).toHaveCount(0)
+  })
+
+  test('keeps reaction focus while a remote mutation fails', async ({ appPage }) => {
+    const { worktreeId } = await seedPRCommentsSidebarFixture(appPage)
+    await openChecks(appPage, worktreeId)
+    await expect(appPage.getByText('Needs review · 1')).toBeVisible({ timeout: 10_000 })
+    await appPage.evaluate(() => {
+      window.__store?.setState({
+        setPRCommentReaction: async () => {
+          await new Promise((resolve) => window.setTimeout(resolve, 300))
+          return false
+        }
+      })
+    })
+
+    const reviewThreadCard = appPage.getByTestId('pr-comment-group').filter({
+      hasText: 'Please update this handler before merge.'
+    })
+    const addReaction = reviewThreadCard.getByRole('button', { name: 'Add reaction' })
+    await addReaction.focus()
+    await addReaction.press('Enter')
+    const picker = appPage.getByRole('group', { name: 'Add reaction' })
+    await expect(picker).toBeFocused()
+    const rocket = picker.getByRole('button', { name: /rocket reaction/ })
+    await rocket.focus()
+    await rocket.press('Enter')
+    await expect(rocket).toBeFocused()
+    await expect(rocket).toHaveAttribute('aria-disabled', 'true')
+    await rocket.press('Enter')
+    await expect(picker).toBeVisible()
+    await expect(rocket).toHaveAttribute('aria-disabled', 'false')
+    await expect(rocket).toBeFocused()
+    await expect(rocket).toHaveAccessibleName('Add rocket reaction')
+
+    await appPage.evaluate(() => {
+      window.__store?.setState({ setPRCommentReaction: async () => true })
+    })
+    await rocket.press('Enter')
+    const selectedRocket = reviewThreadCard.getByRole('button', { name: '1 rocket reaction' })
+    await expect(selectedRocket).toHaveAttribute('aria-pressed', 'true')
+    await appPage.evaluate(() => {
+      window.__store?.setState({
+        setPRCommentReaction: async () => {
+          await new Promise((resolve) => window.setTimeout(resolve, 300))
+          return false
+        }
+      })
+    })
+    await selectedRocket.focus()
+    await selectedRocket.press('Enter')
+    await expect(addReaction).toBeFocused()
+    await expect(addReaction).toHaveAttribute('aria-disabled', 'true')
+    await expect(selectedRocket).toHaveCount(0)
+    await expect(selectedRocket).toHaveCount(1)
+    await expect(addReaction).toHaveAttribute('aria-disabled', 'false')
+    await expect(addReaction).toBeFocused()
+  })
+})

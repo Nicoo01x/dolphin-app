@@ -1,0 +1,80 @@
+/*
+ * La línea de tiempo del chat: un punto por hito, cada clase con su color, y el hilo que los une.
+ *
+ * Los colores son los mismos de las insignias del texto del agente (insignias.css): lo que mide
+ * tiempo es cian acá y allá, así que la tarjeta y el mensaje no se contradicen. El color va en el
+ * PUNTO y no en el texto: sesenta filas de texto de color es un semáforo, y lo que se busca en esta
+ * tarjeta es el renglón, no el adorno.
+ */
+.dolphin-linea-de-tiempo {
+  position: relative;
+}
+
+/* El hilo: detrás de los puntos, de la primera fila a la última. */
+.dolphin-linea-de-tiempo::before {
+  content: '';
+  position: absolute;
+  top: 0.75rem;
+  bottom: 0.75rem;
+  left: 0.6875rem;
+  width: 1px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.dolphin-hito-punto {
+  --hito-tinte: currentColor;
+  display: block;
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: 999px;
+  background: var(--hito-tinte);
+  /* Un anillo del color del fondo para que el hilo no se vea pasar por debajo del punto. */
+  box-shadow: 0 0 0 0.1875rem var(--chat-background, var(--background));
+}
+
+[data-hito='pedido'] .dolphin-hito-punto {
+  --hito-tinte: #0891b2;
+}
+[data-hito='respuesta'] .dolphin-hito-punto {
+  --hito-tinte: #7c3aed;
+}
+[data-hito='escritura'] .dolphin-hito-punto {
+  --hito-tinte: var(--git-decoration-added);
+}
+[data-hito='comando'] .dolphin-hito-punto {
+  --hito-tinte: #db2777;
+}
+[data-hito='error'] .dolphin-hito-punto {
+  --hito-tinte: var(--git-decoration-deleted);
+}
+[data-hito='companeros'] .dolphin-hito-punto {
+  --hito-tinte: #059669;
+}
+
+/* En oscuro los tintes propios se apagan contra el fondo del chat: los mismos, un paso más claros
+   (la misma regla que las insignias). */
+:is(.dark, [data-native-chat-scheme='dark']) [data-hito='pedido'] .dolphin-hito-punto {
+  --hito-tinte: #67e8f9;
+}
+:is(.dark, [data-native-chat-scheme='dark']) [data-hito='respuesta'] .dolphin-hito-punto {
+  --hito-tinte: #c4b5fd;
+}
+:is(.dark, [data-native-chat-scheme='dark']) [data-hito='comando'] .dolphin-hito-punto {
+  --hito-tinte: #f9a8d4;
+}
+:is(.dark, [data-native-chat-scheme='dark']) [data-hito='companeros'] .dolphin-hito-punto {
+  --hito-tinte: #6ee7b7;
+}
+
+[data-native-chat-scheme='light'] [data-hito='pedido'] .dolphin-hito-punto {
+  --hito-tinte: #0891b2;
+}
+[data-native-chat-scheme='light'] [data-hito='respuesta'] .dolphin-hito-punto {
+  --hito-tinte: #7c3aed;
+}
+[data-native-chat-scheme='light'] [data-hito='comando'] .dolphin-hito-punto {
+  --hito-tinte: #db2777;
+}
+[data-native-chat-scheme='light'] [data-hito='companeros'] .dolphin-hito-punto {
+  --hito-tinte: #059669;
+}

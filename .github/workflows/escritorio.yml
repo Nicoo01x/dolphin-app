@@ -1,0 +1,61 @@
+name: Escritorio
+
+# El escritorio vive en escritorio/ desde el 26/10 (antes era el repo dolphin-escritorio).
+# master es la rama del repo de trabajo; main, la del repo público (la foto de cada versión).
+on:
+  push:
+    branches: [master, main]
+    paths: ['escritorio/**', '.github/workflows/escritorio.yml']
+  pull_request:
+    branches: [master, main]
+    paths: ['escritorio/**', '.github/workflows/escritorio.yml']
+  workflow_dispatch:
+
+# Un push nuevo cancela la corrida del anterior: con varios seguidos solo
+# importa la última.
+concurrency:
+  group: escritorio-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    # En Linux, y no en Windows, por dos razones que van juntas: un minuto de
+    # Windows se cobra como dos, y la suite del escritorio en Windows tiene una
+    # veintena de hojas que fallan por el sistema y no por el código (comillas
+    # POSIX, ACL, tmux, WSL, goldens), así que pagaba el doble por un rojo que
+    # no decía nada. Windows lo corre Nico en su máquina, que es donde trabaja.
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: escritorio
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.14.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: escritorio/package.json
+          cache: pnpm
+          cache-dependency-path: escritorio/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
