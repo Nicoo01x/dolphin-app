@@ -5,7 +5,17 @@ import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const require = createRequire(import.meta.url)
-const { runTerminalHostRoundTrip } = require('./verify-packaged-daemon-entry.cjs')
+const {
+  runTerminalHostRoundTrip,
+  terminalHostBootTimeoutMs
+} = require('./verify-packaged-daemon-entry.cjs')
+
+describe('plazo del arranque del terminal host', () => {
+  it('deja el plazo nativo como estaba y estira sólo el de un slice traducido', () => {
+    expect(terminalHostBootTimeoutMs([])).toBe(20_000)
+    expect(terminalHostBootTimeoutMs(['/usr/bin/arch', '-x86_64'])).toBe(120_000)
+  })
+})
 
 describe.skipIf(process.platform === 'win32')('terminal host round trip', () => {
   let root

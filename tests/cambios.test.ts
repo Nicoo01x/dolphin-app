@@ -13,6 +13,7 @@ import { entregadorDeGit } from "../src/nucleo/entrega.js";
 import { TallerDeGit } from "../src/nucleo/taller.js";
 import { leerDiff } from "../src/nucleo/diff.js";
 import { medirLineaBase } from "../src/nucleo/linea-base.js";
+import { rutaReal } from "../src/nucleo/ruta-real.js";
 import type { Verificador } from "../src/nucleo/tipos.js";
 
 /**
@@ -118,9 +119,10 @@ describe("lo que cambió una rama", () => {
     const u = await taller.abrir("u1", "dolphin/x");
     await taller.cerrar(u);
 
-    // Sigue anotado: al volver el disco, sigue siendo un worktree.
+    // Sigue anotado: al volver el disco, sigue siendo un worktree. Git anota la ruta real: en el
+    // runner de Windows `tmpdir()` da la corta (`RUNNER~1`) y la lista trae la larga.
     const lista = await git(["worktree", "list", "--porcelain"], repo);
-    expect(lista.replace(/\\/g, "/").toLowerCase()).toContain(suyo.replace(/\\/g, "/").toLowerCase());
+    expect(lista.replace(/\\/g, "/").toLowerCase()).toContain(rutaReal(suyo).replace(/\\/g, "/").toLowerCase());
     await rename(lejos, suyo);
     await git(["worktree", "remove", "--force", suyo], repo);
   });

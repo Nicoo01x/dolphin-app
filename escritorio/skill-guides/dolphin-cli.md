@@ -1,15 +1,17 @@
 ---
 name: dolphin-cli
 description: >-
-  Operate Dolphin-managed worktrees, folder contexts, terminals, repos, automations, worktree
-  comments, and Dolphin's embedded browser through the `dolphin` CLI. Use when the user says
-  "$dolphin-cli", "Dolphin worktree", "child worktree", "spawn codex/claude in a worktree",
-  "read/wait/send Dolphin terminal", "handoff" / "handover" / "give this to another agent", or
-  "Dolphin browser". Also use for opening, testing, screenshotting, or checking how a local or
-  external web page renders while working in Dolphin, unless the user or project names another
-  browser tool; plain HTTP or API calls (curl, fetch) do not need it. Prefer it over raw git
-  worktree, ad hoc PTYs, or Computer Use when Dolphin state is involved. Use Computer Use only
-  when a visible window needs GUI control that a CLI, filesystem, or API cannot do.
+  Operate Dolphin-managed worktrees, terminals, repos, automations, comments and the embedded
+  browser through the `dolphin` CLI, and delegate to another agent as a Dolphin chat. Use when
+  the user says "$dolphin-cli", "Dolphin worktree", "spawn codex/claude in a worktree",
+  "read/wait/send Dolphin terminal", "handoff" / "give this to another agent", "Dolphin
+  browser", or in Spanish "delegá", "pasale a", "que lo haga Codex/ChatGPT/Gemini", "abrí otro
+  agente". ChatGPT, GPT and OpenAI mean the codex agent. Inside Dolphin, delegating to another
+  agent is `dolphin agent delegate` or `agent launch --surface chat` plus `chat wait/read`, never
+  codex:rescue or a plugin that runs it outside Dolphin. Also use to open or check how a web
+  page renders while in Dolphin, unless the user names another browser tool; plain HTTP calls
+  do not need it. Prefer it over raw git worktree or ad hoc PTYs when Dolphin state is
+  involved; use Computer Use only when a visible window needs GUI control.
 ---
 
 # Dolphin CLI
@@ -19,6 +21,8 @@ Use `dolphin` when Dolphin's running editor/runtime is the source of truth. Use 
 ## Start Here
 
 `DOLPHIN` is a placeholder for the executable you resolved in the stub; substitute it before running.
+
+Inside Dolphin, the `DOLPHIN_CLI_COMMAND` environment variable holds the absolute path of this app's CLI in every terminal and chat it starts. Use it even when another `dolphin` comes first on `PATH`: `"$DOLPHIN_CLI_COMMAND"` in POSIX shells, `& $env:DOLPHIN_CLI_COMMAND` in PowerShell.
 
 **Dev builds (`pnpm dev`):** after `pnpm build:cli` the dev CLI is `dolphin-dev`, and `./config/scripts/dolphin-dev.mjs` invokes it worktree-locally without depending on the /usr/local/bin symlink. Plain `dolphin` targets any installed production Dolphin.
 
@@ -69,6 +73,35 @@ DOLPHIN chat send --session <session> --text "<task brief>" --json
 DOLPHIN chat send --session <session> --text "<message>" --wait --timeout-ms 600000 --json
 DOLPHIN chat wait --session <session> --timeout-ms 600000 --json
 ```
+
+## Delegar a otro motor y leer lo que hace
+
+Dentro de Dolphin, «delegá a Codex», «pasale esto a ChatGPT», «que lo haga Gemini» o «abrí otro agente» quiere decir abrir ese agente como **chat de Dolphin** en este mismo worktree, para que la persona vea los dos chats. ChatGPT, GPT y OpenAI son el agente `codex`, y `--agent` acepta esos nombres.
+
+**La regla:** dentro de Dolphin, delegar a Codex/ChatGPT/GPT/OpenAI es `DOLPHIN agent launch --agent codex --surface chat …` + `DOLPHIN chat wait/read` (o su atajo, `agent delegate`), y **no** el plugin `codex:rescue` ni `codex:codex-rescue`, ni `codex exec`, ni ningún comando que corra Codex fuera de Dolphin. Lo mismo vale para Gemini y para Claude.
+
+En una sola llamada, con la respuesta:
+
+```text
+DOLPHIN agent delegate --agent codex --prompt "<tarea>" --wait --timeout-ms 900000 --json
+```
+
+Devuelve `session`, `settled` y `reply`, que es el último mensaje del otro agente. Si el ejecutable no conoce `agent delegate`, hacé los pasos de abajo.
+
+Paso a paso, para mirarlo o mandarle más mensajes:
+
+```text
+DOLPHIN agent launch --agent codex --surface chat --prompt "<tarea>" --json
+DOLPHIN chat wait --session <outcome.handle> --timeout-ms 900000 --json
+DOLPHIN chat read --session <outcome.handle> --limit 20 --json
+DOLPHIN chat send --session <outcome.handle> --text "<seguimiento>" --wait --timeout-ms 900000 --json
+```
+
+- La tarea tiene que bastarse sola: qué cambiar, qué no tocar y cómo se prueba que está hecho. El otro agente no ve tu conversación.
+- `settled: "blocked"` es una aprobación o una pregunta para la persona, y ningún comando la aprueba: decíselo y no te quedes esperando.
+- `settled: "timeout"` no es un fracaso: el chat sigue trabajando. Esperá de nuevo con `chat wait`.
+- Si el resultado dice `surface: "terminal"` (o `outcome.kind` `terminal`), Dolphin no pudo abrirlo como chat: leelo con `terminal read --terminal <handle>`.
+- Para varias tareas, que Dolphin te despierte con el resultado, o preguntas y respuestas, usá la skill `orchestration` (`worker-start`).
 
 ## Starting agents
 
@@ -383,9 +416,9 @@ Search rules:
 
 This guide covers worktrees, terminals, and handoffs on its own. At a gate below, run `DOLPHIN skills get dolphin-cli --reference references/<file>.md` and read only that document; `--references` lists the names. If the CLI rejects `--reference`, run `DOLPHIN skills get dolphin-cli --full` once instead: it returns this guide plus every reference this CLI build serves on this host, so read only the named one. If `--full` is rejected too, the CLI predates bundled references: use `DOLPHIN <command> --help`, keep the rules above, and do not guess flags.
 
-| Action gate                                                                                                     | Reference                        |
-| --------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| Driving Dolphin's embedded browser: navigation, snapshots, refs, tabs, concurrent pages, or `browser_*` recoveries | `references/browser.md`          |
-| Creating, editing, running, or inspecting scheduled automations                                                 | `references/automations.md`      |
-| Creating, loading, installing, updating, approving, or publishing a Dolphin plugin, or adding a plugin catalog    | `references/plugins.md`          |
-| Mobile emulator taps, gestures, typing, buttons, camera, or permissions                                         | invoke the `dolphin-emulator` skill |
+| Action gate                                                                                                        | Reference                           |
+| ------------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
+| Driving Dolphin's embedded browser: navigation, snapshots, refs, tabs, concurrent pages, or `browser_*` recoveries | `references/browser.md`             |
+| Creating, editing, running, or inspecting scheduled automations                                                    | `references/automations.md`         |
+| Creating, loading, installing, updating, approving, or publishing a Dolphin plugin, or adding a plugin catalog     | `references/plugins.md`             |
+| Mobile emulator taps, gestures, typing, buttons, camera, or permissions                                            | invoke the `dolphin-emulator` skill |

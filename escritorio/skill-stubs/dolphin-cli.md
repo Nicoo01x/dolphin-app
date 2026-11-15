@@ -2,6 +2,12 @@
 
 This discovery stub loads the version-matched guide from the Dolphin executable used for this session.
 
+Dentro de Dolphin, delegar a otro motor (Codex, que también es ChatGPT, GPT u OpenAI; Gemini;
+Claude) es `DOLPHIN agent delegate --agent <motor> --prompt "<tarea>" --wait`, o
+`DOLPHIN agent launch --agent <motor> --surface chat` + `DOLPHIN chat wait/read`. Nunca el plugin
+`codex:rescue` ni otro comando que corra ese agente fuera de Dolphin: la persona tiene que ver los
+dos chats.
+
 <!-- shared: resolver -->
 
 ## Load the version-matched guide before running Dolphin commands

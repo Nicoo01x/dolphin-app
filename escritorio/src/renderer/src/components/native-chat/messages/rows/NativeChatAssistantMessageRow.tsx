@@ -18,6 +18,7 @@ import { NativeChatImageAttachments } from '../../media/images/NativeChatImageAt
 import { NativeChatForkAction } from '../actions/NativeChatForkAction'
 import type { useNativeChatWorkRun } from '../../tools/runs/use-native-chat-work-run'
 import { useTranslate } from '@/i18n/use-translate'
+import { BotonVerLoQueHizo } from '../../../dolphin/lo-que-hizo/lo-que-hizo-del-chat'
 
 function messageIsStreaming(
   message: NativeChatMessage,
@@ -116,11 +117,15 @@ export function NativeChatAssistantMessageRow({
           timestamp={message.timestamp}
           onScrollToTop={scrollToTop}
           action={
-            fork ? (
-              <NativeChatForkAction itemId={message.id} fork={fork} />
-            ) : holdsForkSlot ? (
-              <span aria-hidden className="size-6 shrink-0" />
-            ) : null
+            <>
+              {fork ? (
+                <NativeChatForkAction itemId={message.id} fork={fork} />
+              ) : holdsForkSlot ? (
+                <span aria-hidden className="size-6 shrink-0" />
+              ) : null}
+              {/* Dolphin: la tarjeta «Lo que hizo» del turno que esta respuesta cierra. */}
+              <BotonVerLoQueHizo mensajeId={message.id} />
+            </>
           }
           className={cn(
             'mt-1 w-fit select-none',

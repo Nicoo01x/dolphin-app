@@ -5,7 +5,8 @@ import { join } from "node:path";
 import { promisify } from "node:util";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { borrarCarpeta } from "./ayuda/borrar.js";
-import { doctor, textoDelDoctor, worktreesNombrados } from "../src/doctor.js";
+import { doctor, sinSeparadorFinal, textoDelDoctor, worktreesNombrados } from "../src/doctor.js";
+import { rutaReal } from "../src/nucleo/ruta-real.js";
 import { leerBandeja, sumarAsuntos, tomarAsunto } from "../src/nucleo/bandeja.js";
 
 /** dolphin doctor con cada falla simulada de verdad (git, carpetas, enlaces, bandeja) y procesos inyectados. */
@@ -15,6 +16,11 @@ const git = async (args: string[], cwd: string) => (await correr("git", args, { 
 let repo = "";
 let afuera = "";
 const sinNada = { procesos: async () => [], casa: "", temporal: "" };
+/**
+ * Cómo escribe git la ruta de un worktree: la real. En el runner de Windows `tmpdir()` da la corta
+ * (`C:/Users/RUNNER~1/…`) y git la larga (`runneradmin`): el doctor muestra la de git.
+ */
+const comoLaEscribeGit = (ruta: string) => rutaReal(ruta).replaceAll("\\", "/");
 
 beforeEach(async () => {
   repo = await mkdtemp(join(tmpdir(), "dolphin-doctor-"));
@@ -83,7 +89,7 @@ describe("lo que el doctor arregla solo", () => {
     await symlink(destino, join(wt, "node_modules"), "junction");
     await borrarCarpeta(destino);
     const h = await doctor(repo, {}, sinNada);
-    expect(h).toEqual([{ que: "enlaces rotos", arreglado: true, detalle: `1 node_modules enlazado apuntaba a nada (node_modules en ${wt.replaceAll("\\", "/")} apuntaba a ${destino}): saqué el enlace` }]);
+    expect(h).toEqual([{ que: "enlaces rotos", arreglado: true, detalle: `1 node_modules enlazado apuntaba a nada (node_modules en ${comoLaEscribeGit(wt)} apuntaba a ${destino}): saqué el enlace` }]);
   });
 
   it("un node_modules ANIDADO enlazado a nada también se encuentra, dice cuál era y deja en paz al sano", async () => {
@@ -103,7 +109,7 @@ describe("lo que el doctor arregla solo", () => {
     // Sólo mirando: dice cuál está roto y no toca nada.
     const [mirado] = await doctor(repo, { arreglar: false }, sinNada);
     expect(mirado).toMatchObject({ que: "enlaces rotos", arreglado: false });
-    expect(mirado!.detalle).toContain(`escritorio/node_modules en ${wt.replaceAll("\\", "/")} apuntaba a ${perdido}`);
+    expect(mirado!.detalle).toContain(`escritorio/node_modules en ${comoLaEscribeGit(wt)} apuntaba a ${perdido})`);
     expect(mirado!.detalle).not.toContain("herramientas");
     expect(await lstat(join(wt, "escritorio", "node_modules")).then(() => true, () => false)).toBe(true);
 
@@ -168,5 +174,16 @@ describe("lo que no se arregla solo", () => {
     expect(worktreesNombrados("claude --cwd C:\\Users\\n\\AppData\\Local\\Temp\\dolphin-ab12CD\\u3 -p x", "C:\\Users\\n\\AppData\\Local\\Temp")).toEqual(["C:\\Users\\n\\AppData\\Local\\Temp\\dolphin-ab12CD\\u3"]);
     expect(worktreesNombrados("codex -C /tmp/dolphin-x1/equipo", "/tmp/")).toEqual(["/tmp/dolphin-x1/equipo"]);
     expect(worktreesNombrados("node app.js", "/tmp")).toEqual([]);
+  });
+});
+
+describe("a dónde apuntaba un enlace", () => {
+  it("sin la barra final que pone el readlink de una junction en Node 22, y sin tocar la raíz", () => {
+    expect(sinSeparadorFinal("C:\Users\RUNNER~1\AppData\Local\Temp\modulos\\")).toBe("C:\Users\RUNNER~1\AppData\Local\Temp\modulos");
+    expect(sinSeparadorFinal("/tmp/modulos/")).toBe("/tmp/modulos");
+    expect(sinSeparadorFinal("/tmp/modulos")).toBe("/tmp/modulos");
+    expect(sinSeparadorFinal("C:\\")).toBe("C:\\");
+    expect(sinSeparadorFinal("/")).toBe("/");
+    expect(sinSeparadorFinal("")).toBe("");
   });
 });

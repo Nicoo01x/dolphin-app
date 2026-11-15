@@ -81,6 +81,15 @@ export function worktreesNombrados(comando: string, temporal: string): string[] 
   return [...new Set(comando.match(patron) ?? [])];
 }
 
+/**
+ * A dónde apunta un enlace, sin la barra del final. En Windows, según la versión de Node, el
+ * `readlink` de una junction devuelve el destino con una `\` al final (visto: 22.12 sí, 24.19 no):
+ * el mismo enlace roto se contaba distinto según con qué se corriera. La raíz (`C:\`, `/`) queda.
+ */
+export function sinSeparadorFinal(destino: string): string {
+  return destino.replace(/([^\\/:])[\\/]+$/, "$1");
+}
+
 const MOTORES = /\b(claude|codex|agy|gemini)(\.exe|\.cmd)?\b/i;
 
 async function revisar(nombre: string, hacer: () => Promise<Hallazgo[]>): Promise<Hallazgo[]> {
@@ -151,7 +160,7 @@ export async function doctor(repo: string, opciones: { arreglar?: boolean } = {}
         const ruta = /^worktree (.+)$/m.exec(b)?.[1]?.trim();
         if (!ruta) continue;
         for (const enlace of await enlacesEnElDisco(ruta)) {
-          const destino = await readlink(enlace).catch(() => "");
+          const destino = sinSeparadorFinal(await readlink(enlace).catch(() => ""));
           if (destino && (await stat(enlace).then(() => true, () => false))) continue;
           // Qué enlace es y a dónde apuntaba, para poder rearmarlo si hace falta (a mano o con la siembra).
           rotos.push(`${relative(ruta, enlace).split(sep).join("/")} en ${ruta} apuntaba a ${destino || "(destino ilegible)"}`);

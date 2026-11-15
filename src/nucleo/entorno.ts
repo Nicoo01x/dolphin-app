@@ -3,6 +3,7 @@ import { lstatSync, unlinkSync } from "node:fs";
 import { copyFile, lstat, mkdir, readdir, readFile, rm, stat, symlink, unlink } from "node:fs/promises";
 import { dirname, isAbsolute, join, normalize, relative, resolve, sep } from "node:path";
 import { git, gitDice, gitValor } from "./git.js";
+import { mismaRuta } from "./ruta-real.js";
 import { anotarAgregados } from "./cambios.js";
 import { anotarHijo, matarArbol, matarHijosYa, olvidarHijo } from "../agentes/ejecutar.js";
 
@@ -439,19 +440,24 @@ export async function quitarWorktree(repo: string, ruta: string): Promise<void> 
   const sacado = await gitDice(["worktree", "remove", "--force", ruta], repo);
   // Si la carpeta sigue (trabado, sin permiso), no se toca su entrada: quedaría un worktree sin repo.
   if (sacado || (await existe(ruta))) return;
+  await olvidarEntradaDelWorktree(repo, ruta);
+}
+
+/**
+ * Borra de `.git/worktrees` sólo la entrada del worktree de `ruta`, cuya carpeta ya no está. Git
+ * escribe en su `gitdir` la ruta REAL y Dolphin trae la suya, que puede venir corta (8.3, como el
+ * `RUNNER~1` del runner de Windows) o pasar por un enlace: comparadas con `resolve` nomás, la
+ * entrada no se encontraba nunca y el worktree quedaba anotado para siempre.
+ */
+export async function olvidarEntradaDelWorktree(repo: string, ruta: string): Promise<void> {
   const comun = await gitValor(["rev-parse", "--git-common-dir"], repo)
     .then((r) => resolve(repo, r))
     .catch(() => undefined);
   if (!comun) return;
-  const mismo = (a: string) => {
-    const r = resolve(a).replace(/\\/g, "/").replace(/\/\.git$/, "");
-    return process.platform === "win32" ? r.toLowerCase() : r;
-  };
-  const buscado = mismo(ruta);
   const entradas = await readdir(join(comun, "worktrees")).catch(() => [] as string[]);
   for (const entrada of entradas) {
-    const gitdir = await readFile(join(comun, "worktrees", entrada, "gitdir"), "utf8").catch(() => "");
-    if (gitdir.trim() !== "" && mismo(gitdir.trim()) === buscado) {
+    const gitdir = (await readFile(join(comun, "worktrees", entrada, "gitdir"), "utf8").catch(() => "")).trim();
+    if (gitdir !== "" && mismaRuta(gitdir.replace(/[\\/]\.git$/, ""), ruta)) {
       await rm(join(comun, "worktrees", entrada), { recursive: true, force: true }).catch(() => {});
     }
   }

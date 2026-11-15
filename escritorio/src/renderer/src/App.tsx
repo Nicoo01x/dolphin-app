@@ -44,6 +44,7 @@ import { PlainSshTerminalPanels } from './components/plain-ssh-terminal/PlainSsh
 import { PluginShotReplayMount } from './components/plugins/view/PluginShotReplayMount'
 import { AddToChatPointMenuHost } from './components/native-chat/selection-quotes/AddToChatMenu'
 import { installActiveWorktreeRemovalSuccessor } from './lib/workspace/activation/active-worktree-removal-successor'
+import { FondoDePaisaje } from './components/dolphin/paisaje/FondoDePaisaje'
 
 function App(): React.JSX.Element {
   const layout = useAppChromeLayout()
@@ -108,6 +109,8 @@ function App(): React.JSX.Element {
         } as React.CSSProperties
       }
     >
+      {/* Dolphin: el óleo detrás de la ventana (Ajustes → Apariencia → Fondo del chat). */}
+      <FondoDePaisaje />
       <TooltipProvider>
         <ConfirmationDialogProvider>
           <BrowserPagePrompts />

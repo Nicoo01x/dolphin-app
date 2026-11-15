@@ -1,3 +1,4 @@
+import type { FondoPropioElegido } from '../../shared/fondo-del-chat-ipc'
 import type { DolphinForgetResult, DolphinRememberResult } from '../../shared/dolphin-memoria-types'
 import type {
   DolphinConsoleResult,
@@ -54,6 +55,10 @@ export type DolphinApi = {
   leerTablero?: (worktreeId: string) => Promise<TableroLeido>
   /** Le pide al núcleo que pase esa tarjeta a otra columna (arrastrarla en el tablero del inicio). */
   moverTarjeta?: (pedido: PedidoDeMoverTarjeta) => Promise<TarjetaMovida>
+  /** «Elegir una imagen…» del fondo del chat: la copia al perfil y devuelve su nombre. */
+  elegirFondoDelChat?: () => Promise<FondoPropioElegido>
+  /** Los bytes de un fondo propio ya copiado al perfil, o null si no está. */
+  leerFondoDelChat?: (nombre: string) => Promise<ArrayBuffer | null>
   /** La carpeta personal (os.homedir() del proceso principal), o null si no se puede saber. */
   carpetaPersonal?: () => Promise<string | null>
   onAbrirOrquestacion: (callback: () => void) => () => void

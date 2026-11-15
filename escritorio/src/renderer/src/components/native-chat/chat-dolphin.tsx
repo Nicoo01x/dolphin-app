@@ -11,6 +11,11 @@ import { useNativeChatFileLinkContext } from './links/actions/use-native-chat-fi
 import { NativeChatAgentWatermark } from './NativeChatAgentWatermark'
 import { NativeChatCompactandoRow } from './NativeChatCompactandoRow'
 import { useCompactadoEnCurso } from './use-compactado-en-curso'
+import { LoQueHizoProvider } from '../dolphin/lo-que-hizo/lo-que-hizo-del-chat'
+export {
+  VacioDelChatDeTerminal,
+  VacioDelChatEstructurado
+} from '../dolphin/paisaje/ChatVacioConPaisaje'
 
 /*
  * Lo que Dolphin le suma a las dos vistas del chat de la base (la de terminal y la estructurada).
@@ -66,27 +71,40 @@ export function MarcoDelChatDeTerminal({
         awaitingInput={awaitingInput}
       />
       <DolphinChatColumns {...sidePanel.columnas} agent={agent}>
-        {children}
+        <LoQueHizoProvider agente={agent} mensajes={session.messages}>
+          {children}
+        </LoQueHizoProvider>
       </DolphinChatColumns>
     </>
   )
 }
 
-/** La marca de agua del motor detrás de la conversación, con la conversación por encima. */
+/**
+ * La marca de agua del motor detrás de la conversación, con la conversación por encima. Con los
+ * mensajes, además, la tarjeta «Lo que hizo» de cada turno.
+ */
 export function LienzoConMarcaDeAgua({
   agent,
+  mensajes = SIN_MENSAJES,
   children
 }: {
   agent: AgentType
+  mensajes?: readonly NativeChatMessage[]
   children: React.ReactNode
 }): React.JSX.Element {
   return (
     <>
       <NativeChatAgentWatermark agent={agent} />
-      <div className="relative z-10 flex min-h-0 flex-1 flex-col">{children}</div>
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col">
+        <LoQueHizoProvider agente={agent} mensajes={mensajes}>
+          {children}
+        </LoQueHizoProvider>
+      </div>
     </>
   )
 }
+
+const SIN_MENSAJES: readonly NativeChatMessage[] = []
 
 /**
  * Mientras un `/compact` no deja su marca, el separador lo anuncia con su reloj en vez de dejar la

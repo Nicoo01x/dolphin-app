@@ -296,13 +296,19 @@ export function buildPtyHostEnv(
     if (!opts.isPackaged) {
       baseEnv.DOLPHIN_USER_DATA_PATH ??= opts.userDataPath
     }
+    // An inherited value belongs to another launch; this pane's own launcher is set below.
     delete baseEnv.DOLPHIN_CLI_COMMAND
   }
-  prependDolphinCliDirToChildPath(baseEnv, {
+  const cliLauncher = prependDolphinCliDirToChildPath(baseEnv, {
     isPackaged: opts.isPackaged,
     userDataPath: opts.userDataPath,
     resourcesPath: opts.resourcesPath
   })
+  // Why the absolute path: a shell profile can put another `dolphin` (an npm shim, an older
+  // install) ahead of this app's bin on PATH. Chats already get it; a terminal needs it too.
+  if (!opts.isWsl && cliLauncher) {
+    baseEnv.DOLPHIN_CLI_COMMAND = cliLauncher
+  }
 
   if (
     opts.routeBrowserOpensToClient === true &&

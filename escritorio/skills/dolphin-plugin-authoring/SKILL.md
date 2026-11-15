@@ -17,8 +17,10 @@ This discovery stub loads the version-matched guide from the Dolphin executable 
 
 Choose the executable once and reuse it for every later command:
 
-- If the `DOLPHIN_CLI_COMMAND` environment variable is set, use its value. Dolphin exports this
-  for managed WSL sessions.
+- If the `DOLPHIN_CLI_COMMAND` environment variable is set, use its value, even when another
+  `dolphin` comes first on `PATH`. Dolphin sets it to its own CLI in the terminals and chats it
+  starts, including managed WSL sessions. Quote it if the path has spaces (`& "<path>"` in
+  PowerShell).
 - Otherwise, in a dev checkout whose session exposes `DOLPHIN_DEV_REPO_ROOT`, use `dolphin-dev`.
 - Otherwise, use `dolphin`.
 

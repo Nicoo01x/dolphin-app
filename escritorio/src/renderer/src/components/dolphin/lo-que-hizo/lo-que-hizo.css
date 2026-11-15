@@ -1,0 +1,70 @@
+/*
+ * La tarjeta «Lo que hizo» (TarjetaLoQueHizo.tsx).
+ *
+ * Tres tonos casi negros, como la referencia: la ventana, los pasos y el código, sin líneas entre
+ * ellos (la jerarquía la hace el tono). En claro, lo mismo sobre papel. El rojo y el verde son los
+ * de los estados de Dolphin, sólo en la palabra del resultado.
+ *
+ * Contraste sobre #0b0b0b: fallo #e5776d 6,9:1 · arreglo #5fb07c 7,6:1. En claro, sobre #ffffff:
+ * #b42633 6,5:1 · #176c40 6,6:1.
+ */
+.lo-que-hizo-ventana {
+  background: #0b0b0b;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.06) inset,
+    0 24px 64px rgb(0 0 0 / 0.45),
+    0 4px 12px rgb(0 0 0 / 0.3);
+}
+
+.lo-que-hizo {
+  --lo-que-hizo-fallo: #e5776d;
+  --lo-que-hizo-arreglo: #5fb07c;
+}
+
+.lo-que-hizo-pasos > li + li {
+  /* Un tono, no una línea: cada paso es su propio bloque. */
+  box-shadow: 0 -1px 0 rgb(255 255 255 / 0.04);
+}
+
+.lo-que-hizo-marca {
+  background: rgb(255 255 255 / 0.06);
+  color: var(--dolphin-tinta-74, #b7b7b7);
+}
+
+.lo-que-hizo-codigo {
+  background: #050505;
+}
+
+.lo-que-hizo-fallo {
+  color: var(--lo-que-hizo-fallo);
+}
+
+.lo-que-hizo-arreglo {
+  color: var(--lo-que-hizo-arreglo);
+}
+
+:root:not(.dark) .lo-que-hizo-ventana {
+  background: #ffffff;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.06) inset,
+    0 24px 64px rgb(0 0 0 / 0.16),
+    0 4px 12px rgb(0 0 0 / 0.08);
+}
+
+:root:not(.dark) .lo-que-hizo {
+  --lo-que-hizo-fallo: #b42633;
+  --lo-que-hizo-arreglo: #176c40;
+}
+
+:root:not(.dark) .lo-que-hizo-pasos > li + li {
+  box-shadow: 0 -1px 0 rgb(0 0 0 / 0.04);
+}
+
+:root:not(.dark) .lo-que-hizo-marca {
+  background: rgb(0 0 0 / 0.05);
+  color: var(--dolphin-tinta-74, #545454);
+}
+
+:root:not(.dark) .lo-que-hizo-codigo {
+  background: #f7f7f7;
+}

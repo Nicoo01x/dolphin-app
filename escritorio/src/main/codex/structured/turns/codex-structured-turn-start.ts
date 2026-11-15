@@ -125,6 +125,8 @@ export async function startCodexTurn(
         model: nativeOptions.model ?? previousApplied?.model ?? host.reportedOptions?.model,
         reasoning_effort:
           nativeOptions.effort ?? previousApplied?.effort ?? host.reportedOptions?.effort ?? null,
+        // Null keeps the mode's built-in instructions (Plan mode's among them); the Dolphin
+        // notice rides on the thread's developerInstructions instead (codex-structured-thread-open).
         developer_instructions: null
       }
     }

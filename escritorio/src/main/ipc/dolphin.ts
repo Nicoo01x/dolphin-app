@@ -15,6 +15,7 @@ import { resolveRegisteredWorktreePath } from './worktrees/removal/registered-wo
 import { registerOrchestrationDashboardHandlers } from './orchestration-dashboard'
 import { registerDolphinMemoryHandlers } from './dolphin-memoria'
 import { registerDolphinTableroHandlers } from './dolphin-tablero'
+import { registerDolphinFondoDelChatHandlers } from './dolphin-fondo-del-chat'
 import type { DolphinRuntimeService } from '../runtime/dolphin-runtime'
 
 type Rejected = Extract<DolphinConsoleResult, { ok: false }>
@@ -45,6 +46,7 @@ export function registerDolphinHandlers(store: Store, runtime?: DolphinRuntimeSe
   }
   registerDolphinMemoryHandlers(store)
   registerDolphinTableroHandlers(store)
+  registerDolphinFondoDelChatHandlers()
   ipcMain.handle(
     'dolphin:openConsole',
     async (event, request: unknown): Promise<DolphinConsoleResult> => {

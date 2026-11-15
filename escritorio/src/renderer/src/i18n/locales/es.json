@@ -238,7 +238,13 @@
         "contrast": "Contraste",
         "contrastHelp": "Cuánto se separan las superficies entre sí, de plano a marcado.",
         "invalid": "Poné colores hex válidos para aplicar este tema.",
-        "reset": "Volver a los colores de fábrica"
+        "reset": "Volver a los colores de fábrica",
+        "acento": "Acento",
+        "acentoHelp": "Los botones, los links y todo lo que la app quiere que veas.",
+        "superficie": "Superficie",
+        "superficieHelp": "El fondo sobre el que va todo lo demás.",
+        "tinta": "Tinta",
+        "tintaHelp": "El texto. Se corrige solo hasta que se lea bien sobre la superficie."
       },
       "reduceVisualEffects": {
         "description": "Apaga el desenfoque detrás de diálogos y menús, y la translucidez de la ventana después de reiniciar. Ayuda en escritorios remotos y en máquinas sin GPU.",
@@ -267,6 +273,30 @@
           "undecodable": "No se pudo decodificar la imagen elegida.",
           "saveFailed": "No se pudo guardar el ícono personalizado."
         }
+      },
+      "fondoDelChat": {
+        "title": "Fondo del chat",
+        "description": "Una pintura detrás de la ventana. Los paneles quedan translúcidos encima y el texto se sigue leyendo.",
+        "keyword": {
+          "background": "fondo",
+          "wallpaper": "fondo de pantalla",
+          "painting": "pintura",
+          "landscape": "paisaje",
+          "image": "imagen",
+          "blur": "desenfoque",
+          "veil": "velo",
+          "transparency": "transparencia"
+        },
+        "ninguno": "Ninguno",
+        "propio": "Tu imagen",
+        "elegir": "Elegir una imagen…",
+        "formato": "Usá una imagen WebP, PNG, JPG o AVIF.",
+        "pesada": "Esa imagen pesa más de 25 MB. Elegí una más liviana.",
+        "ilegible": "No se pudo leer esa imagen. Probá con otra.",
+        "velo": "Velo",
+        "veloAyuda": "Cuánto se oscurece la pintura. Los paneles siempre suman lo que el texto necesita.",
+        "desenfoque": "Desenfocar la pintura",
+        "desenfoqueAyuda": "Un desenfoque leve. La trama de la tela se sigue viendo."
       }
     },
     "browser": {
@@ -13544,6 +13574,10 @@
           "learningTitle": "Aprender de mis correcciones",
           "learningDescription": "Guarda tus correcciones como candidatos en la memoria del proyecto para que puedas aprobarlas."
         },
+        "agent-dolphin-context-copy": {
+          "title": "Avisar a los agentes que están en Dolphin",
+          "description": "Les dice a Claude, Codex y Gemini que corren dentro de Dolphin y cómo pasarle trabajo a otro agente, así ves los dos chats."
+        },
         "agent-cross-review-copy": {
           "title": "Revisión cruzada al terminar",
           "description": "Cuando el agente termina un turno con cambios, otro modelo revisa el diff. Gasta cupo de tu plan."
@@ -13568,7 +13602,10 @@
           "descripcion": "Cada color que pinta el editor, uno por uno. Lo que rodea al código queda monocromo a propósito: el color vive adentro del archivo, que es lo que estás mirando.",
           "editandoOscuro": "Estás editando el tema oscuro, que es el que está en uso.",
           "editandoClaro": "Estás editando el tema claro, que es el que está en uso.",
-          "volver": "Volver a los colores de fábrica"
+          "volver": "Volver a los colores de fábrica",
+          "tema": "Tema del código",
+          "temaNoche": "Dolphin Noche",
+          "temaDolphin": "Dolphin de siempre"
         },
         "TraerTemaDeVsCode": {
           "noEsJson": "Eso no es JSON válido. Pega el contenido completo del archivo del tema.",
@@ -14557,7 +14594,8 @@
             "9fffaf17c1": "Alternar barra lateral derecha ({{value0}})",
             "aiVaultSessionHistory": "Agentes",
             "folderWorkspaces": "Worktrees adjuntos",
-            "parentPrChecks": "Checks de PR"
+            "parentPrChecks": "Checks de PR",
+            "creatingWorkspace": "Disponible cuando el espacio de trabajo esté listo"
           },
           "right": {
             "panel": {
@@ -18964,6 +19002,52 @@
           "unitHour": "h",
           "unitDay": "d",
           "now": "Ahora"
+        },
+        "paisaje": {
+          "preguntaConProyecto": "¿En qué trabajamos en {{value0}}?",
+          "pregunta": "¿En qué trabajamos?"
+        },
+        "loQueHizo": {
+          "titulo": "Lo que hizo {{value0}}",
+          "cerrar": "Cerrar",
+          "pie": "Queda con la sesión, para que cualquiera del equipo lo lea.",
+          "abrirPr": "Abrir el PR #{{value0}}",
+          "ver": "Ver lo que hizo",
+          "sinPasos": "Todavía no hay nada para mostrar del último turno.",
+          "archivos_one": "{{count}} archivo",
+          "archivos_other": "{{count}} archivos",
+          "archivos_many": "{{count}} archivos",
+          "segundos": "{{value0}} s",
+          "minutos": "{{value0}} min {{value1}} s",
+          "accion": {
+            "leyo": "Leyó",
+            "busco": "Buscó",
+            "corrio": "Corrió",
+            "edito": "Editó",
+            "creo": "Creó",
+            "borro": "Borró",
+            "movio": "Movió"
+          },
+          "tipo": {
+            "leyo": "Leyó",
+            "busco": "Buscó",
+            "corrio": "Corrió",
+            "edito": "Editó"
+          },
+          "resultado": {
+            "fallo": "Falló",
+            "arreglo": "Arreglo listo"
+          },
+          "detalle": {
+            "fallaron_one": "{{count}} falló",
+            "fallaron_other": "{{count}} fallaron",
+            "fallaron_many": "{{count}} fallaron",
+            "pasaron_one": "{{count}} pasó",
+            "pasaron_other": "{{count}} pasaron",
+            "pasaron_many": "{{count}} pasaron",
+            "codigo": "salió con {{value0}}",
+            "fallo": "falló"
+          }
         }
       },
       "linear-issue-attribute-filter-dropdowns": {
@@ -24505,7 +24589,9 @@
       "importWarpFolder": "Importar carpeta de temas de Warp",
       "images": "Imágenes",
       "repoIconImages": "Imágenes de icono del repositorio",
-      "audio": "Audio"
+      "audio": "Audio",
+      "pickChatBackground": "Elegir el fondo del chat",
+      "chatBackgroundImage": "Imagen"
     }
   },
   "taskProviders": {

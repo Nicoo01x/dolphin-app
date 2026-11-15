@@ -71,6 +71,7 @@ export function ColumnasDelTablero({
   tarjetas,
   onElegir,
   estadoDe,
+  espacioDe,
   onMover,
   guardando,
   ejemplo,
@@ -79,6 +80,8 @@ export function ColumnasDelTablero({
   tarjetas: TarjetaDelTablero[]
   onElegir?: (tarjeta: TarjetaDelTablero) => void
   estadoDe?: (tarjeta: TarjetaDelTablero) => EstadoDeTarjeta | undefined
+  /** El espacio de trabajo de la rama de la tarjeta: de ahí sale «Lo que hizo». */
+  espacioDe?: (tarjeta: TarjetaDelTablero) => string | undefined
   onMover?: (tarjeta: TarjetaDelTablero, columna: ColumnaDelTablero) => void
   /** Las tarjetas movidas que el núcleo todavía no guardó: se ven atenuadas en su columna nueva. */
   guardando?: ReadonlySet<string>
@@ -200,6 +203,7 @@ export function ColumnasDelTablero({
                     key={tarjeta.id}
                     tarjeta={tarjeta}
                     estado={estadoDe?.(tarjeta)}
+                    espacio={espacioDe?.(tarjeta)}
                     onElegir={onElegir}
                     movimiento={movimiento}
                     arrastrando={arrastrando === tarjeta.id}

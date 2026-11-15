@@ -54,8 +54,21 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      # El runner se moría a los ~3 min de lint («The runner has received a shutdown signal», en el
+      # privado «exit code 143», sin salida): se quedaba sin memoria. El que la come es el paso
+      # type-aware (`audit:code-quality:type-aware`): tsgolint arma el programa TypeScript entero y
+      # abre UN checker por cada GOMAXPROCS, cada uno con sus cachés de tipos. Medido en la máquina
+      # de Nico sobre el árbol del 15/11: 13,7 GB de pico con 16 checkers y 10,2 GB con 2 (pasa, 0
+      # hallazgos). Casi todo es el programa, no los checkers, y encima run-lint.mjs corría otro paso
+      # al lado: en el runner de 16 GB no entraban los dos. Así que en CI: los pasos de a uno
+      # (`--maxWorkers=1`), tsgolint con 2 checkers, y un techo blando para el GC de Go por encima
+      # de lo que vive (10 GB: con un techo menor el GC trabaja sin parar y no baja el pico) y por
+      # debajo de lo que tiene el runner. `--timings` deja el tiempo de cada paso en el log.
       - name: Lint
-        run: pnpm lint
+        env:
+          GOMAXPROCS: '2'
+          GOMEMLIMIT: 12GiB
+        run: pnpm lint --maxWorkers=1 --timings
 
       - name: Test
         run: pnpm test

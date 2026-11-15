@@ -39,6 +39,12 @@ export type StructuredAgentSessionRuntimeDeps = StructuredAgentSessionTransportO
   /** Gives each chat a scratch folder and the visuals skill that teaches it, and sweeps folders
    *  whose chat is gone. Wired by the real hosts only, so a test runtime never loads the bundled
    *  skill. */
+  /** Tells Claude and Codex chats they run inside Dolphin and how to delegate. Wired by the real
+   *  hosts only; absent sends nothing, so test runtimes keep the providers' own prompts. */
+  dolphinAgentContext?: {
+    /** Read this host's preference when a chat starts a provider process. */
+    isEnabled: () => boolean
+  }
   nativeChatVisuals?: {
     /** Read this host's preference when a chat starts a provider process. */
     isEnabled: () => boolean

@@ -35,7 +35,14 @@ import {
   getAgentProjectMemoryLearningTitle,
   getAgentProjectMemoryTitle
 } from '../agent-project-memory-copy'
-import { getAgentCrossReviewDescription, getAgentCrossReviewTitle } from '../agent-cross-review-copy'
+import {
+  getAgentCrossReviewDescription,
+  getAgentCrossReviewTitle
+} from '../agent-cross-review-copy'
+import {
+  getAgentDolphinContextDescription,
+  getAgentDolphinContextTitle
+} from '../agent-dolphin-context-copy'
 
 type AgentSettingProps = {
   settings: GlobalSettings
@@ -90,6 +97,7 @@ export function AgentsPane({
         />
         <AgentStatusHooksSetting settings={settings} updateSettings={updateSettings} />
         <AgentProjectMemorySetting settings={settings} updateSettings={updateSettings} />
+        <AgentDolphinContextSetting settings={settings} updateSettings={updateSettings} />
         <AgentCrossReviewSetting settings={settings} updateSettings={updateSettings} />
         <SettingsSwitchRow
           label={getClaudeSubagentNavigationTitle(t)}
@@ -155,12 +163,23 @@ function AgentProjectMemorySetting({ settings, updateSettings }: AgentSettingPro
         label={getAgentProjectMemoryLearningTitle()}
         description={getAgentProjectMemoryLearningDescription()}
         checked={learningEnabled}
-        onChange={() =>
-          updateSettings({ agentProjectMemoryLearningEnabled: !learningEnabled })
-        }
+        onChange={() => updateSettings({ agentProjectMemoryLearningEnabled: !learningEnabled })}
         ariaLabel={getAgentProjectMemoryLearningTitle()}
       />
     </>
+  )
+}
+
+function AgentDolphinContextSetting({ settings, updateSettings }: AgentSettingProps) {
+  const enabled = settings.agentDolphinContextEnabled !== false
+  return (
+    <SettingsSwitchRow
+      label={getAgentDolphinContextTitle()}
+      description={getAgentDolphinContextDescription()}
+      checked={enabled}
+      onChange={() => updateSettings({ agentDolphinContextEnabled: !enabled })}
+      ariaLabel={getAgentDolphinContextTitle()}
+    />
   )
 }
 

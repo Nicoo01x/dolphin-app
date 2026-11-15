@@ -48,6 +48,8 @@ export type CodexStructuredLaunchPartDeps = {
     pathEnv?: string | null
     homePath?: string
   }) => StructuredAgentCommand
+  /** The "you are running inside Dolphin" notice for the thread; null or absent when turned off. */
+  resolveDolphinContext?: () => string | null
 }
 
 export type CodexStructuredInvocationDeps = Pick<
@@ -141,6 +143,7 @@ export function codexStructuredLaunchPart(
     const resumeThreadId = head?.handle.nativeId ?? null
     // Match the first turn's model to avoid duplicate prompt injection on a model switch.
     const model = record.options?.model
+    const dolphinContext = deps.resolveDolphinContext?.() ?? null
     const visuals = await basis.visuals()
     const launchDirectory = await basis.launchDirectory()
     const selectedHome = await deps.prepareLaunchAccountHome?.(record, launchDirectory)
@@ -180,6 +183,7 @@ export function codexStructuredLaunchPart(
           ? {}
           : { permissionPolicy: codexStructuredPermissionPolicy(basis.permissionMode ?? 'ask') }),
         ...(model ? { model } : {}),
+        ...(dolphinContext ? { developerInstructions: dolphinContext } : {}),
         ...(visuals ? { visuals } : {})
       },
       env: withNativeChatVisualsEnv(

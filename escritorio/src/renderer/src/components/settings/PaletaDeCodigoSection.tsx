@@ -2,14 +2,13 @@ import { useMemo } from 'react'
 import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import {
   NOMBRE_DEL_ROL,
-  PALETA_CLARA,
-  PALETA_OSCURA,
   PRESETS_OSCUROS,
   ROLES_DE_CODIGO,
   paletaConPersonal,
   type PaletaParcial,
   type RolDeCodigo
 } from '../../../../shared/paleta-de-codigo'
+import { paletaDeFabrica, temaDeCodigo, type TemaDeCodigo } from '../../../../shared/tema-de-codigo'
 import { useDocumentDarkTheme } from '@/hooks/use-document-dark-theme'
 import { translate } from '@/i18n/i18n'
 import { SearchableSetting } from './section-layout/SearchableSetting'
@@ -32,12 +31,14 @@ type Props = {
   updateSettings: (updates: Partial<GlobalSettings>) => void
 }
 
-const TITULO = translate('auto.components.settings.PaletaDeCodigoSection.titulo', 'Code colors')
-
 export function PaletaDeCodigoSection({ settings, updateSettings }: Props): React.JSX.Element {
+  // Why acá y no en el módulo: al importarse, el catálogo en castellano todavía no cargó y el
+  // título quedaba en inglés para siempre.
+  const titulo = translate('auto.components.settings.PaletaDeCodigoSection.titulo', 'Code colors')
   const oscuro = useDocumentDarkTheme()
   const personal = oscuro ? settings.paletaDeCodigoOscura : settings.paletaDeCodigoClara
-  const base = oscuro ? PALETA_OSCURA : PALETA_CLARA
+  const tema = temaDeCodigo(settings.temaDeCodigo)
+  const base = paletaDeFabrica(tema, oscuro)
   const paleta = useMemo(() => paletaConPersonal(base, personal), [base, personal])
 
   const guardar = (siguiente: PaletaParcial): void => {
@@ -55,7 +56,7 @@ export function PaletaDeCodigoSection({ settings, updateSettings }: Props): Reac
 
   return (
     <SearchableSetting
-      title={TITULO}
+      title={titulo}
       description={translate(
         'auto.components.settings.PaletaDeCodigoSection.descripcion',
         'Every colour the editor paints, one by one. The chrome around the code stays monochrome on purpose: the colour lives inside the file, which is what you look at.'
@@ -75,7 +76,7 @@ export function PaletaDeCodigoSection({ settings, updateSettings }: Props): Reac
       className="space-y-3 py-2"
     >
       <div className="space-y-0.5">
-        <Label>{TITULO}</Label>
+        <Label>{titulo}</Label>
         <p className="text-xs text-muted-foreground">
           {oscuro
             ? translate(
@@ -88,6 +89,11 @@ export function PaletaDeCodigoSection({ settings, updateSettings }: Props): Reac
               )}
         </p>
       </div>
+
+      <ElegirTemaDeCodigo
+        tema={tema}
+        onElegir={(temaDeCodigo) => updateSettings({ temaDeCodigo })}
+      />
 
       {oscuro ? (
         <div className="flex flex-wrap gap-1.5">
@@ -161,5 +167,55 @@ export function PaletaDeCodigoSection({ settings, updateSettings }: Props): Reac
         {translate('auto.components.settings.PaletaDeCodigoSection.volver', 'Back to defaults')}
       </button>
     </SearchableSetting>
+  )
+}
+
+/**
+ * Dolphin Noche o el de siempre. Va arriba de los colores porque es la decisión grande: los doce
+ * roles de abajo se ajustan sobre el tema que se elige acá.
+ */
+function ElegirTemaDeCodigo({
+  tema,
+  onElegir
+}: {
+  tema: TemaDeCodigo
+  onElegir: (tema: TemaDeCodigo) => void
+}): React.JSX.Element {
+  const opciones: { valor: TemaDeCodigo; nombre: string }[] = [
+    {
+      valor: 'noche',
+      nombre: translate('auto.components.settings.PaletaDeCodigoSection.temaNoche', 'Dolphin Night')
+    },
+    {
+      valor: 'dolphin',
+      nombre: translate(
+        'auto.components.settings.PaletaDeCodigoSection.temaDolphin',
+        'Dolphin Classic'
+      )
+    }
+  ]
+  return (
+    <div
+      role="radiogroup"
+      aria-label={translate('auto.components.settings.PaletaDeCodigoSection.tema', 'Code theme')}
+      className="flex flex-wrap gap-1.5"
+    >
+      {opciones.map((opcion) => (
+        <button
+          key={opcion.valor}
+          type="button"
+          role="radio"
+          aria-checked={tema === opcion.valor}
+          onClick={() => onElegir(opcion.valor)}
+          className={
+            tema === opcion.valor
+              ? 'h-7 rounded-full bg-foreground px-3 text-xs font-medium text-background transition-colors'
+              : 'h-7 rounded-full bg-foreground/[0.07] px-3 text-xs transition-colors hover:bg-foreground/[0.11]'
+          }
+        >
+          {opcion.nombre}
+        </button>
+      ))}
+    </div>
   )
 }

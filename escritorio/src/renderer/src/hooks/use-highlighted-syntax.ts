@@ -6,7 +6,8 @@ import {
 import { scheduleSyntaxHighlighting } from '@/lib/syntax-highlighting/syntax-highlight-scheduler'
 import {
   loadedSyntaxHighlighter,
-  loadSyntaxLanguage
+  loadSyntaxLanguage,
+  syntaxThemeKey
 } from '@/lib/syntax-highlighting/syntax-highlighter'
 import { recomputeOn } from '@/lib/recompute-on'
 import { BoundedMap } from '../../../shared/bounded-map'
@@ -54,7 +55,8 @@ const finished = new BoundedMap<string, SyntaxProgress>({
 })
 
 function finishedKey(language: string, source: string): string {
-  return `${language}\n${source}`
+  // Dolphin: el tema va en la clave, así un bloque no vuelve con los colores del tema anterior.
+  return `${syntaxThemeKey()}\n${language}\n${source}`
 }
 
 /** Tokens cover the highlighted prefix; code.slice(highlightedLength) stays plain until later renders. */

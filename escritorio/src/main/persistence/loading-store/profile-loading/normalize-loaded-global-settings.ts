@@ -1,4 +1,5 @@
 import { normalizeAgentDefaultSurface } from '../../../../shared/native-chat/native-chat-providers'
+import { temaDeCodigo } from '../../../../shared/tema-de-codigo'
 import { normalizeNativeChatAppearanceSettings } from '../../../../shared/native-chat/native-chat-appearance-settings'
 import { getDefaultVoiceSettings } from '../../../../shared/constants'
 import { normalizePRBotAuthorOverrides } from '../../../../shared/source-control/review-comments/pr-bot-author-overrides'
@@ -102,6 +103,8 @@ export function normalizeLoadedGlobalSettings(
     prBotAuthorOverrides: normalizePRBotAuthorOverrides(parsed.settings?.prBotAuthorOverrides),
     // Only fresh profiles take the on default; a stored profile saved before the key existed was off.
     artifactSharingEnabled: parsed.settings?.artifactSharingEnabled === true,
+    // Dolphin: Noche es sólo para perfiles nuevos; uno guardado sin el ajuste sigue con el de antes.
+    temaDeCodigo: temaDeCodigo(parsed.settings?.temaDeCodigo),
     // Carry the retired sidekick flag into pet settings.
     experimentalPet: parsed.settings?.experimentalPet ?? readLegacySidekickFlag(parsed) ?? false,
     // Migrate old platform defaults once; retain later opt-outs.

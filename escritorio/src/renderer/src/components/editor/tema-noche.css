@@ -1,0 +1,58 @@
+/*
+ * Dolphin Noche: lo que el tema de Monaco y el de shiki no saben pintar (`shared/tema-de-codigo.ts`).
+ *
+ * Todo cuelga de `:root[data-tema-de-codigo='noche']`, que pone `use-paleta-de-codigo.ts`. Con el
+ * tema de siempre nada de esto aplica y la base sigue como estaba.
+ *
+ * Los hex son los de `CROMO_NOCHE_*`: si cambian allá, cambian acá.
+ */
+
+/* ── Los diffs del chat (NativeChatDiffCard, NativeChatDiffView) ─────────────────────────────
+   Fondo rojo y verde muy oscuros, la barra de color en el canto y el signo en su color: la
+   referencia de la tarjeta «Lo que hizo». */
+:root[data-tema-de-codigo='noche'].dark,
+:root[data-tema-de-codigo='noche'] .native-chat-appearance[data-native-chat-scheme='dark'],
+:root[data-tema-de-codigo='noche'] [data-tema-noche='oscuro'] {
+  --diff-added-background: #0f2318;
+  --diff-added-gutter: #4cc38a;
+  --diff-added-emphasis: rgb(76 195 138 / 0.16);
+  --diff-removed-background: #2a1013;
+  --diff-removed-gutter: #f0646f;
+  --diff-removed-emphasis: rgb(240 100 111 / 0.16);
+  --chat-diff-added: #4cc38a;
+  --chat-diff-removed: #f0646f;
+  --chat-code-block: #0e0e0e;
+}
+
+:root[data-tema-de-codigo='noche']:not(.dark),
+:root[data-tema-de-codigo='noche'] .native-chat-appearance[data-native-chat-scheme='light'],
+:root[data-tema-de-codigo='noche'] [data-tema-noche='claro'] {
+  --diff-added-background: #e3f4ea;
+  --diff-added-gutter: #176c40;
+  --diff-added-emphasis: rgb(23 108 64 / 0.14);
+  --diff-removed-background: #fbe6e8;
+  --diff-removed-gutter: #b42633;
+  --diff-removed-emphasis: rgb(180 38 51 / 0.14);
+  --chat-diff-added: #176c40;
+  --chat-diff-removed: #b42633;
+}
+
+/* ── El visor de diffs de Monaco ─────────────────────────────────────────────────────────────
+   El fondo de la línea lo pone el tema (`diffEditor.*LineBackground`); la barra a la izquierda
+   del código, que ningún color de tema dibuja, va como sombra interior de 3 px. Sombra y no
+   borde: un borde corre el texto un píxel y desalinea las dos columnas del diff. */
+:root[data-tema-de-codigo='noche'] .monaco-diff-editor .line-insert {
+  box-shadow: inset 3px 0 0 #4cc38a;
+}
+
+:root[data-tema-de-codigo='noche'] .monaco-diff-editor .line-delete {
+  box-shadow: inset 3px 0 0 #f0646f;
+}
+
+:root[data-tema-de-codigo='noche']:not(.dark) .monaco-diff-editor .line-insert {
+  box-shadow: inset 3px 0 0 #176c40;
+}
+
+:root[data-tema-de-codigo='noche']:not(.dark) .monaco-diff-editor .line-delete {
+  box-shadow: inset 3px 0 0 #b42633;
+}

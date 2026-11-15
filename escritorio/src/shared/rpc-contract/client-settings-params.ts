@@ -117,6 +117,7 @@ export const SettingsUpdate = z
     agentStatusHooksEnabled: z.boolean().optional(),
     agentProjectMemoryEnabled: z.boolean().optional(),
     agentProjectMemoryLearningEnabled: z.boolean().optional(),
+    agentDolphinContextEnabled: z.boolean().optional(),
     crossReviewOnAgentStop: z.boolean().optional(),
     codexShareHistoryAcrossAccounts: z.boolean().optional(),
     claudeSubagentNavigationEnabled: z.boolean().optional(),

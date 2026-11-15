@@ -1,27 +1,37 @@
 ---
 name: dolphin-cli
 description: >-
-  Operate Dolphin-managed worktrees, folder contexts, terminals, repos, automations, worktree
-  comments, and Dolphin's embedded browser through the `dolphin` CLI. Use when the user says
-  "$dolphin-cli", "Dolphin worktree", "child worktree", "spawn codex/claude in a worktree",
-  "read/wait/send Dolphin terminal", "handoff" / "handover" / "give this to another agent", or
-  "Dolphin browser". Also use for opening, testing, screenshotting, or checking how a local or
-  external web page renders while working in Dolphin, unless the user or project names another
-  browser tool; plain HTTP or API calls (curl, fetch) do not need it. Prefer it over raw git
-  worktree, ad hoc PTYs, or Computer Use when Dolphin state is involved. Use Computer Use only
-  when a visible window needs GUI control that a CLI, filesystem, or API cannot do.
+  Operate Dolphin-managed worktrees, terminals, repos, automations, comments and the embedded
+  browser through the `dolphin` CLI, and delegate to another agent as a Dolphin chat. Use when
+  the user says "$dolphin-cli", "Dolphin worktree", "spawn codex/claude in a worktree",
+  "read/wait/send Dolphin terminal", "handoff" / "give this to another agent", "Dolphin
+  browser", or in Spanish "delegá", "pasale a", "que lo haga Codex/ChatGPT/Gemini", "abrí otro
+  agente". ChatGPT, GPT and OpenAI mean the codex agent. Inside Dolphin, delegating to another
+  agent is `dolphin agent delegate` or `agent launch --surface chat` plus `chat wait/read`, never
+  codex:rescue or a plugin that runs it outside Dolphin. Also use to open or check how a web
+  page renders while in Dolphin, unless the user names another browser tool; plain HTTP calls
+  do not need it. Prefer it over raw git worktree or ad hoc PTYs when Dolphin state is
+  involved; use Computer Use only when a visible window needs GUI control.
 ---
 
 # Dolphin CLI
 
 This discovery stub loads the version-matched guide from the Dolphin executable used for this session.
 
+Dentro de Dolphin, delegar a otro motor (Codex, que también es ChatGPT, GPT u OpenAI; Gemini;
+Claude) es `DOLPHIN agent delegate --agent <motor> --prompt "<tarea>" --wait`, o
+`DOLPHIN agent launch --agent <motor> --surface chat` + `DOLPHIN chat wait/read`. Nunca el plugin
+`codex:rescue` ni otro comando que corra ese agente fuera de Dolphin: la persona tiene que ver los
+dos chats.
+
 ## Resolve the CLI for this session
 
 Choose the executable once and reuse it for every later command:
 
-- If the `DOLPHIN_CLI_COMMAND` environment variable is set, use its value. Dolphin exports this
-  for managed WSL sessions.
+- If the `DOLPHIN_CLI_COMMAND` environment variable is set, use its value, even when another
+  `dolphin` comes first on `PATH`. Dolphin sets it to its own CLI in the terminals and chats it
+  starts, including managed WSL sessions. Quote it if the path has spaces (`& "<path>"` in
+  PowerShell).
 - Otherwise, in a dev checkout whose session exposes `DOLPHIN_DEV_REPO_ROOT`, use `dolphin-dev`.
 - Otherwise, use `dolphin`.
 

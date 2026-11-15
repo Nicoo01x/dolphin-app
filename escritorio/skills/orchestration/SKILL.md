@@ -3,16 +3,17 @@ name: orchestration
 description: >-
   Run work in separate Dolphin worker agents and get their results back. Use when
   the user asks for Dolphin workers or supervision (monitor, task DAGs, ask/reply,
-  decision gates), or when the work needs something your own subagents cannot
-  give: a different agent (such as Codex from Claude) or its own Dolphin workspace.
-  "Have Codex (or Claude) review this and report back" means a Dolphin worker of
-  that agent, even when you have your own model subagents.
-  Also use when you are a dispatched worker (a prompt with Task and Dispatch
-  IDs: ask, worker_done). Otherwise prefer your own subagents,
-  including for long or parallel work. Use `dolphin-cli` to hand work off with
-  nothing expected back ("hand off", "handover", "give this to another agent",
-  "another worktree"), and for terminal control, shell commands, worktree
-  management, and reading or waiting on terminals.
+  decision gates), or when the work needs a different agent (such as Codex from
+  Claude) or its own Dolphin workspace. "Have Codex (or Claude) review this and
+  report back" means a Dolphin worker of that agent, even when you have your own
+  subagents; so do "delegá", "pasale a", "que lo haga Codex/ChatGPT/Gemini" and
+  "abrí otro agente". ChatGPT, GPT and OpenAI mean the codex agent; never use
+  codex:rescue or a plugin that runs it outside Dolphin. Also use when you are a
+  dispatched worker (a prompt with Task and Dispatch IDs: ask, worker_done).
+  Otherwise prefer your own subagents, including for long or parallel work. Use
+  `dolphin-cli` to hand work off with nothing expected back ("hand off", "give
+  this to another agent", "another worktree"), and for terminals, shell commands
+  and worktree management.
 ---
 
 # Dolphin Orchestration
@@ -20,13 +21,17 @@ description: >-
 This discovery stub loads the version-matched guide from the Dolphin executable used for this session.
 
 Never substitute a non-Dolphin subagent tool when the user asked for Dolphin orchestration.
+Dentro de Dolphin, «delegá a Codex/ChatGPT/GPT/OpenAI» es un agente de Dolphin
+(`agent delegate`, `agent launch --surface chat` o `worker-start`), nunca el plugin `codex:rescue`.
 
 ## Resolve the CLI for this session
 
 Choose the executable once and reuse it for every later command:
 
-- If the `DOLPHIN_CLI_COMMAND` environment variable is set, use its value. Dolphin exports this
-  for managed WSL sessions.
+- If the `DOLPHIN_CLI_COMMAND` environment variable is set, use its value, even when another
+  `dolphin` comes first on `PATH`. Dolphin sets it to its own CLI in the terminals and chats it
+  starts, including managed WSL sessions. Quote it if the path has spaces (`& "<path>"` in
+  PowerShell).
 - Otherwise, in a dev checkout whose session exposes `DOLPHIN_DEV_REPO_ROOT`, use `dolphin-dev`.
 - Otherwise, use `dolphin`.
 

@@ -350,7 +350,7 @@ export function NativeChatResolvedView({
           ) : viewState.kind === 'error' ? (
             <NativeChatEmptyState kind="error" message={viewState.message} />
           ) : viewState.kind === 'empty' ? (
-            <NativeChatEmptyState kind="empty" agent={agent} />
+            <chatDolphin.VacioDelChatDeTerminal tabId={terminalTabId} agent={agent} />
           ) : (
             <NativeChatMessageList
               ref={messageListRef}

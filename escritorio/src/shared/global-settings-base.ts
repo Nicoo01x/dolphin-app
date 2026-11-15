@@ -24,9 +24,12 @@ import type { SshRemoteControlSettings } from './ssh-remote-control-settings'
 import type { AgentWorkspaceTrustSettings } from './agent-launch/permissions/agent-workspace-trust-decision'
 import type { KeybindingGlobalSettings } from './keybindings/global-settings'
 import type { AgentProjectMemorySettings } from './agent-project-memory-settings'
+import type { DolphinAgentContextSettings } from './dolphin-agent-context'
 import type { AgentCrossReviewSettings } from './agent-cross-review-settings'
 import type { DelegacionAutomaticaSettings } from './delegacion-automatica-settings'
 import type { PaletaDeCodigoSettings } from './paleta-de-codigo'
+import type { TemaDeCodigoSettings } from './tema-de-codigo'
+import type { FondoDelChatSettings } from './fondo-del-chat'
 import type { PrediccionDeEdicionSettings } from './prediccion-de-edicion-settings'
 import type { TemaDeLaInterfazSettings } from './tema-de-la-interfaz-settings'
 import type { GlobalSettingsEditor } from './global-settings-editor-types'
@@ -58,9 +61,12 @@ export type GlobalSettingsBase = AntigravityChatAuthSettings &
   AgentWorkspaceTrustSettings &
   KeybindingGlobalSettings &
   AgentProjectMemorySettings &
+  DolphinAgentContextSettings &
   AgentCrossReviewSettings &
   DelegacionAutomaticaSettings &
   PrediccionDeEdicionSettings &
   PaletaDeCodigoSettings &
+  TemaDeCodigoSettings &
+  FondoDelChatSettings &
   TemaDeLaInterfazSettings &
   GlobalSettingsEditor

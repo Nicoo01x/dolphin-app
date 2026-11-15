@@ -258,6 +258,7 @@ function TableroReal({
       <ColumnasDelTablero
         tarjetas={tarjetas}
         estadoDe={estadoDe}
+        espacioDe={(tarjeta) => (tarjeta.rama ? porRama.get(tarjeta.rama)?.espacio.id : undefined)}
         onMover={onMover}
         guardando={guardando}
         onElegir={proyecto ? (tarjeta) => onElegir(proyecto.repoId, tarjeta) : undefined}

@@ -224,6 +224,18 @@
           "dispatchedAgents_other": "{{agentType}} - dispatched {{count}} agents"
         }
       },
+      "dolphin": {
+        "loQueHizo": {
+          "archivos_one": "{{count}} file",
+          "archivos_other": "{{count}} files",
+          "detalle": {
+            "fallaron_one": "{{count}} failed",
+            "fallaron_other": "{{count}} failed",
+            "pasaron_one": "{{count}} passed",
+            "pasaron_other": "{{count}} passed"
+          }
+        }
+      },
       "editor": {
         "CheckRunJobs": {
           "stepsFailedOfTotal_one": "{{failed}} / {{count}} steps failed",
@@ -2361,8 +2373,26 @@
       "permissionOverridesKept_other": "{{count}} agents still use their own permission setting:"
     },
     "appearance": {
+      "fondoDelChat": {
+        "keyword": {
+          "background": "background",
+          "blur": "blur",
+          "image": "image",
+          "landscape": "landscape",
+          "painting": "painting",
+          "transparency": "transparency",
+          "veil": "veil",
+          "wallpaper": "wallpaper"
+        }
+      },
       "interfaceTheme": {
-        "colors": "custom interface colors"
+        "acento": "Accent",
+        "acentoHelp": "Buttons, links and anything the app wants you to notice.",
+        "colors": "custom interface colors",
+        "superficie": "Surface",
+        "superficieHelp": "The background everything else sits on.",
+        "tinta": "Ink",
+        "tintaHelp": "Text. It is nudged until it stays readable on the surface."
       }
     },
     "diagnostics": {

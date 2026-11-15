@@ -1,5 +1,6 @@
 import type { SettingsSearchEntry } from '../search/settings-search'
 import { getInterfaceThemeEntries } from '../appearance-interface-theme-search'
+import { getFondoDelChatEntries } from '../appearance-fondo-del-chat-search'
 import { getTerminalAppearanceSearchEntries } from '../terminal/terminal-search'
 import { getSidebarEntries } from './appearance-sidebar-search'
 import { createLocalizedCatalog } from '@/i18n/localized-catalog'
@@ -272,6 +273,7 @@ export function getAppearancePaneSearchEntries(
     ...getAppearanceSectionEntries(),
     ...getThemeEntries(),
     ...getInterfaceThemeEntries(),
+    ...getFondoDelChatEntries(),
     ...getCodeEditorThemeEntries(),
     ...(SHOW_UI_LANGUAGE_SETTING ? getLanguageEntries() : []),
     ...getTypographyEntries(),

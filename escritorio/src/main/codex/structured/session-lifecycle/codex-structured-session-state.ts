@@ -32,14 +32,14 @@ import type { NativeChatVisualsLaunch } from '../../../native-chat/native-chat-v
 import type { AgentChatPermissionChoice } from '../../../../shared/agent-launch/permissions/agent-chat-permission-mode'
 import type { CodexSandboxPolicy } from '../launch/codex-structured-sandbox-policy'
 import type { StructuredAgentSessionEventSink } from '../../../native-chat/agent-session-wire/journal-ingress/structured-agent-session-event-sink'
-import type { DependenciasDeSesionCodexDolphin } from './sesion-codex-dolphin'
+import type { DependenciasDeSesionCodexDolphin, LanzamientoDolphin } from './sesion-codex-dolphin'
 
 export type CodexSessionCatalogAccess = AgentModelCatalogSessionAccess & {
   read?: (verifiedOnly?: boolean) => ReturnType<AgentModelCatalogStore['get']>
   demand?: (legacy?: boolean) => Promise<unknown>
 }
 
-export type CodexStructuredLaunch = {
+export type CodexStructuredLaunch = LanzamientoDolphin & {
   prefixArgs?: readonly string[]
   command: string
   args: string[]

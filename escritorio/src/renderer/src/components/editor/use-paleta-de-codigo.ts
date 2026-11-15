@@ -3,9 +3,12 @@ import * as monaco from 'monaco-editor'
 import { useAppStore } from '@/store'
 import { definirTemasDeDolphin, temaDeDolphin } from './tema-dolphin-monaco'
 import { useDocumentDarkTheme } from '@/hooks/use-document-dark-theme'
+import { temaDeCodigo } from '../../../../shared/tema-de-codigo'
+import { fijarTemaDeResaltado } from '@/lib/syntax-highlighting/syntax-highlighter'
+import './tema-noche.css'
 
 /**
- * Mantiene los temas de Monaco al día con la paleta que la persona eligió.
+ * Mantiene los temas de Monaco al día con el tema y la paleta que la persona eligió.
  *
  * `defineTheme` es global y pisa la definición anterior con el mismo nombre, así que redefinir el
  * tema repinta TODOS los editores abiertos de una. Por eso esto vive en un solo lugar alto y no en
@@ -19,9 +22,17 @@ export function usePaletaDeCodigo(): void {
   const oscuro = useDocumentDarkTheme()
   const oscura = useAppStore((s) => s.settings?.paletaDeCodigoOscura)
   const clara = useAppStore((s) => s.settings?.paletaDeCodigoClara)
+  const tema = temaDeCodigo(useAppStore((s) => s.settings?.temaDeCodigo))
 
   useEffect(() => {
-    definirTemasDeDolphin(monaco.editor, { oscura, clara })
+    definirTemasDeDolphin(monaco.editor, { oscura, clara }, tema)
     monaco.editor.setTheme(temaDeDolphin(oscuro))
-  }, [oscura, clara, oscuro])
+  }, [oscura, clara, oscuro, tema])
+
+  // El chat colorea con shiki, no con Monaco: lo mismo, del otro lado. Y la marca en <html> es lo
+  // que deja a las hojas pintar lo que ningún tema sabe (la barra del diff, los diffs del chat).
+  useEffect(() => {
+    fijarTemaDeResaltado(tema)
+    document.documentElement.dataset.temaDeCodigo = tema
+  }, [tema])
 }

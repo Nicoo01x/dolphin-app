@@ -10,6 +10,7 @@ import { getRequiredStringFlag } from '../flags'
 import { printResult } from '../format'
 import { RuntimeClientError } from '../runtime-client'
 import { getRequiredWorktreeSelector, resolveCurrentWorktreeSelector } from '../selectors'
+import { agentDelegateHandler } from './agent-delegate'
 
 export const AGENT_LAUNCH_HANDLERS: Record<string, CommandHandler> = {
   'agent launch': async ({ flags, client, cwd, json, rawArgs }) => {
@@ -51,5 +52,6 @@ export const AGENT_LAUNCH_HANDLERS: Record<string, CommandHandler> = {
       rawArgs
     )
     printResult(result, json, formatAgentLaunch)
-  }
+  },
+  'agent delegate': agentDelegateHandler
 }

@@ -17,7 +17,6 @@ import type { NativeChatComposerHandle } from '@/components/native-chat/composer
 import type { NativeChatOptionPickerRequest } from '@/components/native-chat/session/options/controls/native-chat-option-picker-request'
 import { structuredAgentSessionDraftScopeKey } from '@/components/native-chat/drafts/native-chat-draft-scope'
 import { NativeChatEmptyState } from '@/components/native-chat/host-access/NativeChatEmptyState'
-import { NativeChatEmptyPane } from '@/components/native-chat/host-access/NativeChatEmptyPane'
 import { NativeChatLoadingCue } from '@/components/native-chat/host-access/NativeChatLoadingCue'
 import { NativeChatMessageList } from '@/components/native-chat/NativeChatMessageList'
 import { NativeChatContextClearFade } from '@/components/native-chat/conversation/projection/NativeChatContextClearFade'
@@ -289,7 +288,7 @@ export function NativeChatStructuredSession(props: Omit<NativeChatStructuredView
             find.isOpen ? <NativeChatFindBar find={find} isVisible={props.isVisible} /> : null
           }
         >
-          <chatDolphin.LienzoConMarcaDeAgua agent={props.agent}>
+          <chatDolphin.LienzoConMarcaDeAgua agent={props.agent} mensajes={controller.messages}>
             {viewState.kind === 'loading' || (viewState.kind === 'error' && !readFailure) ? (
               historyPhase !== 'unread' && <NativeChatLoadingCue />
             ) : viewState.kind === 'error' ? (
@@ -299,7 +298,7 @@ export function NativeChatStructuredSession(props: Omit<NativeChatStructuredView
                 {...(readFailure?.named ? { headline: readFailure.text } : {})}
               />
             ) : viewState.kind === 'empty' ? (
-              <NativeChatEmptyPane slot={install.slot} agent={props.agent} />
+              <chatDolphin.VacioDelChatEstructurado {...props} slot={install.slot} />
             ) : (
               <NativeChatRowActionsProvider pane={props} chat={controller} forks={forks}>
                 <NativeChatUsageLimitActionsProvider

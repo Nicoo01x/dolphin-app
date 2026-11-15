@@ -4,176 +4,176 @@
     {
       "name": "dolphin-cli",
       "sourcePath": "skills/dolphin-cli",
-      "packageDigest": "18e28d431e70ea037a19c1d26044ed056c69b1a74b17cf8795c32d294d2697e7",
+      "packageDigest": "4ef51b78c0e707cf5f481d9417e911e76e3248e7670c054482ccf79108dfc3a2",
       "files": [
         {
           "path": "SKILL.md",
-          "size": 2387,
+          "size": 3111,
           "executable": false,
           "classification": "text",
-          "exactSha256": "d8d9aa6f4c08c8bf4be4d5cabd8a8e230c034d253733d0d6685b332f7c555774",
-          "textNormalizedSha256": "d8d9aa6f4c08c8bf4be4d5cabd8a8e230c034d253733d0d6685b332f7c555774",
-          "identitySha256": "d8d9aa6f4c08c8bf4be4d5cabd8a8e230c034d253733d0d6685b332f7c555774"
+          "exactSha256": "4f89e5fb959c32c1f9a252e72623ffcb0286a7ac892b8b514bc4391a21f5f2c0",
+          "textNormalizedSha256": "4f89e5fb959c32c1f9a252e72623ffcb0286a7ac892b8b514bc4391a21f5f2c0",
+          "identitySha256": "4f89e5fb959c32c1f9a252e72623ffcb0286a7ac892b8b514bc4391a21f5f2c0"
         }
       ]
     },
     {
       "name": "dolphin-computer-use",
       "sourcePath": "skills/dolphin-computer-use",
-      "packageDigest": "82f1970f973a1338d0f91064b3b1ef41962f8718f9fde7bd2bbddbb26ad054fb",
+      "packageDigest": "27c525528bad95755bdc89bc28c14623c40d1242347761d3297266a103fc9cda",
       "files": [
         {
           "path": "SKILL.md",
-          "size": 2039,
+          "size": 2210,
           "executable": false,
           "classification": "text",
-          "exactSha256": "e53231814138635b2162bee485afde58e8fec1a0a668b9be1f0756f3d25bf89b",
-          "textNormalizedSha256": "e53231814138635b2162bee485afde58e8fec1a0a668b9be1f0756f3d25bf89b",
-          "identitySha256": "e53231814138635b2162bee485afde58e8fec1a0a668b9be1f0756f3d25bf89b"
+          "exactSha256": "f0fb4f3573ed9f693b9458017b931fe8f0a3bc0d37499662d60d792570bada43",
+          "textNormalizedSha256": "f0fb4f3573ed9f693b9458017b931fe8f0a3bc0d37499662d60d792570bada43",
+          "identitySha256": "f0fb4f3573ed9f693b9458017b931fe8f0a3bc0d37499662d60d792570bada43"
         }
       ]
     },
     {
       "name": "dolphin-emulator",
       "sourcePath": "skills/dolphin-emulator",
-      "packageDigest": "4a0334860c584be159bc31b746c4bf18b51e092de7376e2e26525d7880c59123",
+      "packageDigest": "3b5a765d9649ae923637d1db2a029085780ff753af10a40b286f3649ea2b92ad",
       "files": [
         {
           "path": "SKILL.md",
-          "size": 2161,
+          "size": 2332,
           "executable": false,
           "classification": "text",
-          "exactSha256": "da4d285152b1f680547f0a8b07d26d1961c5c7217c523df25d1c0fa9c2d7e866",
-          "textNormalizedSha256": "da4d285152b1f680547f0a8b07d26d1961c5c7217c523df25d1c0fa9c2d7e866",
-          "identitySha256": "da4d285152b1f680547f0a8b07d26d1961c5c7217c523df25d1c0fa9c2d7e866"
+          "exactSha256": "72fa6b48d1ad3686d7d93f67a7c429c088840ce93c793e0d5c0267468882f081",
+          "textNormalizedSha256": "72fa6b48d1ad3686d7d93f67a7c429c088840ce93c793e0d5c0267468882f081",
+          "identitySha256": "72fa6b48d1ad3686d7d93f67a7c429c088840ce93c793e0d5c0267468882f081"
         }
       ]
     },
     {
       "name": "dolphin-emulator-android",
       "sourcePath": "skills/dolphin-emulator-android",
-      "packageDigest": "8b772dacb67dedf69e5d1cc7ef05ae6551023b38d85023d9d11dd07a65684a66",
+      "packageDigest": "fa2a24d96a4fa84c9602d48b5120481633b57ae70be5bd03cd8a87b69ed0f66e",
       "files": [
         {
           "path": "SKILL.md",
-          "size": 2052,
+          "size": 2223,
           "executable": false,
           "classification": "text",
-          "exactSha256": "6b248c50a29115abfe0678a6c3b03d2899f514e877a292842eff717640eaa5b9",
-          "textNormalizedSha256": "6b248c50a29115abfe0678a6c3b03d2899f514e877a292842eff717640eaa5b9",
-          "identitySha256": "6b248c50a29115abfe0678a6c3b03d2899f514e877a292842eff717640eaa5b9"
+          "exactSha256": "58839069fee72e1d10eb73cad6dcbfe9b63bd43a2baabb2f82f9aad0651fa495",
+          "textNormalizedSha256": "58839069fee72e1d10eb73cad6dcbfe9b63bd43a2baabb2f82f9aad0651fa495",
+          "identitySha256": "58839069fee72e1d10eb73cad6dcbfe9b63bd43a2baabb2f82f9aad0651fa495"
         }
       ]
     },
     {
       "name": "dolphin-jira",
       "sourcePath": "skills/dolphin-jira",
-      "packageDigest": "22bbeb96b3dcfd55b3f7e406d6e147a6dff5fa646ff47be46da789e2d7876496",
+      "packageDigest": "ed482950c8e98b8b362f11ff6414f3e16d4b51ea468b927db4b274ff160da7d9",
       "files": [
         {
           "path": "SKILL.md",
-          "size": 1895,
+          "size": 2066,
           "executable": false,
           "classification": "text",
-          "exactSha256": "5f7d080ff6200e79bdbd920ca2f348b12d5b56d6997ef0677f0bf15e3404bbdb",
-          "textNormalizedSha256": "5f7d080ff6200e79bdbd920ca2f348b12d5b56d6997ef0677f0bf15e3404bbdb",
-          "identitySha256": "5f7d080ff6200e79bdbd920ca2f348b12d5b56d6997ef0677f0bf15e3404bbdb"
+          "exactSha256": "ff735b9cbeed717ffcaf9a21e40bfd73c91284d70cf561eba85c92e2a3e077b5",
+          "textNormalizedSha256": "ff735b9cbeed717ffcaf9a21e40bfd73c91284d70cf561eba85c92e2a3e077b5",
+          "identitySha256": "ff735b9cbeed717ffcaf9a21e40bfd73c91284d70cf561eba85c92e2a3e077b5"
         }
       ]
     },
     {
       "name": "dolphin-linear",
       "sourcePath": "skills/dolphin-linear",
-      "packageDigest": "b83c589be1a4355e13ece2f1da33b0f3f690a124f2406972ecbb19c8c9e9559a",
+      "packageDigest": "eb0aafdeda47f5753a9a30943681c1dc44ffdc228b2215bb7038076ebef350c9",
       "files": [
         {
           "path": "SKILL.md",
-          "size": 1903,
+          "size": 2074,
           "executable": false,
           "classification": "text",
-          "exactSha256": "bd44db73dd10e053f3aa65816afd5e819c9859b92d00a2d02aa35723981d372b",
-          "textNormalizedSha256": "bd44db73dd10e053f3aa65816afd5e819c9859b92d00a2d02aa35723981d372b",
-          "identitySha256": "bd44db73dd10e053f3aa65816afd5e819c9859b92d00a2d02aa35723981d372b"
+          "exactSha256": "a8223dd6795d1a3581555adee8f466f6c8a1719c1c7509452be8b2eeb5024515",
+          "textNormalizedSha256": "a8223dd6795d1a3581555adee8f466f6c8a1719c1c7509452be8b2eeb5024515",
+          "identitySha256": "a8223dd6795d1a3581555adee8f466f6c8a1719c1c7509452be8b2eeb5024515"
         }
       ]
     },
     {
       "name": "dolphin-per-workspace-env",
       "sourcePath": "skills/dolphin-per-workspace-env",
-      "packageDigest": "d833066c09a950063c04e11d33ee945b85df193b6dc8d5429d1083c654ca586f",
+      "packageDigest": "380e9e149dbe36004de9ec17e821dbfa14d9aca05fa348729e6823f6244b3bf7",
       "files": [
         {
           "path": "SKILL.md",
-          "size": 2080,
+          "size": 2251,
           "executable": false,
           "classification": "text",
-          "exactSha256": "e9ad5e56da25ba65de795ea8e2ca41a329bf3f63c35b07d5364063c41a9ba1de",
-          "textNormalizedSha256": "e9ad5e56da25ba65de795ea8e2ca41a329bf3f63c35b07d5364063c41a9ba1de",
-          "identitySha256": "e9ad5e56da25ba65de795ea8e2ca41a329bf3f63c35b07d5364063c41a9ba1de"
+          "exactSha256": "5bf05d2c01a09d7552d7d5e065c50a7d1bce10556be1b277cee7dba8b26c0fc2",
+          "textNormalizedSha256": "5bf05d2c01a09d7552d7d5e065c50a7d1bce10556be1b277cee7dba8b26c0fc2",
+          "identitySha256": "5bf05d2c01a09d7552d7d5e065c50a7d1bce10556be1b277cee7dba8b26c0fc2"
         }
       ]
     },
     {
       "name": "dolphin-plugin-authoring",
       "sourcePath": "skills/dolphin-plugin-authoring",
-      "packageDigest": "a53c480a6b77d079cc33793e6fe72a4c532c8f9ce838be4376a9ff6b501a5205",
+      "packageDigest": "c3bebd3fc6d32c2babbe885d6f71a82ed70d0019ea599997fdbd7a9d40c1b6d0",
       "files": [
         {
           "path": "SKILL.md",
-          "size": 2145,
+          "size": 2316,
           "executable": false,
           "classification": "text",
-          "exactSha256": "6ed9e9d8cd8970f6b2ccb16dba71cae4d1deb111a0f7424d9a298525eec5e4e5",
-          "textNormalizedSha256": "6ed9e9d8cd8970f6b2ccb16dba71cae4d1deb111a0f7424d9a298525eec5e4e5",
-          "identitySha256": "6ed9e9d8cd8970f6b2ccb16dba71cae4d1deb111a0f7424d9a298525eec5e4e5"
+          "exactSha256": "212bce6e61c14b2e9e90a6e519cdb13d73ce4ced5cab2b783a411f35880c0f7b",
+          "textNormalizedSha256": "212bce6e61c14b2e9e90a6e519cdb13d73ce4ced5cab2b783a411f35880c0f7b",
+          "identitySha256": "212bce6e61c14b2e9e90a6e519cdb13d73ce4ced5cab2b783a411f35880c0f7b"
         }
       ]
     },
     {
       "name": "jira-tickets",
       "sourcePath": "skills/jira-tickets",
-      "packageDigest": "9265172fc351ed064dfd44103cebe03be1ed3b7f63b5e7f44252f0b59af69d3d",
+      "packageDigest": "cefc029c1739d4977116b6f36ef7c8ed9987db7b43b66677bdd44ffc1c903b21",
       "files": [
         {
           "path": "SKILL.md",
-          "size": 1935,
+          "size": 2106,
           "executable": false,
           "classification": "text",
-          "exactSha256": "3c94d8a2023fe4ccc7038e13d8497c797ccaa113b6476435e719c9a86451df45",
-          "textNormalizedSha256": "3c94d8a2023fe4ccc7038e13d8497c797ccaa113b6476435e719c9a86451df45",
-          "identitySha256": "3c94d8a2023fe4ccc7038e13d8497c797ccaa113b6476435e719c9a86451df45"
+          "exactSha256": "fb6d716e0c9518ad32fd5502c74f41b3986c7a65b0a8ff329127e591ea8cd2e6",
+          "textNormalizedSha256": "fb6d716e0c9518ad32fd5502c74f41b3986c7a65b0a8ff329127e591ea8cd2e6",
+          "identitySha256": "fb6d716e0c9518ad32fd5502c74f41b3986c7a65b0a8ff329127e591ea8cd2e6"
         }
       ]
     },
     {
       "name": "linear-tickets",
       "sourcePath": "skills/linear-tickets",
-      "packageDigest": "59fb6cc09d9311e772fcd3a567d95008c40e27411bac50cb58d0b09b95d91bce",
+      "packageDigest": "606d11b97f399f78fe21f2014628e198ee78b555b723f8bff22995f91699aa8f",
       "files": [
         {
           "path": "SKILL.md",
-          "size": 2043,
+          "size": 2214,
           "executable": false,
           "classification": "text",
-          "exactSha256": "47ac2e4ca41dd37bc18e8380cee50c8497f13b75f4abbf49a214a1a45c8108f6",
-          "textNormalizedSha256": "47ac2e4ca41dd37bc18e8380cee50c8497f13b75f4abbf49a214a1a45c8108f6",
-          "identitySha256": "47ac2e4ca41dd37bc18e8380cee50c8497f13b75f4abbf49a214a1a45c8108f6"
+          "exactSha256": "1572c77cdad1026870f3140d82d3451f792fae1b30a812c1d6822d8476961c13",
+          "textNormalizedSha256": "1572c77cdad1026870f3140d82d3451f792fae1b30a812c1d6822d8476961c13",
+          "identitySha256": "1572c77cdad1026870f3140d82d3451f792fae1b30a812c1d6822d8476961c13"
         }
       ]
     },
     {
       "name": "orchestration",
       "sourcePath": "skills/orchestration",
-      "packageDigest": "5d41c77bb4ce67127006687a3f43e7408a189034213ea8e6eef3c22633f7d6b4",
+      "packageDigest": "107beb036539b49cd5b153d7ceca1c1849c2b9222418f23b405ca0e6fd38c00f",
       "files": [
         {
           "path": "SKILL.md",
-          "size": 3105,
+          "size": 3559,
           "executable": false,
           "classification": "text",
-          "exactSha256": "37592e49ca1d13ecb779edeef1800108a448a780906d64255a50b948e4963352",
-          "textNormalizedSha256": "37592e49ca1d13ecb779edeef1800108a448a780906d64255a50b948e4963352",
-          "identitySha256": "37592e49ca1d13ecb779edeef1800108a448a780906d64255a50b948e4963352"
+          "exactSha256": "91b0d8a8aecf09c7153873a5a2365ed35f62b4b2969aae45d04d3b11ba8b8478",
+          "textNormalizedSha256": "91b0d8a8aecf09c7153873a5a2365ed35f62b4b2969aae45d04d3b11ba8b8478",
+          "identitySha256": "91b0d8a8aecf09c7153873a5a2365ed35f62b4b2969aae45d04d3b11ba8b8478"
         }
       ]
     }

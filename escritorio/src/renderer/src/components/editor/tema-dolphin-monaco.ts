@@ -1,12 +1,18 @@
 import type { editor } from 'monaco-editor'
 import {
-  PALETA_CLARA,
-  PALETA_OSCURA,
   paletaConPersonal,
   type PaletaDeCodigo,
   type PaletaParcial,
   type TintaDeRol
 } from '../../../../shared/paleta-de-codigo'
+import {
+  CROMO_NOCHE_CLARO,
+  CROMO_NOCHE_OSCURO,
+  paletaDeFabrica,
+  TEMA_DE_CODIGO_ANTERIOR,
+  type CromoDeCodigo,
+  type TemaDeCodigo
+} from '../../../../shared/tema-de-codigo'
 
 /**
  * El tema del editor de Dolphin.
@@ -53,9 +59,12 @@ function regla(tokens: readonly string[], tinta: TintaDeRol): editor.ITokenTheme
  * Un rol se mapea a varios tokens porque cada lenguaje los nombra distinto; Monaco resuelve por
  * prefijo, así que `string` también agarra `string.ts` y `string.sql`.
  */
-function reglasDe(paleta: PaletaDeCodigo): editor.ITokenThemeRule[] {
+function reglasDe(paleta: PaletaDeCodigo, textoPlano?: string): editor.ITokenThemeRule[] {
   return [
-    ...regla(['', 'identifier', 'variable', 'attribute.name'], paleta.base),
+    // En Noche los nombres van en azul y el texto suelto (Markdown, texto plano) queda neutro; en el
+    // de siempre son el mismo gris.
+    ...regla([''], textoPlano ? { color: textoPlano } : paleta.base),
+    ...regla(['identifier', 'variable', 'attribute.name'], paleta.base),
     ...regla(['comment', 'comment.doc'], paleta.comentario),
     ...regla(
       [
@@ -193,6 +202,35 @@ function coloresClaros(paleta: PaletaDeCodigo): editor.IColors {
   }
 }
 
+/**
+ * El cromo de Dolphin Noche: los mismos colores de interfaz que el de siempre (monocromo), con su
+ * propio lienzo y los diffs de la referencia —fondo rojo y verde muy oscuros, con la barra en el
+ * margen que pinta `tema-noche.css`—.
+ */
+function coloresNoche(
+  paleta: PaletaDeCodigo,
+  cromo: CromoDeCodigo,
+  oscuro: boolean
+): editor.IColors {
+  const base = oscuro ? coloresOscuros(paleta) : coloresClaros(paleta)
+  return {
+    ...base,
+    'editor.background': `#${cromo.fondo}`,
+    'editorGutter.background': `#${cromo.fondo}`,
+    'editor.foreground': `#${cromo.texto}`,
+    'editorLineNumber.foreground': `#${cromo.numeroDeLinea}`,
+    'diffEditor.insertedLineBackground': `#${cromo.agregadoFondo}`,
+    'diffEditor.removedLineBackground': `#${cromo.quitadoFondo}`,
+    'diffEditor.insertedTextBackground': `#${cromo.agregadoMarca}${oscuro ? '29' : '33'}`,
+    'diffEditor.removedTextBackground': `#${cromo.quitadoMarca}${oscuro ? '29' : '2b'}`,
+    'diffEditorGutter.insertedLineBackground': `#${cromo.agregadoFondo}`,
+    'diffEditorGutter.removedLineBackground': `#${cromo.quitadoFondo}`,
+    'diffEditorOverview.insertedForeground': `#${cromo.agregadoMarca}`,
+    'diffEditorOverview.removedForeground': `#${cromo.quitadoMarca}`,
+    'diffEditor.diagonalFill': '#00000000'
+  }
+}
+
 type DefinidorDeTemas = {
   defineTheme: (nombre: string, tema: editor.IStandaloneThemeData) => void
 }
@@ -206,21 +244,25 @@ type DefinidorDeTemas = {
  */
 export function definirTemasDeDolphin(
   monacoEditor: DefinidorDeTemas,
-  personal?: { oscura?: PaletaParcial; clara?: PaletaParcial }
+  personal?: { oscura?: PaletaParcial; clara?: PaletaParcial },
+  tema: TemaDeCodigo = TEMA_DE_CODIGO_ANTERIOR
 ): void {
-  const oscura = paletaConPersonal(PALETA_OSCURA, personal?.oscura)
-  const clara = paletaConPersonal(PALETA_CLARA, personal?.clara)
+  // Lo que la persona cambió se aplica sobre la paleta de fábrica del tema elegido: el mismo
+  // «quiero las cadenas más claras» vale en los dos temas.
+  const oscura = paletaConPersonal(paletaDeFabrica(tema, true), personal?.oscura)
+  const clara = paletaConPersonal(paletaDeFabrica(tema, false), personal?.clara)
+  const noche = tema === 'noche'
   monacoEditor.defineTheme(TEMA_OSCURO, {
     base: 'vs-dark',
     inherit: false,
-    rules: reglasDe(oscura),
-    colors: coloresOscuros(oscura)
+    rules: reglasDe(oscura, noche ? CROMO_NOCHE_OSCURO.texto : undefined),
+    colors: noche ? coloresNoche(oscura, CROMO_NOCHE_OSCURO, true) : coloresOscuros(oscura)
   })
   monacoEditor.defineTheme(TEMA_CLARO, {
     base: 'vs',
     inherit: false,
-    rules: reglasDe(clara),
-    colors: coloresClaros(clara)
+    rules: reglasDe(clara, noche ? CROMO_NOCHE_CLARO.texto : undefined),
+    colors: noche ? coloresNoche(clara, CROMO_NOCHE_CLARO, false) : coloresClaros(clara)
   })
 }
 

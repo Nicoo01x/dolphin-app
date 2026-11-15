@@ -1,5 +1,7 @@
 import { AppearanceInterfaceThemeSection } from '../AppearanceInterfaceThemeSection'
 import { getInterfaceThemeEntries } from '../appearance-interface-theme-search'
+import { getFondoDelChatEntries } from '../appearance-fondo-del-chat-search'
+import { FondoDelChatSection } from '../FondoDelChatSection'
 import type React from 'react'
 import { useLayoutEffect, useState } from 'react'
 import { AppWindow, PanelLeft, TerminalSquare } from 'lucide-react'
@@ -132,6 +134,7 @@ export function AppearancePane({
     { title: interfaceTitle },
     ...getThemeEntries(),
     ...getInterfaceThemeEntries(),
+    ...getFondoDelChatEntries(),
     ...getCodeEditorThemeEntries(),
     ...getZoomEntries(),
     ...getTypographyEntries(),
@@ -223,6 +226,11 @@ export function AppearancePane({
             forceVisiblePrimary={interfaceLabelMatches}
           />
           <AppearanceInterfaceThemeSection
+            settings={settings}
+            updateSettings={updateSettings}
+            forceVisiblePrimary={interfaceLabelMatches}
+          />
+          <FondoDelChatSection
             settings={settings}
             updateSettings={updateSettings}
             forceVisiblePrimary={interfaceLabelMatches}

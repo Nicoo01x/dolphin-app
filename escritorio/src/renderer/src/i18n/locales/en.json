@@ -800,7 +800,37 @@
         "contrast": "Contrast",
         "contrastHelp": "How far the surfaces step apart from each other, from flat to stark.",
         "invalid": "Enter valid hex colors to apply this theme.",
-        "reset": "Reset the colors"
+        "reset": "Reset the colors",
+        "acento": "Accent",
+        "acentoHelp": "Buttons, links and anything the app wants you to notice.",
+        "superficie": "Surface",
+        "superficieHelp": "The background everything else sits on.",
+        "tinta": "Ink",
+        "tintaHelp": "Text. It is nudged until it stays readable on the surface."
+      },
+      "fondoDelChat": {
+        "title": "Chat background",
+        "description": "A painting behind the window. The panels go translucent on top and the text stays readable.",
+        "keyword": {
+          "background": "background",
+          "wallpaper": "wallpaper",
+          "painting": "painting",
+          "landscape": "landscape",
+          "image": "image",
+          "blur": "blur",
+          "veil": "veil",
+          "transparency": "transparency"
+        },
+        "ninguno": "None",
+        "propio": "Your image",
+        "elegir": "Choose an image…",
+        "formato": "Use a WebP, PNG, JPG or AVIF image.",
+        "pesada": "That image is over 25 MB. Pick a smaller one.",
+        "ilegible": "That image could not be read. Try another one.",
+        "velo": "Veil",
+        "veloAyuda": "How much the painting darkens. The panels always add what the text needs.",
+        "desenfoque": "Blur the painting",
+        "desenfoqueAyuda": "A light blur. The texture of the canvas still shows."
       }
     },
     "browser": {
@@ -14289,6 +14319,10 @@
           "learningTitle": "Learn from my corrections",
           "learningDescription": "Saves your corrections as project-memory candidates for you to approve."
         },
+        "agent-dolphin-context-copy": {
+          "title": "Tell agents they are in Dolphin",
+          "description": "Tells Claude, Codex and Gemini they run inside Dolphin and how to hand work to another agent, so you see both chats."
+        },
         "agent-cross-review-copy": {
           "title": "Cross-review when the agent stops",
           "description": "When the agent finishes a turn with changes, another model reviews the diff. Uses your plan quota."
@@ -14313,7 +14347,10 @@
           "descripcion": "Every colour the editor paints, one by one. The chrome around the code stays monochrome on purpose: the colour lives inside the file, which is what you look at.",
           "editandoOscuro": "Editing the dark theme, which is the one in use.",
           "editandoClaro": "Editing the light theme, which is the one in use.",
-          "volver": "Back to defaults"
+          "volver": "Back to defaults",
+          "tema": "Code theme",
+          "temaNoche": "Dolphin Night",
+          "temaDolphin": "Dolphin Classic"
         },
         "TraerTemaDeVsCode": {
           "noEsJson": "That isn't valid JSON. Paste the whole contents of the theme file.",
@@ -19679,6 +19716,49 @@
           "unitHour": "h",
           "unitDay": "d",
           "now": "Right now"
+        },
+        "paisaje": {
+          "preguntaConProyecto": "What should we work on in {{value0}}?",
+          "pregunta": "What should we work on?"
+        },
+        "loQueHizo": {
+          "titulo": "What {{value0}} did",
+          "cerrar": "Close",
+          "pie": "Kept with the session, for anyone on the team to read.",
+          "abrirPr": "Open pull request #{{value0}}",
+          "ver": "See what it did",
+          "sinPasos": "Nothing to show from the last turn yet.",
+          "archivos_one": "{{count}} file",
+          "archivos_other": "{{count}} files",
+          "segundos": "{{value0}} s",
+          "minutos": "{{value0}} min {{value1}} s",
+          "accion": {
+            "leyo": "Read",
+            "busco": "Searched for",
+            "corrio": "Ran",
+            "edito": "Edited",
+            "creo": "Created",
+            "borro": "Deleted",
+            "movio": "Moved"
+          },
+          "tipo": {
+            "leyo": "Read",
+            "busco": "Searched",
+            "corrio": "Ran",
+            "edito": "Edited"
+          },
+          "resultado": {
+            "fallo": "Failed",
+            "arreglo": "Fix ready"
+          },
+          "detalle": {
+            "fallaron_one": "{{count}} failed",
+            "fallaron_other": "{{count}} failed",
+            "pasaron_one": "{{count}} passed",
+            "pasaron_other": "{{count}} passed",
+            "codigo": "exited with {{value0}}",
+            "fallo": "failed"
+          }
         }
       },
       "linear-issue-attribute-filter-dropdowns": {
@@ -25158,7 +25238,9 @@
       "importGhosttyConfig": "Import Ghostty Config",
       "importKittyConfig": "Import Kitty Config",
       "pickAppIcon": "Choose app icon",
-      "appIconImage": "App icon image"
+      "appIconImage": "App icon image",
+      "pickChatBackground": "Pick the chat background",
+      "chatBackgroundImage": "Image"
     }
   },
   "taskProviders": {

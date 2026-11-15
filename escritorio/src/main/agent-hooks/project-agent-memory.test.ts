@@ -14,7 +14,12 @@ import {
   type ProjectMemoryRecord
 } from './project-agent-memory-storage'
 
-const settings = { projectMemoryEnabled: true, learnFromCorrections: true }
+// El aviso de Dolphin tiene su propio test (project-agent-memory-dolphin-context.test.ts).
+const settings = {
+  projectMemoryEnabled: true,
+  learnFromCorrections: true,
+  dolphinContextEnabled: false
+}
 
 type MemoryFixture = { recuerdos: readonly unknown[] }
 type TrainingFixture = { aprendido?: readonly unknown[] }

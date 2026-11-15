@@ -53,6 +53,16 @@ function verifyPackagedDaemonEntryBoots(resourcesDir, options = {}) {
 }
 
 const TERMINAL_HOST_BOOT_TIMEOUT_MS = 20_000
+// Un slice de otra arquitectura corre traducido (x64 bajo Rosetta en un runner arm64) y la
+// primera ejecución traduce en frío el Node entero del helper: en macos-15 el x64 tardó 18,5 s
+// cuando pasó y más de 20 s las tres veces que falló, contra 0,7 s del arm64 nativo. Sólo se
+// estira el plazo; lo que se comprueba (token, hello y el "OK 42" del PTY) es lo mismo.
+const TRANSLATED_TERMINAL_HOST_BOOT_TIMEOUT_MS = 120_000
+
+/** El plazo del arranque: el de siempre si es nativo, con margen para traducir si es emulado. */
+function terminalHostBootTimeoutMs(prefix) {
+  return prefix.length > 0 ? TRANSLATED_TERMINAL_HOST_BOOT_TIMEOUT_MS : TERMINAL_HOST_BOOT_TIMEOUT_MS
+}
 // Arithmetic so the shell echoing the typed command cannot satisfy the check.
 const TERMINAL_HOST_BOOT_COMMAND = 'echo "OK $((6*7))" && exit'
 const TERMINAL_HOST_BOOT_OUTPUT = 'OK 42'
@@ -265,6 +275,9 @@ async function verifyPackagedMacTerminalHostBoots(appPath, { arch, required }) {
     return
   }
   const stderr = []
+  const timeoutMs = terminalHostBootTimeoutMs(prefix)
+  const how = prefix.length > 0 ? `translated on ${process.arch}` : 'native'
+  let startedAt = Date.now()
   // Boot clone outside build tree so ancestor node_modules cannot satisfy missing packaged dependency.
   const isolated = mkdtempSync(join(tmpdir(), 'dolphin-terminal-host-boot-'))
   const clone = join(isolated, 'Dolphin Terminal Host.app')
@@ -273,26 +286,32 @@ async function verifyPackagedMacTerminalHostBoots(appPath, { arch, required }) {
     if (cloned.status !== 0) {
       throw new Error(`could not clone the helper: ${cloned.stderr.trim()}`)
     }
+    startedAt = Date.now()
     await runTerminalHostRoundTrip({
       command: [...prefix, join(clone, relative(paths.bundle, paths.executable))],
       entry: join(clone, relative(paths.bundle, paths.entry)),
-      deadline: Date.now() + TERMINAL_HOST_BOOT_TIMEOUT_MS,
+      deadline: startedAt + timeoutMs,
       stderr
     })
   } catch (error) {
     throw new Error(
-      `[verify-packaged-daemon-entry] the ${arch} terminal host did not serve a PTY: ${error.message}\n${stderr.join('').slice(-2000)}`
+      `[verify-packaged-daemon-entry] the ${arch} terminal host did not serve a PTY ` +
+        `(${how}, ${Date.now() - startedAt} ms of ${timeoutMs}): ${error.message}\n${stderr.join('').slice(-2000)}`
     )
   } finally {
     rmSync(isolated, { recursive: true, force: true })
   }
-  console.log(`[verify-packaged-daemon-entry] OK — ${arch} terminal host served a PTY`)
+  console.log(
+    `[verify-packaged-daemon-entry] OK — ${arch} terminal host served a PTY ` +
+      `(${how}, ${Date.now() - startedAt} ms of ${timeoutMs})`
+  )
 }
 
 module.exports = {
   assertPackagedDaemonEntryExists,
   macCommandPrefixForArch,
   runTerminalHostRoundTrip,
+  terminalHostBootTimeoutMs,
   verifyPackagedDaemonEntryBoots,
   verifyPackagedMacTerminalHostBoots
 }

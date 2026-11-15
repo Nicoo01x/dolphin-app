@@ -5,18 +5,22 @@ import { planDe64 } from "../src/nucleo/caja-filtrada.js";
 
 describe("silencio del agente", () => {
   it("mata un proceso que no escribe y conserva la salida parcial", async () => {
+    // El reloj del silencio arranca con el spawn, así que el arranque de node cuenta como
+    // silencio. Con 30 ms, un runner de Linux cargado mataba al hijo antes de que llegara a
+    // escribir «inicio» (salía «»): el silencio tiene que ser holgadamente más largo que un
+    // arranque de node con la suite entera en paralelo, y el hijo, quedarse callado más todavía.
     try {
       await correrConPrompt(
         process.execPath,
-        ["-e", "process.stdout.write('inicio'); setTimeout(() => {}, 1000)"],
+        ["-e", "process.stdout.write('inicio'); setTimeout(() => {}, 60_000)"],
         "",
         process.cwd(),
-        5000,
+        60_000,
         undefined,
         false,
         undefined,
         undefined,
-        30,
+        3000,
       );
       throw new Error("la corrida tenía que quedar en silencio");
     } catch (error) {

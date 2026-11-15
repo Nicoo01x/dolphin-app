@@ -3,16 +3,17 @@ name: orchestration
 description: >-
   Run work in separate Dolphin worker agents and get their results back. Use when
   the user asks for Dolphin workers or supervision (monitor, task DAGs, ask/reply,
-  decision gates), or when the work needs something your own subagents cannot
-  give: a different agent (such as Codex from Claude) or its own Dolphin workspace.
-  "Have Codex (or Claude) review this and report back" means a Dolphin worker of
-  that agent, even when you have your own model subagents.
-  Also use when you are a dispatched worker (a prompt with Task and Dispatch
-  IDs: ask, worker_done). Otherwise prefer your own subagents,
-  including for long or parallel work. Use `dolphin-cli` to hand work off with
-  nothing expected back ("hand off", "handover", "give this to another agent",
-  "another worktree"), and for terminal control, shell commands, worktree
-  management, and reading or waiting on terminals.
+  decision gates), or when the work needs a different agent (such as Codex from
+  Claude) or its own Dolphin workspace. "Have Codex (or Claude) review this and
+  report back" means a Dolphin worker of that agent, even when you have your own
+  subagents; so do "delegá", "pasale a", "que lo haga Codex/ChatGPT/Gemini" and
+  "abrí otro agente". ChatGPT, GPT and OpenAI mean the codex agent; never use
+  codex:rescue or a plugin that runs it outside Dolphin. Also use when you are a
+  dispatched worker (a prompt with Task and Dispatch IDs: ask, worker_done).
+  Otherwise prefer your own subagents, including for long or parallel work. Use
+  `dolphin-cli` to hand work off with nothing expected back ("hand off", "give
+  this to another agent", "another worktree"), and for terminals, shell commands
+  and worktree management.
 ---
 
 # Dolphin orchestration
@@ -54,6 +55,23 @@ DOLPHIN orchestration worker-start --spec "<task>" --worktree current --agent co
   Except on a paired server: a finished worker there refuses `send`, so start
   new work there with `worker-start --on <server>` (load
   `references/placement-and-remote.md` first).
+
+## Delegar a otro motor y que la persona lo vea
+
+«Delegá a Codex/ChatGPT/GPT/OpenAI», «pasale esto a Gemini», «que lo haga Claude» o «abrí otro
+agente»: dentro de Dolphin es siempre un agente de Dolphin. ChatGPT, GPT y OpenAI son `--agent codex`.
+
+**La regla:** dentro de Dolphin, delegar a Codex/ChatGPT/GPT/OpenAI es
+`DOLPHIN agent launch --agent codex --surface chat …` + `DOLPHIN chat wait/read`, o un worker de
+esta guía, y **no** el plugin `codex:rescue` ni ningún comando que corra Codex fuera de Dolphin.
+
+- Una tarea y su respuesta, con el chat a la vista:
+  `DOLPHIN agent delegate --agent codex --prompt "<tarea>" --wait --json` (los pasos sueltos
+  están en la guía `dolphin-cli`, «Delegar a otro motor»).
+- Que Dolphin te despierte con el resultado, o varias tareas:
+  `DOLPHIN orchestration worker-start --spec "<tarea>" --worktree current --agent codex --keep-open`,
+  y terminá el turno. `--keep-open` deja el chat de Codex abierto para que la persona lo use.
+- Si el otro agente pide una aprobación, es de la persona: decíselo, no la esperes.
 
 Never:
 

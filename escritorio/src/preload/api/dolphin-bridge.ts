@@ -1,3 +1,4 @@
+import type { FondoPropioElegido } from '../../shared/fondo-del-chat-ipc'
 import { ipcRenderer } from 'electron'
 import type {
   DolphinConsoleResult,
@@ -93,6 +94,9 @@ export const dolphinApi = {
   moverTarjeta: (pedido: PedidoDeMoverTarjeta): Promise<TarjetaMovida> =>
     ipcRenderer.invoke('dolphin:tablero:mover', pedido),
   carpetaPersonal: (): Promise<string | null> => ipcRenderer.invoke('dolphin:carpeta-personal'),
+  elegirFondoDelChat: (): Promise<FondoPropioElegido> => ipcRenderer.invoke('dolphin:fondo:elegir'),
+  leerFondoDelChat: (nombre: string): Promise<ArrayBuffer | null> =>
+    ipcRenderer.invoke('dolphin:fondo:leer', { nombre }),
   alternarXray: (): Promise<void> => ipcRenderer.invoke('dolphin:xray:alternar'),
   onXrayEnviar: (callback: (pedido: { id: string; prompt: string }) => void): (() => void) => {
     const listener = (

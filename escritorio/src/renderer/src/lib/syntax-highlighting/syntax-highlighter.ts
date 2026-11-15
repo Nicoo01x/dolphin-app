@@ -8,6 +8,11 @@ import {
   type TextMateCore
 } from './textmate-core'
 import { withVueTemplateInjections } from './vue-template-injections'
+import {
+  TEMA_NOCHE_CLARO_SHIKI,
+  TEMA_NOCHE_OSCURO_SHIKI,
+  TEMAS_NOCHE_SHIKI
+} from './tema-noche-shiki'
 
 export type SyntaxToken = {
   content: string
@@ -47,7 +52,23 @@ export type SyntaxHighlighter = (
 /** `unsupported`: no grammar for the language. `failed`: the grammar could not load. */
 export type SyntaxLanguageStatus = 'ready' | 'unsupported' | 'failed'
 
-const THEMES = { light: 'light-plus', dark: 'dark-plus' } as const
+const VS_CODE_THEMES = { light: 'light-plus', dark: 'dark-plus' } as const
+// Dolphin: el tema de código «Noche» también pinta el chat (shared/tema-de-codigo.ts).
+const NOCHE_THEMES = { light: TEMA_NOCHE_CLARO_SHIKI, dark: TEMA_NOCHE_OSCURO_SHIKI } as const
+let THEMES: { readonly light: string; readonly dark: string } = VS_CODE_THEMES
+
+/**
+ * Dolphin: qué par de temas colorea de acá en adelante. Lo que ya se pintó se queda como estaba
+ * hasta que se vuelve a pintar: la clave de la caché del hook lleva el tema (`syntaxThemeKey`).
+ */
+export function fijarTemaDeResaltado(tema: 'noche' | 'dolphin'): void {
+  THEMES = tema === 'noche' ? NOCHE_THEMES : VS_CODE_THEMES
+}
+
+/** Dolphin: el tema vigente, para que una caché de tokens no mezcle colores de dos temas. */
+export function syntaxThemeKey(): string {
+  return THEMES.dark
+}
 const MAX_LOAD_ATTEMPTS = 3
 const LOAD_RETRY_DELAY_MS = 2000
 // Arbitrary fence labels must not grow the table without limit.
@@ -81,7 +102,8 @@ let loadFailureLogged = false
 function loadHighlighter(): Promise<TextMateCore> {
   highlighterPromise ??= createTextMateCore([
     import('shiki/themes/light-plus.mjs'),
-    import('shiki/themes/dark-plus.mjs')
+    import('shiki/themes/dark-plus.mjs'),
+    ...TEMAS_NOCHE_SHIKI
   ]).catch((error: unknown) => {
     highlighterPromise = undefined
     throw error

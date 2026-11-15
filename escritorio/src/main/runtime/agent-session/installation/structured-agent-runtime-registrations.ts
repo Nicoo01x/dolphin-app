@@ -21,6 +21,7 @@ import { createOpenCodeAcpConnection } from '../../../opencode/opencode-acp-conn
 import { acpStructuredLaunchPart } from '../../../acp/launch/acp-structured-launch-resolution'
 import { AcpStructuredSessionAdapter } from '../../../acp/session/acp-structured-session-adapter'
 import { PI_RPC_RUNTIME_REGISTRATION } from '../../../pi/rpc-runtime-registration'
+import { DOLPHIN_AGENT_CONTEXT } from '../../../../shared/dolphin-agent-context'
 import {
   claudeLaunchEnvOverlay,
   claudeListingDeps
@@ -39,6 +40,11 @@ import type {
   StructuredAgentRuntimeAdapter,
   StructuredAgentRuntimeRegistration
 } from './structured-agent-runtime-registration-types'
+
+/** The Dolphin notice for a chat that starts now, or null when the host has it off or unwired. */
+function structuredDolphinContext(deps: StructuredAgentAdapterContext['deps']): string | null {
+  return deps.dolphinAgentContext?.isEnabled() === true ? DOLPHIN_AGENT_CONTEXT : null
+}
 
 function createCodexAdapter(context: StructuredAgentAdapterContext): StructuredAgentRuntimeAdapter {
   const { deps, followUps, host } = context
@@ -68,7 +74,8 @@ function createCodexAdapter(context: StructuredAgentAdapterContext): StructuredA
           ...(deps.prepareLaunchAccountHome
             ? { prepareLaunchAccountHome: deps.prepareLaunchAccountHome }
             : {}),
-          ...(deps.resolveCodexCommand ? { resolveCommand: deps.resolveCodexCommand } : {})
+          ...(deps.resolveCodexCommand ? { resolveCommand: deps.resolveCodexCommand } : {}),
+          resolveDolphinContext: () => structuredDolphinContext(deps)
         })
       ),
       deps.readCodexInstallation
@@ -124,7 +131,8 @@ function createClaudeAdapter(
         ...(deps.resolveClaudeCommand ? { resolveCommand: deps.resolveClaudeCommand } : {}),
         resolveAuthPolicy: deps.resolveClaudeAuthPolicy,
         attachmentDirectory: agentSessionAttachmentStoreRoot(deps.stateDirectory),
-        ...(deps.claudeCliFlags ? { cliFlags: deps.claudeCliFlags } : {})
+        ...(deps.claudeCliFlags ? { cliFlags: deps.claudeCliFlags } : {}),
+        resolveDolphinContext: () => structuredDolphinContext(deps)
       })
     ),
     ...(deps.resolveClaudeCommand ? { resolveClaudeCommand: deps.resolveClaudeCommand } : {}),

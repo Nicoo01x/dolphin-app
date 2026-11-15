@@ -3,6 +3,8 @@
 This discovery stub loads the version-matched guide from the Dolphin executable used for this session.
 
 Never substitute a non-Dolphin subagent tool when the user asked for Dolphin orchestration.
+Dentro de Dolphin, «delegá a Codex/ChatGPT/GPT/OpenAI» es un agente de Dolphin
+(`agent delegate`, `agent launch --surface chat` o `worker-start`), nunca el plugin `codex:rescue`.
 
 <!-- shared: resolver -->
 

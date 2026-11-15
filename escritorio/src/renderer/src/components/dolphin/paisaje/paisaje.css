@@ -1,0 +1,155 @@
+/*
+ * La ventana translúcida sobre el óleo (FondoDePaisaje.tsx).
+ *
+ * Todo cuelga de `:root[data-dolphin-paisaje]`: sin fondo elegido («Ninguno») la marca no está y
+ * la app se ve como antes, sin una regla de acá aplicada.
+ *
+ * Los números de los velos no son a ojo: `--paisaje-panel` lo calcula `veloDePanel` para que el
+ * texto atenuado de un panel llegue a 4,5:1 en el punto más claro del cuadro más claro
+ * (`shared/fondo-del-chat.ts`). El deslizador cambia cuánto cuadro se ve, nunca la legibilidad.
+ */
+
+/* ── La capa del cuadro ────────────────────────────────────────────────────────────────────── */
+.dolphin-paisaje {
+  position: fixed;
+  inset: 0;
+  /* Debajo de todo el contenido y arriba del fondo del body, como el video de los temas. */
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  contain: strict;
+}
+
+.dolphin-paisaje-imagen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* El tercio de arriba de un paisaje es el cielo: se corre un poco para que se vea la tierra. */
+  object-position: center 40%;
+  user-select: none;
+}
+
+/* Leve: la trama de la tela se tiene que seguir notando. Se agranda un 4 % para que el borde
+   desenfocado no deje un halo claro en el canto de la ventana. */
+.dolphin-paisaje[data-desenfoque] .dolphin-paisaje-imagen {
+  filter: blur(6px);
+  transform: scale(1.04);
+}
+
+/* El velo: uniforme (el del deslizador) y además se cierra hacia abajo y hacia los costados, como
+   en la referencia. Los degradés sólo oscurecen: no le quitan contraste a nada. */
+.dolphin-paisaje-velo {
+  position: absolute;
+  inset: 0;
+  --paisaje-tinta-velo: 10 10 10;
+  background-image:
+    radial-gradient(
+      130% 95% at 50% 28%,
+      transparent 45%,
+      rgb(var(--paisaje-tinta-velo) / 0.38) 100%
+    ),
+    linear-gradient(to bottom, transparent 45%, rgb(var(--paisaje-tinta-velo) / 0.32) 100%);
+  background-color: rgb(var(--paisaje-tinta-velo) / var(--paisaje-velo, 0.62));
+}
+
+/* ── Las tintas de los paneles, por tema ─────────────────────────────────────────────────────
+   En oscuro el panel es casi negro; en claro es papel y pide un poco más de velo (0,9) porque el
+   texto oscuro sobre una pintura oscura necesita más papel que el texto claro sobre una clara. */
+:root[data-dolphin-paisaje] {
+  --paisaje-tinta-panel: 14 14 14;
+  --paisaje-tinta-compositor: 30 30 30;
+  --paisaje-alfa-panel: var(--paisaje-panel, 0.4);
+  /* Sobre la pintura, lo atenuado sube un escalón: la tinta al 74 % en vez del 60 %. Con el 60 %
+     el panel tendría que tapar el 84 % del cuadro para llegar a AA (`fondo-del-chat.ts`). */
+  --paisaje-atenuado: var(--dolphin-tinta-74);
+}
+
+:root[data-dolphin-paisaje]:not(.dark) {
+  --paisaje-tinta-panel: 247 247 247;
+  --paisaje-tinta-compositor: 255 255 255;
+  --paisaje-alfa-panel: var(--paisaje-panel-claro, 0.4);
+  --paisaje-atenuado: #4a4a4a;
+}
+
+:root[data-dolphin-paisaje]:not(.dark) .dolphin-paisaje-velo {
+  --paisaje-tinta-velo: 252 252 252;
+}
+
+/* «Reducir transparencia» del sistema o «reducir efectos» de la app: los paneles quedan opacos y
+   la pintura sólo se ve donde no hay panel. */
+@media (prefers-reduced-transparency: reduce) {
+  :root[data-dolphin-paisaje] {
+    --paisaje-alfa-panel: 1;
+  }
+}
+
+:root[data-dolphin-paisaje][data-reduce-effects] {
+  --paisaje-alfa-panel: 1;
+}
+
+/* ── Los paneles ───────────────────────────────────────────────────────────────────────────────
+   La barra lateral y el panel derecho llevan `data-dolphin-panel`. Adentro, su token de fondo
+   pasa a transparente: así las filas que la base pinta con `bg-sidebar` no apilan velo sobre velo
+   (se verían manchas), y el velo lo pone una sola vez el contenedor. */
+:root[data-dolphin-paisaje] [data-dolphin-panel] {
+  --worktree-sidebar: transparent;
+  --sidebar: transparent;
+  --muted-foreground: var(--paisaje-atenuado);
+  background-color: rgb(var(--paisaje-tinta-panel) / var(--paisaje-alfa-panel)) !important;
+}
+
+/* La franja de arriba de la barra lateral es barra de pestañas: queda opaca. */
+:root[data-dolphin-paisaje] .titlebar-left {
+  background: var(--dolphin-panel);
+}
+
+/* ── El chat ───────────────────────────────────────────────────────────────────────────────────
+   Con conversación, el chat es un panel más: el cuadro se oscurece detrás de los mensajes. */
+:root[data-dolphin-paisaje] [data-native-chat-root] {
+  --chat-pane: transparent;
+  /* Lo atenuado del chat es una mezcla del gris atenuado con el lienzo: sin mezcla, y un escalón
+     más claro, llega a AA con el mismo velo que un panel. */
+  --muted-foreground: var(--paisaje-atenuado);
+  --chat-faint-mix: 100%;
+  --chat-composer-surface: rgb(var(--paisaje-tinta-compositor) / var(--paisaje-alfa-panel));
+  background-color: rgb(var(--paisaje-tinta-panel) / var(--paisaje-alfa-panel));
+}
+
+/* La tapa que esconde la terminal debajo del chat, y la terminal misma: la terminal tiene su propio
+   fondo opaco y taparía el cuadro. Es lo mismo que hace la base con un fondo de tema
+   (native-chat-appearance.css), para la marca de Dolphin. */
+:root[data-dolphin-paisaje] [data-terminal-chat-pane]:not(.has-multiple-panes) {
+  background: transparent !important;
+}
+
+:root[data-dolphin-paisaje] [data-terminal-chat-pane] .native-chat-pane-shell {
+  background-color: transparent;
+}
+
+:root[data-dolphin-paisaje]
+  [data-terminal-chat-pane]
+  .pane:has(> .native-chat-pane-shell)
+  > :is(.xterm-container, .session-restored-banner, .pane-top-banner) {
+  opacity: 0;
+}
+
+/* ── El chat vacío ─────────────────────────────────────────────────────────────────────────────
+   Como la referencia: la pregunta y el compositor ancho en el medio de la pantalla, directo sobre
+   la pintura, sin panel. Lo que va sobre el cuadro (la pregunta, la carpeta y la rama) lleva la
+   tinta plena, que llega a AA con el velo mínimo del deslizador (0,6); el compositor tiene su
+   propia superficie. */
+:root[data-dolphin-paisaje] [data-native-chat-root]:has([data-dolphin-chat-vacio]) {
+  --chat-content-max-width: 60rem;
+  --chat-foreground-faint: var(--foreground);
+  background-color: transparent;
+}
+
+/* El compositor sube al medio: un espaciador abajo empuja la conversación (vacía) y el compositor
+   hacia arriba. Pseudo-elemento y no un nodo, para no tocar el árbol de la base. */
+:root[data-dolphin-paisaje] [data-native-chat-root]:has([data-dolphin-chat-vacio])::after {
+  content: '';
+  flex: 0.72 1 0;
+  min-height: 0;
+}

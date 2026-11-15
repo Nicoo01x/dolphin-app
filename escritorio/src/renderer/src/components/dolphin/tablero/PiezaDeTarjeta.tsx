@@ -5,6 +5,10 @@ import type { WorktreeStatus } from '../../../../../shared/worktree-status-rollu
 import { sePuedeEmpezar, type TarjetaDelTablero } from '../../../../../shared/dolphin-tablero-types'
 import { FASES_DE_EJEMPLO } from './ciclo-de-ejemplo'
 import { TiraDelPorton } from './TiraDelPorton'
+import { BotonLoQueHizoDelTablero } from '../lo-que-hizo/BotonLoQueHizoDelTablero'
+
+/** Donde el agente ya terminó su parte: ahí tiene sentido mirar qué hizo. */
+const TERMINADAS: ReadonlySet<string> = new Set(['para-revisar', 'hecho'])
 
 /** En qué anda el espacio de trabajo que tiene la tarjeta: el punto y su nombre. */
 export type EstadoDeTarjeta = { estado: WorktreeStatus; etiqueta: string }
@@ -77,6 +81,7 @@ function Contenido({
 export function PiezaDeTarjeta({
   tarjeta,
   estado,
+  espacio,
   onElegir,
   movimiento,
   arrastrando = false,
@@ -85,6 +90,8 @@ export function PiezaDeTarjeta({
 }: {
   tarjeta: TarjetaDelTablero
   estado?: EstadoDeTarjeta
+  /** El espacio de trabajo de su rama: en Para revisar y Hecho, abre «Lo que hizo» su agente. */
+  espacio?: string
   /** Sin esto —o en una columna que ya empezó— la tarjeta no carga el prompt. */
   onElegir?: (tarjeta: TarjetaDelTablero) => void
   movimiento?: Movimiento
@@ -161,6 +168,9 @@ export function PiezaDeTarjeta({
       ) : (
         <div className={TARJETA}>{contenido}</div>
       )}
+      {espacio && !ejemplo && TERMINADAS.has(tarjeta.columna) ? (
+        <BotonLoQueHizoDelTablero worktreeId={espacio} />
+      ) : null}
     </li>
   )
 }

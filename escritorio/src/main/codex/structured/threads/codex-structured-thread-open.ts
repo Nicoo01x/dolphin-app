@@ -67,6 +67,8 @@ export async function openCodexThread(
     model?: string
     threadConfig?: Record<string, unknown>
     commandEnv?: Record<string, string>
+    /** Sent on start and on resume, so a resumed chat also learns it runs inside Dolphin. */
+    developerInstructions?: string
   },
   /** null: no deadline; the start that opens the thread bounds it (`signal`). */
   timeoutMs: number | null | undefined,
@@ -77,7 +79,8 @@ export async function openCodexThread(
   const threadSettings = {
     cwd: launch.cwd,
     ...launch.permissionPolicy,
-    ...(Object.keys(config).length > 0 ? { config } : {})
+    ...(Object.keys(config).length > 0 ? { config } : {}),
+    ...(launch.developerInstructions ? { developerInstructions: launch.developerInstructions } : {})
   }
   const startThread = (): Promise<unknown> => {
     throwIfSignalAborted(signal)

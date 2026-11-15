@@ -1,6 +1,7 @@
 import { app } from 'electron'
 import { parseWorkspaceKey } from '../../shared/workspace-scope'
 import { isLocalExecutionHost } from '../../shared/execution-host'
+import { dolphinAgentContextEnabled } from '../../shared/dolphin-agent-context'
 import { classifyError } from '../telemetry/classify-error'
 import { track } from '../telemetry/client'
 import { getPtyIdForPaneKey } from '../ipc/pty/pane/key-state'
@@ -135,7 +136,8 @@ export function startTerminalRuntimeStartupServices(): WindowsDesktopStartupServ
       const settings = state.store?.getSettings()
       return {
         projectMemoryEnabled: settings?.agentProjectMemoryEnabled !== false,
-        learnFromCorrections: settings?.agentProjectMemoryLearningEnabled !== false
+        learnFromCorrections: settings?.agentProjectMemoryLearningEnabled !== false,
+        dolphinContextEnabled: dolphinAgentContextEnabled(settings)
       }
     },
     resolveRepoPath: (worktreeId) => projectMemoryRepoPath(state.store, worktreeId)

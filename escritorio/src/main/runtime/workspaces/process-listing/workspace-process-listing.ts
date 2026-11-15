@@ -1,4 +1,5 @@
 import { getRepoHostIdentityForParts } from '../../../../shared/repo-host-identity'
+import { dolphinAgentContextHostDeps } from '../../../../shared/dolphin-agent-context'
 import { createRepoRowExecutionHostLookup } from '../../../../shared/execution-host/worktree-execution-host-resolution'
 import { resolveWorktreeHostRouting } from '../catalog/worktree-launch-host-repo'
 import { resolveHostStructuredAgentLaunchEnvironment } from '../../agent-session/launch/structured-agent-launch-support'
@@ -271,6 +272,7 @@ export abstract class DolphinRuntimeWithGetWorktreePs extends RuntimeChatWorkerE
       nativeChatVisuals: {
         isEnabled: () => this.requireStore().getSettings().nativeChatInlineVisuals !== false
       },
+      dolphinAgentContext: dolphinAgentContextHostDeps(() => this.requireStore().getSettings()),
       resolveAgentFullAccess: (agent) =>
         isTuiAgent(agent) &&
         preModeChatGetsFullAccess(agent, this.requireStore().getSettings(), process.platform),

@@ -199,6 +199,7 @@ function RightSidebarInner(): React.JSX.Element {
       )}
     >
       <div
+        data-dolphin-panel="derecho"
         className="flex flex-col flex-1 min-w-0 bg-sidebar overflow-hidden"
         style={{
           borderLeft: rightSidebarOpen ? '1px solid var(--sidebar-border)' : 'none'

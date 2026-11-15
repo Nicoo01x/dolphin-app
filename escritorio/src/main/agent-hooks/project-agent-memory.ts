@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { DOLPHIN_AGENT_CONTEXT } from '../../shared/dolphin-agent-context'
 import {
   addProjectMemoryCandidate,
   normalizeForStorage,
@@ -12,6 +13,8 @@ import {
 export type ProjectAgentMemorySettings = {
   projectMemoryEnabled?: boolean
   learnFromCorrections?: boolean
+  /** The "you are running inside Dolphin" notice at SessionStart; on unless turned off. */
+  dolphinContextEnabled?: boolean
 }
 
 export type ProjectAgentMemoryOptions = {
@@ -211,6 +214,10 @@ function hookResponse(eventName: string, context: string): string {
   })
 }
 
+/**
+ * Lo que el hook le suma al contexto del agente en terminal: el aviso de Dolphin al arrancar la
+ * sesión, haya memoria o no, y la memoria del proyecto cuando la hay.
+ */
 export async function buildProjectMemoryHookResponse(
   source: 'claude' | 'gemini',
   body: unknown,
@@ -227,6 +234,31 @@ export async function buildProjectMemoryHookResponse(
     return ''
   }
   const settings = options.getSettings()
+  // Sin deduplicar: SessionStart también llega después de compactar, cuando el aviso se perdió.
+  const dolphinContext =
+    eventName === 'SessionStart' && settings?.dolphinContextEnabled !== false
+      ? DOLPHIN_AGENT_CONTEXT
+      : ''
+  const memory = await projectMemoryContext(
+    source,
+    eventName,
+    record,
+    options,
+    settings,
+    sentBySession
+  )
+  const context = [dolphinContext, memory].filter((block) => block.length > 0).join('\n\n')
+  return context ? hookResponse(eventName, context) : ''
+}
+
+async function projectMemoryContext(
+  source: 'claude' | 'gemini',
+  eventName: string,
+  record: Record<string, unknown>,
+  options: ProjectAgentMemoryOptions,
+  settings: ProjectAgentMemorySettings | null | undefined,
+  sentBySession: Set<string>
+): Promise<string> {
   const memoryEnabled = settings?.projectMemoryEnabled !== false
   const learningEnabled = settings?.learnFromCorrections !== false
   if (!memoryEnabled && eventName === 'SessionStart') {
@@ -292,8 +324,7 @@ export async function buildProjectMemoryHookResponse(
     return ''
   }
   await recordProjectMemoryUsage(repoPath, usedIds)
-  return hookResponse(
-    eventName,
-    eventName === 'SessionStart' ? context : `Memoria relevante del proyecto (Dolphin):\n${context}`
-  )
+  return eventName === 'SessionStart'
+    ? context
+    : `Memoria relevante del proyecto (Dolphin):\n${context}`
 }

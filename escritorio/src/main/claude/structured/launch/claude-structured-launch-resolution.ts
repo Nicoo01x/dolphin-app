@@ -154,6 +154,9 @@ export type ClaudeStructuredLaunchPartDeps = {
   attachmentDirectory?: string
   /** Omit version-gated flags when support cannot be checked. */
   cliFlags?: Pick<ClaudeCliFlagSupport, 'check'>
+  /** The "you are running inside Dolphin" notice, appended to Claude Code's own system prompt;
+   *  null or absent when the user turned it off. Read per launch, so the setting applies to the next chat. */
+  resolveDolphinContext?: () => string | null
   /** Whether Claude wrote a transcript for this id; defaults to the transcript resolver. */
   hasTranscript?: (input: {
     providerSessionId: string
@@ -301,6 +304,7 @@ export function claudeStructuredLaunchPart(
         accountRecipe,
         options: {
           ...CLAUDE_STRUCTURED_BASE_OPTIONS,
+          ...claudeDolphinContextSystemPrompt(deps.resolveDolphinContext?.() ?? null),
           ...permission,
           ...(additionalDirectories.length ? { additionalDirectories } : {}),
           ...(visuals?.pluginDir ? { plugins: [{ type: 'local', path: visuals.pluginDir }] } : {}),
@@ -332,6 +336,13 @@ export function claudeStructuredLaunchPart(
       cliRuntimeCommand: command
     }
   }
+}
+
+/** Append, never replace: the chat keeps Claude Code's own prompt and only learns it is in Dolphin. */
+export function claudeDolphinContextSystemPrompt(
+  context: string | null
+): Pick<ClaudeStructuredSdkOptions, 'systemPrompt'> {
+  return context ? { systemPrompt: { type: 'preset', preset: 'claude_code', append: context } } : {}
 }
 
 /** Until Claude writes the rewind's session, each launch forks it from the kept conversation. */

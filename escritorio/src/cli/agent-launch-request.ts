@@ -58,9 +58,23 @@ function readSurfaceFlag(flags: Flags): AgentLaunchSurface | undefined {
   return known
 }
 
-export function parseCliAgent(value: string): TuiAgent {
+/**
+ * Los nombres con que la gente llama a un motor y no son su id. «Delegá a ChatGPT» tiene que
+ * llegar a Codex sin que el agente adivine: sin esto, `--agent chatgpt` daba «Unknown TUI agent».
+ */
+export const CLI_AGENT_ALIASES: Readonly<Record<string, TuiAgent>> = {
+  chatgpt: 'codex',
+  gpt: 'codex',
+  openai: 'codex'
+}
+
+export function parseCliAgent(rawValue: string): TuiAgent {
+  // Un id real gana siempre: el alias sólo cubre lo que no es un motor.
+  const value = isTuiAgent(rawValue)
+    ? rawValue
+    : (CLI_AGENT_ALIASES[rawValue.trim().toLowerCase()] ?? rawValue)
   if (!isTuiAgent(value)) {
-    throw new RuntimeClientError('invalid_argument', `Unknown TUI agent "${value}"`)
+    throw new RuntimeClientError('invalid_argument', `Unknown TUI agent "${rawValue}"`)
   }
   return value
 }
