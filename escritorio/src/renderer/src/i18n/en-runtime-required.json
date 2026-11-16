@@ -2249,6 +2249,11 @@
       "suspendExitedWithoutCode": "Suspend exited with code unknown."
     }
   },
+  "featureTips": {
+    "chatUiHere": {
+      "dismiss": "Dismiss"
+    }
+  },
   "jira": {
     "workspace": {
       "linkedCount_one": "{{count}} workspace linked to {{key}}",

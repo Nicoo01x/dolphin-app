@@ -4,64 +4,57 @@ import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store/index'
 import type { AppState } from '@/store/types'
 import { isPairedWebClientWindow } from '@/app-shell/chrome/desktop-window-chrome'
-import { TRAILING_ACTIONS_CLASS_NAMES } from '@/components/ui/sonner'
+import { encolarAviso } from '@/components/dolphin/avisos/avisos-store'
+import { avisoDelTemaDeClaude } from '@/components/dolphin/avisos/aviso-tema-de-claude'
 import { whenAgentTerminalAppears } from '../agent-presence/agent-terminal-presence'
-
-const OFFER_TOAST_ID = 'claude-theme-sync-offer'
 
 function isOfferDue(state: AppState): boolean {
   return state.settings?.claudeCodeThemeSyncOffer === 'pending'
 }
 
-function showClaudeThemeSyncOffer(): void {
-  const { updateSettings, updateSettingsOrThrow } = useAppStore.getState()
-  // Why settle before showing: shown means answered, so a dismiss, quit or reload never asks again.
-  void updateSettings({ claudeCodeThemeSyncOffer: 'settled' })
-  toast(translate('terminal.claudeThemeSyncOffer.title', 'Match Claude Code to your Dolphin theme?'), {
-    // Why a stable id: a late settings sync can't stack a second offer.
-    id: OFFER_TOAST_ID,
-    description: translate(
-      'terminal.claudeThemeSyncOffer.description',
-      'Claude Code on this computer would use your terminal colors and follow theme changes, including outside Dolphin. You can change this in Settings.'
-    ),
-    duration: Infinity,
-    classNames: TRAILING_ACTIONS_CLASS_NAMES,
-    action: {
-      label: translate('terminal.claudeThemeSyncOffer.accept', 'Match theme'),
-      onClick: () => {
-        // Why confirm only after the write: a failed save must not claim the sync is on.
-        updateSettingsOrThrow({ claudeCodeThemeSync: true }).then(
-          () =>
-            toast.success(
-              translate('terminal.claudeThemeSyncOffer.accepted', 'Claude Code theme sync is on'),
-              {
-                description: translate(
-                  'terminal.claudeThemeSyncOffer.acceptedDescription',
-                  'New Claude Code sessions on this computer use your Dolphin theme.'
-                )
-              }
-            ),
-          () =>
-            toast.error(
-              translate(
-                'terminal.claudeThemeSyncOffer.failed',
-                'Could not turn on Claude Code theme sync'
-              ),
-              {
-                description: translate(
-                  'terminal.claudeThemeSyncOffer.failedDescription',
-                  'Turn it on in Settings.'
-                )
-              }
+function acceptClaudeThemeSync(): void {
+  // Why confirm only after the write: a failed save must not claim the sync is on.
+  useAppStore
+    .getState()
+    .updateSettingsOrThrow({ claudeCodeThemeSync: true })
+    .then(
+      () =>
+        toast.success(
+          translate('terminal.claudeThemeSyncOffer.accepted', 'Claude Code theme sync is on'),
+          {
+            description: translate(
+              'terminal.claudeThemeSyncOffer.acceptedDescription',
+              'New Claude Code sessions on this computer use your Dolphin theme.'
             )
+          }
+        ),
+      () =>
+        toast.error(
+          translate(
+            'terminal.claudeThemeSyncOffer.failed',
+            'Could not turn on Claude Code theme sync'
+          ),
+          {
+            description: translate(
+              'terminal.claudeThemeSyncOffer.failedDescription',
+              'Turn it on in Settings.'
+            )
+          }
         )
-      }
-    },
-    cancel: {
-      label: translate('terminal.claudeThemeSyncOffer.decline', 'No thanks'),
-      onClick: () => {}
-    }
-  })
+    )
+}
+
+// Dolphin: the offer waits its turn in the centered notice queue instead of stacking as a toast.
+function showClaudeThemeSyncOffer(): void {
+  encolarAviso(
+    avisoDelTemaDeClaude({
+      // Why settle when shown: shown means answered, so a dismiss, quit or reload never asks again;
+      // an offer the queue never reached stays pending for the next launch.
+      alMostrar: () =>
+        void useAppStore.getState().updateSettings({ claudeCodeThemeSyncOffer: 'settled' }),
+      alAceptar: acceptClaudeThemeSync
+    })
+  )
 }
 
 /** Offers theme sync once, when Claude Code first runs in a Dolphin terminal. */

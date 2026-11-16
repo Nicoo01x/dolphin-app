@@ -35,6 +35,7 @@ import { maybePushMode2031Flip } from '../emulation/terminal-mode-2031-replies'
 import { resolveTerminalMinimumContrastRatio } from '../../../../../shared/terminal-themes/terminal-contrast-correction'
 import { resolveTerminalInlineImagesEnabled } from '../../../../../shared/terminal/images/terminal-inline-images-settings'
 import { windowBackdropActive } from '@/app-shell/appearance/window-backdrop'
+import { usePaisajeActivo } from '@/components/dolphin/paisaje/paisaje-activo'
 import { contrastRatio, hexToRgb, over, type Rgba } from '../../../../../shared/color/rgba-contrast'
 import { getTerminalFontSizeOverride } from './terminal-font-size-overrides'
 
@@ -166,7 +167,8 @@ export function applyTerminalAppearance(
   const paneBackground = theme?.background ?? '#000000'
   // Why: over a window backdrop the split root is the one translucent paint; xterm's viewport,
   // scrollable element and canvas each repainting it compounded 0.82 to ~0.99 (#36196).
-  const backdropActive = windowBackdropActive()
+  // Dolphin: con el paisaje de vidrio detrás, la terminal también pinta sin fondo propio.
+  const backdropActive = windowBackdropActive() || usePaisajeActivo.getState().vidrio
   const xtermTheme = backdropActive
     ? composeActiveTerminalTheme(appearance.theme, { ...settings, terminalBackgroundOpacity: 0 })
     : theme

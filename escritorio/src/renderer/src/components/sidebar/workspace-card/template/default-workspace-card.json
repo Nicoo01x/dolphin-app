@@ -9,6 +9,7 @@
     "pinnedRepo": "place.inPinnedSection && repo != null && !place.showProjectName",
     "inlineRepo": "!vars.classic && repo != null && !place.hideRepoBadge && !vars.folder && !vars.pinnedRepo",
     "metaRepo": "vars.classic && repo != null && !place.hideRepoBadge && !vars.pinnedRepo",
+    "location": "options.show.host",
     "hostLabel": "options.show.host ? host.contextLabel : null",
     "hostBadge": "vars.hostLabel != null && (!vars.compact || place.showProjectName)",
     "metaRow": "!vars.compact",
@@ -54,9 +55,12 @@
                 {
                   "el": "SshControl",
                   "when": "host.kind == 'ssh'",
-                  "props": { "iconOnly": "=!vars.classic" }
+                  "props": { "iconOnly": "=!vars.classic", "quietWhenConnected": "=vars.location" }
                 },
-                { "el": "RuntimeHostMark", "when": "host.kind == 'runtime'" },
+                {
+                  "el": "RuntimeHostMark",
+                  "when": "host.kind == 'runtime' && (!vars.location || host.runtimeDisconnected)"
+                },
                 { "el": "RepoChip", "when": "vars.inlineRepo" },
                 {
                   "el": "Title",
@@ -168,6 +172,7 @@
       "marker": "parent-content"
     },
     "children": [
+      { "el": "LocationMark", "when": "vars.location" },
       {
         "el": "StatusLane",
         "when": "options.show.status",

@@ -91,6 +91,41 @@ describe('reporte de bug de X-ray', () => {
     }
   })
 
+  it('en la app instalada corre el núcleo construido (dist/dolphin.js), sin src ni tsx', async () => {
+    // Así queda resources/dolphin-app: dist/ y nada de código fuente.
+    const dolphinDir = await mkdtemp(join(process.env.TEMP ?? '/tmp', 'dolphin-bug-instalado-'))
+    try {
+      await mkdir(join(dolphinDir, 'dist'), { recursive: true })
+      await writeFile(join(dolphinDir, 'dist', 'dolphin.js'), '')
+      const specs: PipedProcessSpec[] = []
+      await iniciarDolphinBug(
+        { id: 'bug-instalado', repoPath: '/repo', que: 'No anda', elemento: 'Botón' },
+        { appPath: '/app', dolphinDir, spawn: fakeSpawn(specs) }
+      )
+      expect(specs[0]?.args?.slice(0, 2)).toEqual([join(dolphinDir, 'dist', 'dolphin.js'), 'bug'])
+      expect(specs[0]?.env).toMatchObject({ ELECTRON_RUN_AS_NODE: '1' })
+      hijos[0]?.emit('exit', 0)
+    } finally {
+      await rm(dolphinDir, { recursive: true, force: true })
+    }
+  })
+
+  it('sin núcleo dice dónde lo buscó, sin lanzar nada', async () => {
+    const dolphinDir = await mkdtemp(join(process.env.TEMP ?? '/tmp', 'dolphin-bug-vacio-'))
+    try {
+      const specs: PipedProcessSpec[] = []
+      await expect(
+        iniciarDolphinBug(
+          { id: 'bug-vacio', repoPath: '/repo', que: 'No anda', elemento: 'Botón' },
+          { appPath: '/app', dolphinDir, spawn: fakeSpawn(specs) }
+        )
+      ).rejects.toThrow(`Dolphin no está en ${dolphinDir}`)
+      expect(specs).toHaveLength(0)
+    } finally {
+      await rm(dolphinDir, { recursive: true, force: true })
+    }
+  })
+
   it('conserva el código 1 y el renglón final cuando el bug sigue', async () => {
     const dolphinDir = await fakeDolphinDir()
     try {

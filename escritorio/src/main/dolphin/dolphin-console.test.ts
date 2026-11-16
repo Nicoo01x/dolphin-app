@@ -312,6 +312,67 @@ describe('dolphin console', () => {
     }
   })
 
+  it('starts the built core that travels in the installer: dist/ only, without src or tsx', async () => {
+    // Como queda en resources/dolphin-app: dist/, ui/ y package.json, sin código fuente ni node_modules.
+    const instalado = join(base, 'Dolphin', 'resources', 'dolphin-app')
+    await mkdir(join(instalado, 'dist'), { recursive: true })
+    await writeFile(join(instalado, 'dist', 'ui-cli.js'), FAKE_UI_CLI)
+    await writeFile(join(instalado, 'package.json'), '{"type":"module"}\n')
+    const sinDolphin = { ...process.env }
+    delete sinDolphin.DOLPHIN_APP_DIR
+    const result = await openDolphinConsole(join(base, 'repo-instalado'), {
+      ...options(),
+      appPath: join(base, 'Dolphin', 'resources', 'app.asar'),
+      env: sinDolphin
+    })
+    expect(result).toMatchObject({ ok: true })
+    if (result.ok) {
+      expect(await (await fetch(result.url)).text()).toContain('repo-instalado')
+    }
+  })
+
+  it('the installed app without the Dolphin core says so, instead of asking for npm install in its resources', async () => {
+    const sinDolphin = { ...process.env }
+    delete sinDolphin.DOLPHIN_APP_DIR
+    const result = await openDolphinConsole(join(base, 'repo'), {
+      ...options(),
+      appPath: join(base, 'Dolphin', 'resources', 'app.asar'),
+      env: sinDolphin
+    })
+    expect(result).toMatchObject({ ok: false, code: 'not-installed' })
+    if (!result.ok) {
+      expect(result.detail).toBe(join(base, 'Dolphin', 'resources', 'dolphin-app'))
+    }
+  })
+
+  it('a program that cannot be launched fails at once, not at the end of the wait', async () => {
+    const started = Date.now()
+    const result = await openDolphinConsole(join(base, 'repo-sin-node'), {
+      ...options(),
+      nodeProgram: join(base, 'no-hay-node', 'node.exe'),
+      timeoutMs: 60_000
+    })
+    expect(result).toMatchObject({ ok: false, code: 'exited' })
+    expect(Date.now() - started).toBeLessThan(15_000)
+  })
+
+  it('a console that says where it listens but never answers ends within one budget, not two', async () => {
+    // Avisa la URL y acepta conexiones, pero no contesta nunca: antes eran dos topes seguidos.
+    await writeFile(
+      join(dolphinDir, 'src', 'ui-cli.ts'),
+      "import http from 'node:http'\n" +
+        'const server = http.createServer(() => {})\n' +
+        "server.listen(0, '127.0.0.1', () => console.log('  http://127.0.0.1:' + server.address().port))\n"
+    )
+    const started = Date.now()
+    const result = await openDolphinConsole(join(base, 'repo-mudo'), {
+      ...options(),
+      timeoutMs: 3_000
+    })
+    expect(result).toEqual({ ok: false, code: 'timeout', detail: '3' })
+    expect(Date.now() - started).toBeLessThan(5_500)
+  })
+
   it('closing the app also stops a console that is still starting', async () => {
     // Una consola que nunca dice dónde escucha: se queda arrancando. Deja una marca al arrancar,
     // para cerrar la app recién cuando el proceso existe.

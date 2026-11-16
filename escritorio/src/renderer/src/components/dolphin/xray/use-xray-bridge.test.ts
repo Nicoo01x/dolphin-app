@@ -19,7 +19,10 @@ describe('aviso final del reporte de X-ray', () => {
   it.each([
     ['incomplete', 'The report was incomplete.'],
     ['already-running', 'A report is already in progress.'],
-    ['dolphin-missing', 'Dolphin is not in C:/faltante.']
+    [
+      'dolphin-missing',
+      'Dolphin is not in C:/faltante. Reinstall the app, or set DOLPHIN_APP_DIR to the dolphin-app repo folder and open the app again.'
+    ]
   ] as const)('traduce el fallo %s sin mostrar el código crudo', (code, expected) => {
     expect(textoDeFalloBug(code, code === 'dolphin-missing' ? 'C:/faltante' : undefined)).toBe(
       expected

@@ -1,12 +1,16 @@
 /*
- * La ventana translúcida sobre el óleo (FondoDePaisaje.tsx).
+ * La ventana de vidrio sobre el óleo (FondoDePaisaje.tsx, `docs/reforma/chat-con-paisaje.md`).
  *
  * Todo cuelga de `:root[data-dolphin-paisaje]`: sin fondo elegido («Ninguno») la marca no está y
- * la app se ve como antes, sin una regla de acá aplicada.
+ * la app se ve como antes, sin una regla de acá aplicada. Vale `vidrio` (de fábrica) u `opaco`
+ * («Paneles opacos» en Ajustes). La preferencia del sistema de reducir la transparencia NO se lee:
+ * con los «Efectos de transparencia» de Windows apagados la pintura quedaba sólo en el medio, y
+ * eso no era lo que la persona había elegido al poner un fondo.
  *
- * Los números de los velos no son a ojo: `--paisaje-panel` lo calcula `veloDePanel` para que el
- * texto atenuado de un panel llegue a 4,5:1 en el punto más claro del cuadro más claro
- * (`shared/fondo-del-chat.ts`). El deslizador cambia cuánto cuadro se ve, nunca la legibilidad.
+ * El vidrio es el de la segunda referencia (`ventana-traslucida-referencia.png`): cada panel pinta
+ * la pintura esmerilada, fija a la ventana para que calce con la de atrás, y una tinta neutra
+ * encima. Los números de la tinta salen de la cuenta de AA (`shared/fondo-del-chat.ts`), no del
+ * ojo: el deslizador cambia cuánto cuadro se ve, nunca la legibilidad.
  */
 
 /* ── La capa del cuadro ────────────────────────────────────────────────────────────────────── */
@@ -26,8 +30,8 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* El tercio de arriba de un paisaje es el cielo: se corre un poco para que se vea la tierra. */
-  object-position: center 40%;
+  /* Que se vean las montañas arriba y el lago con los ciervos abajo. */
+  object-position: var(--paisaje-encuadre, center 58%);
   user-select: none;
 }
 
@@ -38,8 +42,8 @@
   transform: scale(1.04);
 }
 
-/* El velo: uniforme (el del deslizador) y además se cierra hacia abajo y hacia los costados, como
-   en la referencia. Los degradés sólo oscurecen: no le quitan contraste a nada. */
+/* El velo de la pintura directa: uniforme (el del deslizador) y además se cierra hacia abajo y
+   hacia los costados, como en la referencia. Los degradés sólo oscurecen. */
 .dolphin-paisaje-velo {
   position: absolute;
   inset: 0;
@@ -51,70 +55,143 @@
       rgb(var(--paisaje-tinta-velo) / 0.38) 100%
     ),
     linear-gradient(to bottom, transparent 45%, rgb(var(--paisaje-tinta-velo) / 0.32) 100%);
-  background-color: rgb(var(--paisaje-tinta-velo) / var(--paisaje-velo, 0.62));
+  background-color: rgb(var(--paisaje-tinta-velo) / var(--paisaje-velo, 0.3));
 }
 
-/* ── Las tintas de los paneles, por tema ─────────────────────────────────────────────────────
-   En oscuro el panel es casi negro; en claro es papel y pide un poco más de velo (0,9) porque el
-   texto oscuro sobre una pintura oscura necesita más papel que el texto claro sobre una clara. */
+/* ── Las tintas, por tema ──────────────────────────────────────────────────────────────────────
+   Oscuro: la tinta del vidrio es #171717, la del panel de la referencia; lo seleccionado y los
+   controles son la tinta de texto (#ebebeb) al 10 %, y las juntas al 8 %. Claro: papel, con la
+   pintura esmerilada aclarada en vez de oscurecida (`vidrio-del-paisaje.ts`). */
 :root[data-dolphin-paisaje] {
-  --paisaje-tinta-panel: 14 14 14;
-  --paisaje-tinta-compositor: 30 30 30;
-  --paisaje-alfa-panel: var(--paisaje-panel, 0.4);
-  /* Sobre la pintura, lo atenuado sube un escalón: la tinta al 74 % en vez del 60 %. Con el 60 %
-     el panel tendría que tapar el 84 % del cuadro para llegar a AA (`fondo-del-chat.ts`). */
+  --paisaje-encuadre: center 58%;
+  --paisaje-tinta-vidrio: 23 23 23;
+  --paisaje-alfa: var(--paisaje-vidrio-alfa, 0.58);
+  --paisaje-imagen-vidrio: var(--paisaje-vidrio-oscuro, none);
+  --paisaje-realce: rgb(235 235 235 / 0.1);
+  --paisaje-junta: rgb(235 235 235 / 0.08);
+  --paisaje-luz-de-borde: rgb(255 255 255 / 0.07);
+  /* Sobre el vidrio, lo atenuado sube un escalón: la tinta al 74 % en vez del 60 %. Es lo que da
+     la cuenta de `ALFA_MINIMO_DEL_VIDRIO`. */
   --paisaje-atenuado: var(--dolphin-tinta-74);
 }
 
 :root[data-dolphin-paisaje]:not(.dark) {
-  --paisaje-tinta-panel: 247 247 247;
-  --paisaje-tinta-compositor: 255 255 255;
-  --paisaje-alfa-panel: var(--paisaje-panel-claro, 0.4);
+  --paisaje-tinta-vidrio: 250 250 252;
+  --paisaje-alfa: var(--paisaje-vidrio-alfa-claro, 0.58);
+  --paisaje-imagen-vidrio: var(--paisaje-vidrio-claro, none);
+  --paisaje-realce: rgb(255 255 255 / 0.55);
+  --paisaje-junta: rgb(10 10 10 / 0.08);
+  --paisaje-luz-de-borde: rgb(255 255 255 / 0.6);
   --paisaje-atenuado: #4a4a4a;
 }
 
 :root[data-dolphin-paisaje]:not(.dark) .dolphin-paisaje-velo {
-  --paisaje-tinta-velo: 252 252 252;
+  --paisaje-tinta-velo: 250 250 250;
 }
 
-/* «Reducir transparencia» del sistema o «reducir efectos» de la app: los paneles quedan opacos y
-   la pintura sólo se ve donde no hay panel. */
-@media (prefers-reduced-transparency: reduce) {
-  :root[data-dolphin-paisaje] {
-    --paisaje-alfa-panel: 1;
-  }
+/* «Paneles opacos»: el vidrio tapa entero y la pintura queda sólo en el chat vacío. */
+:root[data-dolphin-paisaje='opaco'] {
+  --paisaje-alfa: 1;
 }
 
-:root[data-dolphin-paisaje][data-reduce-effects] {
-  --paisaje-alfa-panel: 1;
+/* ── El vidrio ─────────────────────────────────────────────────────────────────────────────────
+   Las superficies que van sobre la pintura: la franja de arriba de la barra lateral, la barra
+   lateral y el panel derecho (`data-dolphin-panel`), la barra de estado y la columna del medio
+   (pestañas, chat, editor y terminal). Si en la columna hay un chat vacío, el vidrio baja a cada
+   grupo que no lo tiene y a las tiras de pestañas: el chat vacío es pintura directa.
+
+   `background-attachment: fixed` y el mismo encuadre que la capa del cuadro: la pintura
+   esmerilada de cada panel calza con la de atrás, como si fuera un solo vidrio. */
+:root[data-dolphin-paisaje]
+  :is(
+    .titlebar-left,
+    [data-dolphin-panel],
+    [data-dolphin-status-bar],
+    .workspace-sidebar-seam:not(:has([data-dolphin-chat-vacio])),
+    .workspace-sidebar-seam:has([data-dolphin-chat-vacio]) > .bg-tab-bar,
+    .workspace-sidebar-seam:has([data-dolphin-chat-vacio])
+      :is(
+        .group\/tab-group:not(:has([data-dolphin-chat-vacio])),
+        .group\/tab-group:has([data-dolphin-chat-vacio]) [data-tab-group-strip-id]
+      )
+  ) {
+  background-color: transparent !important;
+  background-image:
+    linear-gradient(rgb(var(--paisaje-tinta-vidrio) / var(--paisaje-alfa)) 0 0),
+    var(--paisaje-imagen-vidrio) !important;
+  background-size: auto, cover;
+  background-position:
+    0 0,
+    var(--paisaje-encuadre);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
-/* ── Los paneles ───────────────────────────────────────────────────────────────────────────────
-   La barra lateral y el panel derecho llevan `data-dolphin-panel`. Adentro, su token de fondo
-   pasa a transparente: así las filas que la base pinta con `bg-sidebar` no apilan velo sobre velo
-   (se verían manchas), y el velo lo pone una sola vez el contenedor. */
-:root[data-dolphin-paisaje] [data-dolphin-panel] {
+/* Adentro del vidrio, los fondos propios de la base pasan a transparente: así las filas, las
+   pestañas y los encabezados que la base pinta con su token no apilan velo sobre velo (se verían
+   franjas), y el vidrio lo pone una sola vez el contenedor. Las juntas pasan a la tinta del texto
+   al 8 %, como en la referencia: separan sin trazar una línea dura. */
+:root[data-dolphin-paisaje]
+  :is(.titlebar-left, [data-dolphin-panel], [data-dolphin-status-bar], .workspace-sidebar-seam) {
   --worktree-sidebar: transparent;
   --sidebar: transparent;
+  --tab-bar: transparent;
+  --chat-pane: transparent;
+  --code-editor-background: transparent;
+  --border: var(--paisaje-junta);
+  --sidebar-border: var(--paisaje-junta);
   --muted-foreground: var(--paisaje-atenuado);
-  background-color: rgb(var(--paisaje-tinta-panel) / var(--paisaje-alfa-panel)) !important;
 }
 
-/* La franja de arriba de la barra lateral es barra de pestañas: queda opaca. */
-:root[data-dolphin-paisaje] .titlebar-left {
-  background: var(--dolphin-panel);
+:root[data-dolphin-paisaje] .workspace-sidebar-seam :is(.editor-header, [data-tab-group-body-id]) {
+  background-color: transparent;
+}
+
+/* La pestaña activa: vidrio un poco más claro, con radio, sin borde. */
+:root[data-dolphin-paisaje] [data-tab-group-strip-id] [data-tab-id] {
+  background-color: transparent;
+}
+
+:root[data-dolphin-paisaje] [data-tab-group-strip-id] [data-tab-id][data-active='true'] {
+  background-color: var(--paisaje-realce);
+  border-radius: 8px;
+}
+
+/* La fila elegida de la barra lateral: el mismo vidrio más claro, sin el borde de la base. */
+:root[data-dolphin-paisaje] [data-worktree-card-surface][data-worktree-card-active] {
+  background-color: var(--paisaje-realce);
+  border-color: transparent;
+}
+
+/* ── La terminal ──────────────────────────────────────────────────────────────────────────────
+   xterm pinta sin fondo cuando hay vidrio (terminal-appearance.ts); la raíz de los paneles
+   divididos (`[data-terminal-layout-leaf-ids]`, que `applyRootBackground` pinta en línea con el
+   fondo del tema), queda transparente para que se vea el vidrio. La terminal no vive adentro de
+   la columna: la base la pinta en una capa aparte encima del grupo (`data-retained-pane-host`),
+   así que se la nombra por esa capa. Sin `backdrop-filter`: se repinta con cada línea que sale. */
+:root[data-dolphin-paisaje='vidrio']
+  [data-workspace-surface-id]
+  > [data-retained-pane-host]
+  :is([data-terminal-layout-leaf-ids], .xterm-viewport) {
+  background: transparent !important;
 }
 
 /* ── El chat ───────────────────────────────────────────────────────────────────────────────────
-   Con conversación, el chat es un panel más: el cuadro se oscurece detrás de los mensajes. */
+   Con conversación, el chat es vidrio (lo pone la columna): el chat mismo no agrega otra capa. */
 :root[data-dolphin-paisaje] [data-native-chat-root] {
   --chat-pane: transparent;
   /* Lo atenuado del chat es una mezcla del gris atenuado con el lienzo: sin mezcla, y un escalón
-     más claro, llega a AA con el mismo velo que un panel. */
+     más claro, llega a AA con el mismo vidrio que un panel. */
   --muted-foreground: var(--paisaje-atenuado);
   --chat-faint-mix: 100%;
-  --chat-composer-surface: rgb(var(--paisaje-tinta-compositor) / var(--paisaje-alfa-panel));
-  background-color: rgb(var(--paisaje-tinta-panel) / var(--paisaje-alfa-panel));
+  /* El compositor: vidrio un tono más claro, con una luz muy tenue en el borde de arriba. */
+  --chat-composer-surface: var(--paisaje-realce);
+  --chat-composer-border: var(--paisaje-junta);
+  background-color: transparent;
+}
+
+:root[data-dolphin-paisaje] [data-native-chat-root] .bg-chat-composer-surface {
+  box-shadow: inset 0 1px 0 var(--paisaje-luz-de-borde);
 }
 
 /* La tapa que esconde la terminal debajo del chat, y la terminal misma: la terminal tiene su propio
@@ -137,13 +214,26 @@
 
 /* ── El chat vacío ─────────────────────────────────────────────────────────────────────────────
    Como la referencia: la pregunta y el compositor ancho en el medio de la pantalla, directo sobre
-   la pintura, sin panel. Lo que va sobre el cuadro (la pregunta, la carpeta y la rama) lleva la
-   tinta plena, que llega a AA con el velo mínimo del deslizador (0,6); el compositor tiene su
-   propia superficie. */
+   la pintura, sin panel. Detrás de lo que se lee hay un velo local, más denso en el medio y que se
+   disuelve hacia afuera: es lo que deja bajar el velo de la ventana sin perder AA en la pregunta,
+   la carpeta y la rama. El compositor es vidrio de verdad acá: chico y quieto, el desenfoque de
+   fondo no cuesta (con «reducir efectos» la base lo apaga y queda la tinta). */
 :root[data-dolphin-paisaje] [data-native-chat-root]:has([data-dolphin-chat-vacio]) {
   --chat-content-max-width: 60rem;
   --chat-foreground-faint: var(--foreground);
-  background-color: transparent;
+  --chat-composer-surface: rgb(var(--paisaje-tinta-vidrio) / 0.5);
+  background-image: radial-gradient(
+    46% 30% at 50% 48%,
+    rgb(var(--paisaje-tinta-vidrio) / 0.5) 0%,
+    rgb(var(--paisaje-tinta-vidrio) / 0.32) 55%,
+    transparent 100%
+  );
+}
+
+:root[data-dolphin-paisaje]
+  [data-native-chat-root]:has([data-dolphin-chat-vacio])
+  .bg-chat-composer-surface {
+  backdrop-filter: blur(24px) saturate(1.5);
 }
 
 /* El compositor sube al medio: un espaciador abajo empuja la conversación (vacía) y el compositor
@@ -152,4 +242,19 @@
   content: '';
   flex: 0.72 1 0;
   min-height: 0;
+}
+
+/* ── Las medidas de la referencia ──────────────────────────────────────────────────────────────
+   Las de la barra lateral de la ventana de vidrio, donde no cambian el comportamiento: filas de
+   navegación de 32 px con texto de 14, y el título de cada espacio de trabajo en 14 y peso medio
+   (los encabezados de sección ya van en 12). El ancho de fábrica, 260 px, está en
+   `shared/constants.ts`. Valen con fondo o sin él: es la barra de Dolphin, no el vidrio. */
+[data-dolphin-panel='lateral'] [data-contextual-tour-target='sidebar-navigation'] button {
+  min-height: 32px;
+  font-size: 14px;
+}
+
+[data-dolphin-panel='lateral'] [data-worktree-title-inline-rename] {
+  font-size: 14px;
+  font-weight: 500;
 }

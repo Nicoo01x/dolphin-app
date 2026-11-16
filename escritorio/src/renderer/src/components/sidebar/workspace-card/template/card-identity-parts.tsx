@@ -22,6 +22,7 @@ import {
 import { shouldBeginWorktreeRename } from '../controller/worktree-card-model'
 import { WorktreeCardSshHostControl } from '../host/WorktreeCardSshHostControl'
 import { WorktreeHostContextBadge } from '../host/WorktreeHostContextBadge'
+import { WorkspaceLocationMark } from '../host/WorkspaceLocationMark'
 import { WorktreeTitleInlineRename } from '../identity/WorktreeTitleInlineRename'
 import { cardElement } from './card-template-compiler'
 
@@ -68,6 +69,7 @@ function sshControl(props: Readonly<Record<string, unknown>>, card: Card): React
       targetRemoved={card.sshTargetRemoved}
       sshOwnerEnvironmentId={card.sshOwnerEnvironmentId}
       iconOnly={props.iconOnly === true}
+      quietWhenConnected={props.quietWhenConnected === true}
       onPointerDown={card.stopQuickActionPointerPropagation}
     />
   )
@@ -94,7 +96,10 @@ export const CARD_IDENTITY_PARTS = {
   RepoChip: part([], (_props, _children, { repo }) =>
     repo ? <WorktreeCardRepoChip repo={repo} /> : null
   ),
-  SshControl: part(['iconOnly'], (props, _children, card) => sshControl(props, card)),
+  SshControl: part(['iconOnly', 'quietWhenConnected'], (props, _children, card) =>
+    sshControl(props, card)
+  ),
+  LocationMark: part([], (_props, _children, card) => <WorkspaceLocationMark card={card} />),
   RuntimeHostMark: part([], (_props, _children, card) => (
     <WorktreeCardRuntimeHostMark
       disconnected={card.isRuntimeDisconnected}

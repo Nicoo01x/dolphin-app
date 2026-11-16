@@ -165,7 +165,8 @@ export function getDefaultUIState(): PersistedUIState {
     lastActiveRepoId: null,
     lastActiveWorktreeId: null,
     activeView: 'terminal',
-    sidebarWidth: 280,
+    // 260, la de la referencia de la ventana de vidrio (docs/reforma/chat-con-paisaje.md).
+    sidebarWidth: 260,
     rightSidebarOpen: true,
     rightSidebarTab: 'explorer',
     rightSidebarExplorerView: 'files',

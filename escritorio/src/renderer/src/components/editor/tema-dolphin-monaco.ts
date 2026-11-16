@@ -231,6 +231,25 @@ function coloresNoche(
   }
 }
 
+/**
+ * El editor sobre el vidrio del paisaje (`components/dolphin/paisaje`): el lienzo, el gutter y el
+ * minimapa sin fondo, para que se vea el panel de vidrio que tiene detrás. Monaco acepta `#rrggbbaa`
+ * en estos colores y no le cuesta nada más: el lienzo sigue siendo una capa que no se repinta al
+ * escribir, sólo deja de taparlo todo. La línea actual y el scroll pegado arriba pasan a ser un velo
+ * del mismo tono, en vez de un gris opaco que cortaría el vidrio en franjas.
+ */
+function sobreElVidrio(colores: editor.IColors, oscuro: boolean): editor.IColors {
+  return {
+    ...colores,
+    'editor.background': '#00000000',
+    'editorGutter.background': '#00000000',
+    'minimap.background': '#00000000',
+    'editor.lineHighlightBackground': oscuro ? '#ffffff0a' : '#0000000a',
+    'editorStickyScroll.background': oscuro ? '#0c0d10d9' : '#fbfbfcd9',
+    'editorStickyScrollHover.background': oscuro ? '#1b1d23d9' : '#eeeef1d9'
+  }
+}
+
 type DefinidorDeTemas = {
   defineTheme: (nombre: string, tema: editor.IStandaloneThemeData) => void
 }
@@ -245,8 +264,10 @@ type DefinidorDeTemas = {
 export function definirTemasDeDolphin(
   monacoEditor: DefinidorDeTemas,
   personal?: { oscura?: PaletaParcial; clara?: PaletaParcial },
-  tema: TemaDeCodigo = TEMA_DE_CODIGO_ANTERIOR
+  tema: TemaDeCodigo = TEMA_DE_CODIGO_ANTERIOR,
+  vidrio = false
 ): void {
+  ultimoPedido = { personal, tema, vidrio }
   // Lo que la persona cambió se aplica sobre la paleta de fábrica del tema elegido: el mismo
   // «quiero las cadenas más claras» vale en los dos temas.
   const oscura = paletaConPersonal(paletaDeFabrica(tema, true), personal?.oscura)
@@ -256,14 +277,46 @@ export function definirTemasDeDolphin(
     base: 'vs-dark',
     inherit: false,
     rules: reglasDe(oscura, noche ? CROMO_NOCHE_OSCURO.texto : undefined),
-    colors: noche ? coloresNoche(oscura, CROMO_NOCHE_OSCURO, true) : coloresOscuros(oscura)
+    colors: conVidrio(
+      noche ? coloresNoche(oscura, CROMO_NOCHE_OSCURO, true) : coloresOscuros(oscura),
+      vidrio,
+      true
+    )
   })
   monacoEditor.defineTheme(TEMA_CLARO, {
     base: 'vs',
     inherit: false,
     rules: reglasDe(clara, noche ? CROMO_NOCHE_CLARO.texto : undefined),
-    colors: noche ? coloresNoche(clara, CROMO_NOCHE_CLARO, false) : coloresClaros(clara)
+    colors: conVidrio(
+      noche ? coloresNoche(clara, CROMO_NOCHE_CLARO, false) : coloresClaros(clara),
+      vidrio,
+      false
+    )
   })
+}
+
+function conVidrio(colores: editor.IColors, vidrio: boolean, oscuro: boolean): editor.IColors {
+  return vidrio ? sobreElVidrio(colores, oscuro) : colores
+}
+
+type PedidoDeTemas = {
+  personal?: { oscura?: PaletaParcial; clara?: PaletaParcial }
+  tema: TemaDeCodigo
+  vidrio: boolean
+}
+
+let ultimoPedido: PedidoDeTemas | null = null
+
+/**
+ * Vuelve a registrar los temas con lo último que se pidió (paleta, tema y vidrio).
+ *
+ * Why: `monaco-setup` registra los temas cuando se abre el primer editor, que es DESPUÉS de que
+ * `usePaletaDeCodigo` los definió con la paleta y el vidrio del paisaje. Registrarlos de fábrica ahí
+ * pisaba los dos: el editor salía opaco sobre el vidrio hasta el siguiente cambio de ajustes.
+ */
+export function redefinirTemasDeDolphin(monacoEditor: DefinidorDeTemas): void {
+  const pedido = ultimoPedido
+  definirTemasDeDolphin(monacoEditor, pedido?.personal, pedido?.tema, pedido?.vidrio)
 }
 
 /** Cuál va, según el tema del sistema. */

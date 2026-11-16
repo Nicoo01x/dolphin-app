@@ -57,6 +57,11 @@ const {
   verifyPackagedPluginTypings
 } = require('./scripts/desktop-distribution/runtime-verification/verify-packaged-plugin-resources.cjs')
 const {
+  assertDolphinCoreBuilt,
+  dolphinCoreExtraResources,
+  verifyPackagedDolphinCore
+} = require('./scripts/desktop-distribution/runtime-verification/verify-packaged-dolphin-core.cjs')
+const {
   assertPackagedServeSelectionEntry,
   assertPackagedWebClient
 } = require('./scripts/desktop-distribution/runtime-verification/verify-packaged-serve-payload.cjs')
@@ -196,6 +201,9 @@ const dolphinSkillsResource = {
 }
 const commonExtraResources = [
   dolphinSkillsResource,
+  // Dolphin: el núcleo construido (dist/, la consola, bin/ y package.json), para que la consola de
+  // Dolphin arranque en la app instalada sin un clon del repo ni DOLPHIN_APP_DIR.
+  ...dolphinCoreExtraResources(),
   relayExtraResource,
   dolphindTemplateExtraResource,
   dolphindTemplateNodeModulesExtraResource,
@@ -483,6 +491,7 @@ module.exports = {
     assertBundledRipgrepInstalled()
     assertProcessHostOutputBuilt()
     assertDolphindTemplateBuilt()
+    assertDolphinCoreBuilt()
     // Why: Dolphin no trae DOLPHIN Mobile (se retiró con su script build:mobile-web), así que el bundle
     // es opcional; el runtime contesta «sin bundle». Si alguien lo arma, tiene que estar entero.
     if (existsSync(mobileWebBundleDir)) {
@@ -583,6 +592,7 @@ module.exports = {
     // Validate real electron-builder output so broken extraResources mappings fail before shipping.
     verifyPackagedPluginResources(resourcesDir)
     verifyPackagedPluginTypings(resourcesDir)
+    verifyPackagedDolphinCore(resourcesDir)
     assertPackagedWebClient(resourcesDir)
     assertPackagedServeSelectionEntry(resourcesDir)
     finalizePackagedRipgrep(resourcesDir)

@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useAppStore } from '@/store'
 import {
+  alfaDelVidrio,
   fondoDelChat,
-  OSCURIDAD_DE_PANEL,
-  veloDePanel,
   type FondoDelChat,
   type FuenteDelFondo
 } from '../../../../../shared/fondo-del-chat'
@@ -66,17 +65,14 @@ export function useFondoDelChat(): FondoDelChat {
   return fondoDelChat(crudo)
 }
 
-/** En claro el velo es de papel; con el texto atenuado en #4a4a4a pide lo mismo (`fondo-del-chat.ts`). */
-export const OSCURIDAD_DE_PANEL_CLARO = 0.78
-
 /**
- * Las variables que leen `paisaje.css` y los paneles: cuánto tapa el velo de la ventana y cuánto
- * le suma cada panel para llegar a AA, en oscuro y en claro.
+ * Las variables que leen `paisaje.css`: cuánto se oscurece la pintura directa (el chat vacío y las
+ * juntas) y cuánto tapa el vidrio de los paneles en cada tema, que nunca baja de lo que pide AA.
  */
 export function variablesDelPaisaje(velo: number): Record<string, string> {
   return {
     '--paisaje-velo': velo.toFixed(3),
-    '--paisaje-panel': veloDePanel(velo, OSCURIDAD_DE_PANEL).toFixed(3),
-    '--paisaje-panel-claro': veloDePanel(velo, OSCURIDAD_DE_PANEL_CLARO).toFixed(3)
+    '--paisaje-vidrio-alfa': alfaDelVidrio(velo, 'oscuro').toFixed(3),
+    '--paisaje-vidrio-alfa-claro': alfaDelVidrio(velo, 'claro').toFixed(3)
   }
 }

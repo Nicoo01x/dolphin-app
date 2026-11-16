@@ -32,6 +32,8 @@ type WorktreeCardSshHostControlProps = {
   sshOwnerEnvironmentId: string | null
   /** Use only the accessible label when dense rows cannot fit visible text. */
   iconOnly: boolean
+  /** The row already shows where it runs; a connected glyph would say it twice. */
+  quietWhenConnected?: boolean
   onPointerDown: React.PointerEventHandler<HTMLButtonElement>
 }
 
@@ -76,6 +78,7 @@ export function WorktreeCardSshHostControl({
   targetRemoved,
   sshOwnerEnvironmentId,
   iconOnly,
+  quietWhenConnected = false,
   onPointerDown
 }: WorktreeCardSshHostControlProps): React.JSX.Element | null {
   const t = useTranslate()
@@ -130,6 +133,9 @@ export function WorktreeCardSshHostControl({
 
   // Live connection outranks stale removal; runtime-owned null status stays passive without claiming disconnection.
   if (status === null || status === 'connected') {
+    if (quietWhenConnected) {
+      return null
+    }
     return (
       <PassiveGlyph
         targetLabel={targetLabel}

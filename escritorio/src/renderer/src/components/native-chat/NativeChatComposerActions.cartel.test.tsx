@@ -40,28 +40,7 @@ vi.mock('./session/options/controls/NativeChatPermissionModePicker', () => ({
   NativeChatComposerPermissionPicker: () => <div data-testid="permission-picker" />
 }))
 
-// El cartel tiene su propio test; acá se mira el cableado: cuáles se ofrecen y qué hace elegir.
-vi.mock('./CartelDeFuncion', () => ({
-  CARTEL_MARCA: 'data-cartel-de-funcion',
-  CartelDeFuncion: ({
-    cartel,
-    nombreDelMotor,
-    onElegir
-  }: {
-    cartel: { id: string }
-    nombreDelMotor: string
-    onElegir: (valor: string) => void
-  }) => (
-    <button data-testid={`cartel-${cartel.id}`} onClick={() => onElegir('opus')}>
-      {nombreDelMotor}
-    </button>
-  )
-}))
-vi.mock('@/lib/delegar-con-dolphin', () => ({ delegarConDolphin: vi.fn(() => true) }))
-
 import { NativeChatComposerActions } from './composer/controls/NativeChatComposerActions'
-import { delegarConDolphin } from '@/lib/delegar-con-dolphin'
-import { toast } from 'sonner'
 
 const BASE = {
   attachDisabled: false,
@@ -84,54 +63,30 @@ afterEach(() => {
   vi.clearAllMocks()
 })
 
-describe('los carteles en el compositor', () => {
-  it('ofrece delegar en el chat de Claude, en nombre de Claude', () => {
-    render(<NativeChatComposerActions {...BASE} agent="claude" />)
-    expect(screen.getByTestId('cartel-delegacion').textContent).toBe('Claude')
-  })
-
-  // `/lider` toma modelos de Claude: ofrecerlo en otro chat sería ofrecer algo que no tiene.
-  it('no lo ofrece en el chat de un motor que no lo tiene, ni sin motor', () => {
-    const { rerender } = render(<NativeChatComposerActions {...BASE} agent="codex" />)
+// Nico sacó «Delegar» del compositor el 15/11/2026: el cartel no se ofrece en ningún chat.
+describe('el compositor sin «Delegar»', () => {
+  it('no ofrece el cartel de delegar en el chat de Claude ni en el de otro motor', () => {
+    const { rerender } = render(<NativeChatComposerActions {...BASE} agent="claude" />)
     expect(screen.queryByTestId('cartel-delegacion')).toBeNull()
-    rerender(<NativeChatComposerActions {...BASE} />)
-    expect(screen.queryByTestId('cartel-delegacion')).toBeNull()
-  })
-
-  it('elegir abre Dolphin delegando con ese modelo', async () => {
-    render(<NativeChatComposerActions {...BASE} agent="claude" />)
-    await userEvent.click(screen.getByTestId('cartel-delegacion'))
-    expect(delegarConDolphin).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'delegacion' }),
-      'opus'
-    )
-    expect(toast.error).not.toHaveBeenCalled()
-  })
-
-  // Sin espacio de trabajo donde abrirla, la apertura no pasa: decirlo es mejor que no hacer nada.
-  it('avisa cuando la apertura no se pudo hacer', async () => {
-    vi.mocked(delegarConDolphin).mockReturnValueOnce(false)
-    render(<NativeChatComposerActions {...BASE} agent="claude" />)
-    await userEvent.click(screen.getByTestId('cartel-delegacion'))
-    expect(toast.error).toHaveBeenCalled()
+    rerender(<NativeChatComposerActions {...BASE} agent="codex" />)
+    expect(screen.queryByTestId('cartel-permisos')).toBeNull()
+    expect(screen.queryByText('Delegate')).toBeNull()
   })
 })
 
-// Nico lo quiso en el compositor, pegado a «Delegar» (antes vivía en la barra de arriba del chat).
+// Nico lo quiso en el compositor (antes vivía en la barra de arriba del chat), y es lo único que
+// quedó de Dolphin ahí después de sacar «Delegar».
 describe('Orquestación inteligente en el compositor', () => {
   const NOMBRE = /Intelligent Orchestration/
 
-  it('aparece justo después de «Delegar» en el chat de un agente de terminal', () => {
+  it('aparece en el chat de un agente de terminal, apagado', () => {
     render(<NativeChatComposerActions {...BASE} agent="claude" />)
-    const delegar = screen.getByTestId('cartel-delegacion')
     const interruptor = screen.getByRole('button', { name: NOMBRE })
-    // La barra de la base envuelve cada control en su `[data-composer-control]`: se comparan esos.
-    const lugarDeDelegar = delegar.closest('[data-composer-control]')
-    expect(lugarDeDelegar?.nextElementSibling?.contains(interruptor)).toBe(true)
+    expect(interruptor.closest('[data-composer-control]')).not.toBeNull()
     expect(interruptor.getAttribute('aria-pressed')).toBe('false')
   })
 
-  it('también aparece en un agente de terminal sin cartel de delegación', () => {
+  it('también aparece en el chat de otro agente de terminal', () => {
     render(<NativeChatComposerActions {...BASE} agent="codex" />)
     expect(screen.getByRole('button', { name: NOMBRE })).toBeTruthy()
   })

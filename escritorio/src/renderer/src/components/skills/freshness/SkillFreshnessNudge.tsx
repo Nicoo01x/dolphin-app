@@ -1,10 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { RefreshCw } from 'lucide-react'
-import { toast } from 'sonner'
 import { useSkillFreshness } from '@/hooks/skills/freshness/useSkillFreshness'
 import { useActiveProjectSkillRuntime } from '@/hooks/skills/runtime/useActiveProjectSkillRuntime'
 import { bundledSkillTargetKey } from '@/lib/skills/runtime/bundled-skill-target'
-import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store/index'
 import {
   bundledSkillNudgeEntries,
@@ -12,12 +9,14 @@ import {
 } from '../../../../../shared/bundled-skill-summary'
 import { requestSkillFreshnessUpdateDialog } from './skill-freshness-update-dialog'
 import { autoUpdateUnmodifiedSkills } from './skill-freshness-auto-update'
+import { encolarAviso, retirarAviso } from '@/components/dolphin/avisos/avisos-store'
+import { avisoDeSkills } from '@/components/dolphin/avisos/aviso-de-skills'
 
 const MAX_DISMISSED_FRESHNESS_NUDGES = 512
 const NO_DISMISSED_FRESHNESS_NUDGES: string[] = []
 
 type ActiveFreshnessNudge = {
-  id: string | number
+  id: string
   fingerprint: string
   persistDismissal: boolean
 }
@@ -41,7 +40,7 @@ export function SkillFreshnessNudge(): null {
       active.persistDismissal = false
       activeNudgeRef.current = null
       shownFingerprints.current.delete(active.fingerprint)
-      toast.dismiss(active.id)
+      retirarAviso(active.id)
     }
     if (!target || !targetKey) {
       const active = activeNudgeRef.current
@@ -103,31 +102,19 @@ export function SkillFreshnessNudge(): null {
       .sort((left, right) => left.localeCompare(right, 'en'))
       .join(', ')
     const nextActive: ActiveFreshnessNudge = {
-      id: '',
+      id: `skill-freshness:${fingerprint}`,
       fingerprint,
       persistDismissal: true
     }
-    nextActive.id = toast.info(
-      names.size === 1
-        ? translate(
-            'auto.components.skills.SkillFreshnessNudge.titleOne',
-            'An installed Dolphin skill is out of date'
-          )
-        : translate(
-            'auto.components.skills.SkillFreshnessNudge.title',
-            '{{count}} installed Dolphin skills are out of date',
-            { count: names.size, defaultValue_one: '{{count}} installed Dolphin skill is out of date' }
-          ),
-      {
-        description: translate(
-          'auto.components.skills.SkillFreshnessNudge.description',
-          'Update {{value0}} so agents follow the current instructions for this version of Dolphin.',
-          { value0: outdatedNames }
-        ),
-        // Keep the nudge until action; quitting records no dismissal, allowing one prompt next launch.
-        duration: Number.POSITIVE_INFINITY,
-        // Persist only explicit close-button dismissal; opening review is engagement.
-        onDismiss: () => {
+    // Dolphin: the nudge waits its turn in the centered notice queue instead of stacking as a toast.
+    encolarAviso(
+      avisoDeSkills({
+        id: nextActive.id,
+        cuantas: names.size,
+        nombres: outdatedNames,
+        // Persist only an explicit dismissal (the x, Escape or dragging it away); review is engagement.
+        // Quitting while it waits records nothing, allowing one prompt next launch.
+        alDescartar: () => {
           if (nextActive.persistDismissal) {
             persistDismissal()
           }
@@ -135,28 +122,15 @@ export function SkillFreshnessNudge(): null {
             activeNudgeRef.current = null
           }
         },
-        action: {
-          label: (
-            <span className="inline-flex items-center gap-1.5">
-              <RefreshCw className="size-3.5" />
-              {names.size === 1
-                ? translate('auto.components.skills.SkillFreshnessNudge.updateOne', 'Update skill')
-                : translate(
-                    'auto.components.skills.SkillFreshnessNudge.updateMany',
-                    'Update skills'
-                  )}
-            </span>
-          ),
-          onClick: () => {
-            // Sonner action closure skips onDismiss; clear ownership so later inventory cannot retain a closed toast.
-            nextActive.persistDismissal = false
-            if (activeNudgeRef.current === nextActive) {
-              activeNudgeRef.current = null
-            }
-            requestSkillFreshnessUpdateDialog()
+        alActualizar: () => {
+          // Clear ownership so later inventory cannot retain a closed notice.
+          nextActive.persistDismissal = false
+          if (activeNudgeRef.current === nextActive) {
+            activeNudgeRef.current = null
           }
+          requestSkillFreshnessUpdateDialog()
         }
-      }
+      })
     )
     activeNudgeRef.current = nextActive
   }, [target, targetKey, dismissed, settingsLoaded, state.error, state.plan, updateSettings])

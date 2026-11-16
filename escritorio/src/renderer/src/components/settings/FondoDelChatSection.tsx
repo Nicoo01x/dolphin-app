@@ -229,7 +229,7 @@ export function FondoDelChatSection({
               <p className="text-xs text-muted-foreground">
                 {translate(
                   'settings.appearance.fondoDelChat.veloAyuda',
-                  'How much the painting darkens. The panels always add what the text needs.'
+                  'How much the painting darkens and how much the glass panels cover. The text reads the same across the whole range.'
                 )}
               </p>
             </div>
@@ -265,6 +265,17 @@ export function FondoDelChatSection({
             checked={fondo.desenfoque}
             disabled={ninguno}
             onChange={() => guardar({ desenfoque: !fondo.desenfoque })}
+          />
+          {/* Apagado de fábrica: la transparencia se elige acá, no la decide el sistema. */}
+          <SettingsSwitchRow
+            label={translate('settings.appearance.fondoDelChat.panelesOpacos', 'Opaque panels')}
+            description={translate(
+              'settings.appearance.fondoDelChat.panelesOpacosAyuda',
+              'The panels cover the painting and it only shows behind the empty chat. For anyone who prefers less transparency.'
+            )}
+            checked={fondo.panelesOpacos}
+            disabled={ninguno}
+            onChange={() => guardar({ panelesOpacos: !fondo.panelesOpacos })}
           />
         </div>
       </div>

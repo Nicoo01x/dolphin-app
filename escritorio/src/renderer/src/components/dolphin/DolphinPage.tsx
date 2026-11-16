@@ -9,6 +9,7 @@ import { DOLPHIN_BROWSER_PAGE_GUEST_WEB_PREFERENCES_ATTRIBUTE } from '../../../.
 import { DolphinMark } from './DolphinMark'
 import { dolphinRunsFor } from './dolphin-available'
 import { dolphinFailureMessage } from './dolphin-failure'
+import { requestDolphinConsole } from './dolphin-console-request'
 import type { DolphinPageVista } from '@/store/slices/ui/ui-slice-contract-core'
 import { vistaDeMensajeDeConsola } from './dolphin-console-message'
 
@@ -99,25 +100,16 @@ export default function DolphinPage(): React.JSX.Element {
     }
     let alive = true
     setState({ kind: 'starting' })
-    void window.api.dolphin.openConsole(repoPath).then(
-      (result) => {
-        if (alive) {
-          setState(
-            result.ok
-              ? { kind: 'ready', url: result.url }
-              : { kind: 'failed', reason: dolphinFailureMessage(result) }
-          )
-        }
-      },
-      (error: unknown) => {
-        if (alive) {
-          setState({
-            kind: 'failed',
-            reason: error instanceof Error ? error.message : String(error)
-          })
-        }
+    // Siempre contesta: con la consola, con el motivo del proceso principal, o con un tope propio.
+    void requestDolphinConsole(() => window.api.dolphin.openConsole(repoPath)).then((result) => {
+      if (alive) {
+        setState(
+          result.ok
+            ? { kind: 'ready', url: result.url }
+            : { kind: 'failed', reason: dolphinFailureMessage(result) }
+        )
       }
-    )
+    })
     return () => {
       alive = false
     }
@@ -198,7 +190,7 @@ export default function DolphinPage(): React.JSX.Element {
     if (!repoPath) {
       return
     }
-    void window.api.dolphin.openConsole(repoPath).then((result) => {
+    void requestDolphinConsole(() => window.api.dolphin.openConsole(repoPath)).then((result) => {
       if (!result.ok) {
         setState({ kind: 'failed', reason: dolphinFailureMessage(result) })
       } else if (result.url === url && webviewRef.current) {

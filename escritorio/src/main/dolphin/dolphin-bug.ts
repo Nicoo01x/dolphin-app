@@ -1,5 +1,5 @@
 import { app, ipcMain } from 'electron'
-import { join, resolve } from 'node:path'
+import { resolve } from 'node:path'
 import { spawnProcess } from '@dolphin/process-host'
 import { forceTerminateProcessTree } from '@dolphin/process-host/process-tree-termination'
 import type { ChildProcessWithoutNullStreams as PipedChildProcess } from 'node:child_process'
@@ -12,7 +12,7 @@ import type {
   DolphinBugTerminado
 } from '../../shared/dolphin-bug-types'
 import { resolveDolphinAppDir } from './dolphin-console'
-import { rutaExiste } from './ruta-existe'
+import { coreEntry } from './dolphin-core-entry'
 
 type Lanzar = (spec: PipedProcessSpec) => PipedChildProcess
 
@@ -36,14 +36,13 @@ export type DolphinBugLaunchOptions = {
   onFinished?: (terminado: DolphinBugTerminado) => void
 }
 
+/** `entry`: con qué se lanza el comando `dolphin` (ver coreEntry): fuente con tsx, o dist/. */
 export function argumentosDolphinBug(
   request: Pick<DolphinBugRequest, 'repoPath' | 'que' | 'elemento'>,
-  dolphinDir: string
+  entry: readonly string[]
 ): readonly string[] {
   return [
-    '--import',
-    'tsx',
-    join(dolphinDir, 'src', 'dolphin.ts'),
+    ...entry,
     'bug',
     // `--opción=valor`: lo que escribió la persona puede empezar con un guion, y suelto se
     // leería como otra opción.
@@ -85,18 +84,21 @@ function conectarSalida(
   stream?.on('error', () => undefined)
 }
 
+/**
+ * Dónde está Dolphin y con qué se lanza: un clon (src/ con tsx) o el núcleo construido que trae
+ * la app instalada (resources/dolphin-app/dist). Why no solo src/: la app instalada no trae código
+ * fuente ni tsx, y el reporte fallaba diciendo que Dolphin no estaba, con el núcleo ahí mismo.
+ */
 async function buscarDolphin(
   options: DolphinBugLaunchOptions,
   env: NodeJS.ProcessEnv
-): Promise<string> {
+): Promise<{ dolphinDir: string; entry: readonly string[] }> {
   const dolphinDir = options.dolphinDir ?? (await resolveDolphinAppDir(options.appPath, env))
-  if (
-    !(await rutaExiste(join(dolphinDir, 'src', 'dolphin.ts'))) ||
-    !(await rutaExiste(join(dolphinDir, 'node_modules', 'tsx', 'package.json')))
-  ) {
+  const entry = await coreEntry(dolphinDir, 'dolphin')
+  if (!entry) {
     throw new Error(`Dolphin no está en ${dolphinDir}`)
   }
-  return dolphinDir
+  return { dolphinDir, entry }
 }
 
 export async function iniciarDolphinBug(
@@ -109,8 +111,9 @@ export async function iniciarDolphinBug(
   const env = options.env ?? process.env
   reporteArrancando = true
   let dolphinDir: string
+  let entry: readonly string[]
   try {
-    dolphinDir = await buscarDolphin(options, env)
+    ;({ dolphinDir, entry } = await buscarDolphin(options, env))
   } finally {
     reporteArrancando = false
   }
@@ -138,7 +141,7 @@ export async function iniciarDolphinBug(
   try {
     child = (options.spawn ?? spawnProcess)({
       program: options.nodeProgram ?? process.execPath,
-      args: argumentosDolphinBug(request, dolphinDir),
+      args: argumentosDolphinBug(request, entry),
       cwd: dolphinDir,
       env: { ...env, ELECTRON_RUN_AS_NODE: '1' },
       stdio: 'pipe',

@@ -23,6 +23,11 @@ const ESCALA: readonly (readonly [number, number])[] = [
   [500, 0.12]
 ]
 
+/** Quien pidió menos movimiento la ve aparecer e irse sin viaje: el arrastre sigue, la animación no. */
+function sinMovimiento(): boolean {
+  return globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
+}
+
 function escalaPara(distancia: number): number {
   for (let i = 1; i < ESCALA.length; i += 1) {
     const [d0, s0] = ESCALA[i - 1]!
@@ -68,7 +73,7 @@ export function useArrastreParaDescartar(
   const descartar = useCallback(() => {
     const fondo = fondoRef.current
     const ventana = ventanaRef.current
-    if (!fondo || !ventana) {
+    if (!fondo || !ventana || sinMovimiento()) {
       cerrarRef.current()
       return
     }
@@ -148,6 +153,10 @@ export function useArrastreParaDescartar(
         const rapidez = Math.hypot(vx, vy)
         const cierra =
           escalaPara(distancia) <= 0.35 || distancia > 430 || (rapidez > 900 && distancia > 260)
+        if (cierra && sinMovimiento()) {
+          cerrarRef.current()
+          return
+        }
         if (cierra) {
           gsap.to(ventana, {
             x: this.x + vx * 0.12,
@@ -167,7 +176,7 @@ export function useArrastreParaDescartar(
           scale: 1,
           opacity: 1,
           filter: 'blur(0px)',
-          duration: 0.58,
+          duration: sinMovimiento() ? 0 : 0.58,
           ease: 'elastic.out(0.75, 0.55)'
         })
       }
@@ -176,7 +185,12 @@ export function useArrastreParaDescartar(
     // Why después de crear el Draggable: al registrarse normaliza el transform del elemento y pisa
     // un tween de x/y en curso, y la ventana se quedaba a mitad de camino entre el botón y el
     // centro. La entrada va cuando el arrastre ya está puesto.
-    gsap.fromTo(fondo, { opacity: 0 }, { opacity: 1, duration: 0.22, ease: 'power2.out' })
+    const quieta = sinMovimiento()
+    gsap.fromTo(
+      fondo,
+      { opacity: 0 },
+      { opacity: 1, duration: quieta ? 0 : 0.22, ease: 'power2.out' }
+    )
     // La ventana nace del botón que la abrió y crece hasta el centro; sin botón, la entrada de
     // /nico-mockup tal cual (escala .94 y 16 px desde abajo).
     gsap.fromTo(
@@ -189,7 +203,7 @@ export function useArrastreParaDescartar(
         y: 0,
         scale: 1,
         opacity: 1,
-        duration: naceRef.current ? 0.44 : 0.34,
+        duration: quieta ? 0 : naceRef.current ? 0.44 : 0.34,
         ease: 'power3.out',
         // El arrastre arranca desde donde la ventana quedó, no desde donde nació.
         onComplete: () => arrastre?.update()

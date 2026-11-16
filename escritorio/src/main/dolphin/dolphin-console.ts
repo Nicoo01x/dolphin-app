@@ -1,5 +1,5 @@
 import { leerEnvDolphin } from '../../shared/dolphin-env'
-import { join, resolve } from 'node:path'
+import { basename, join, resolve } from 'node:path'
 import { rutaExiste } from './ruta-existe'
 import { spawnProcess } from '@dolphin/process-host'
 import {
@@ -12,6 +12,15 @@ import type {
   DolphinLiveRequest,
   DolphinLiveResult
 } from '../../shared/dolphin-console-types'
+import {
+  askConsole,
+  consoleEntry,
+  DolphinFailure,
+  sleep,
+  stderrTail,
+  urlFromOutput,
+  waitUntilServing
+} from './dolphin-console-arranque'
 
 /**
  * La consola de Dolphin adentro de la app de escritorio.
@@ -28,6 +37,7 @@ import type {
  */
 
 export type { DolphinConsoleResult }
+export { askConsole, DolphinFailure, tokenFromConsolePage } from './dolphin-console-arranque'
 
 /** El proceso de una consola: lo que devuelve spawnProcess (este repo no importa child_process directo). */
 type ChildProcess = ReturnType<typeof spawnProcess>
@@ -39,34 +49,28 @@ export type RunningConsole = {
   token: string
 }
 
-/** Una falla con su código, para el renderer, y el detalle tal cual. */
-export class DolphinFailure extends Error {
-  constructor(
-    readonly code: DolphinFailureCode,
-    readonly detail?: string
-  ) {
-    super(detail ?? code)
-  }
-}
-
-/** El pase que la consola de Dolphin pone en su página (`<meta name="dolphin-token">`). */
-export function tokenFromConsolePage(html: string): string | undefined {
-  return /<meta name="dolphin-token" content="([0-9a-f]+)"/.exec(html)?.[1]
-}
-
 export type OpenOptions = {
   /** La carpeta de la app (app.getAppPath()): Dolphin se busca al lado, salvo DOLPHIN_APP_DIR. */
   appPath: string
   /** Con qué se corre Node: por defecto, el mismo Electron como Node (no depende del PATH). */
   nodeProgram?: string
   env?: NodeJS.ProcessEnv
+  /** Cuánto puede tardar en arrancar, de punta a punta: decir dónde escucha y contestar su página. */
   timeoutMs?: number
 }
 
-/** Cuánto se espera un pedido a la consola: uno solo para todos. */
-const REQUEST_TIMEOUT_MS = 15_000
-/** Cuánto se espera cada «¿ya contestás?» mientras arranca. */
-const PROBE_TIMEOUT_MS = 2_000
+/**
+ * Lo que puede tardar una consola en arrancar, si no se dice otra cosa. Why 45 s: en frío, con la
+ * máquina cargada, se midió un arranque de 38 s (ver dolphin-tablero-mover.ts).
+ */
+const START_TIMEOUT_MS = 45_000
+/**
+ * El margen por encima del arranque para todo lo demás: buscar Dolphin en el disco, esperar a otro
+ * pedido que ya la estaba levantando. Why un tope sobre todo y no solo sobre el proceso: con el
+ * disco ocupado, mirar si existe un archivo puede tardar lo que quiera, y la pantalla se quedaba
+ * en «Levantando la consola…» sin error ni Reintentar.
+ */
+const OPEN_MARGIN_MS = 5_000
 
 const consoles = new Map<string, Promise<RunningConsole>>()
 /** Los procesos de consola vivos, también los que todavía arrancan: al salir no queda ninguno. */
@@ -90,107 +94,37 @@ export async function resolveDolphinAppDir(
     : resolve(arriba, 'dolphin-app')
 }
 
-/** Un pedido a la consola, con tope: una consola colgada no cuelga a la app. */
-export function askConsole(
-  url: string,
-  init: RequestInit = {},
-  timeoutMs = REQUEST_TIMEOUT_MS
-): Promise<Response> {
-  return fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) })
-}
-
-const sleep = (ms: number): Promise<void> => new Promise((done) => setTimeout(done, ms).unref())
-
-/** La última línea que el proceso escribió por stderr: es lo que explica por qué se cayó. */
-function stderrTail(child: ChildProcess): () => string {
-  let tail = ''
-  child.stderr?.setEncoding('utf8')
-  child.stderr?.on('data', (chunk: string) => {
-    tail = (tail + chunk).slice(-2_000)
-  })
-  child.stderr?.on('error', () => undefined)
-  return () =>
-    tail
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .findLast((line) => line !== '') ?? ''
-}
-
-/** Detalle: el código de salida (o la señal) y, si escribió algo, su última línea de error. */
-function exitedFailure(child: ChildProcess, lastError: string): DolphinFailure {
-  const how = String(child.signalCode ?? child.exitCode)
-  return new DolphinFailure('exited', lastError ? `${how} · ${lastError}` : how)
+/**
+ * La app instalada (corre desde su app.asar) sin DOLPHIN_APP_DIR: Dolphin se busca en su carpeta
+ * resources, y el instalador no lo trae.
+ */
+function installedWithoutCore(appPath: string, env: NodeJS.ProcessEnv): boolean {
+  return basename(appPath).toLowerCase().endsWith('.asar') && !leerEnvDolphin('APP_DIR', env)
 }
 
 /**
- * La URL que la consola avisa por su salida al arrancar («http://127.0.0.1:PUERTO»). Después la
- * salida se sigue leyendo y se descarta: un pipe que nadie vacía frena al proceso cuando se llena.
+ * La consola del repo, con tope de punta a punta: pase lo que pase en el medio, contesta.
+ * Why no se corta el arranque al vencer: si la consola termina de levantar, queda para el próximo
+ * pedido (Reintentar la encuentra ya lista).
  */
-function urlFromOutput(
-  child: ChildProcess,
-  timeoutMs: number,
-  lastError: () => string
-): Promise<string> {
+export function ensureConsoleInTime(repo: string, options: OpenOptions): Promise<RunningConsole> {
+  const limitMs = (options.timeoutMs ?? START_TIMEOUT_MS) + OPEN_MARGIN_MS
   return new Promise((done, fail) => {
-    let seen = ''
     const timer = setTimeout(
-      () => fail(new DolphinFailure('timeout', String(Math.round(timeoutMs / 1000)))),
-      timeoutMs
+      () => fail(new DolphinFailure('timeout', String(Math.round(limitMs / 1000)))),
+      limitMs
     )
-    const onData = (chunk: Buffer | string): void => {
-      seen = (seen + String(chunk)).slice(-4_000)
-      const match = /http:\/\/127\.0\.0\.1:([1-9]\d*)/.exec(seen)
-      if (!match) {
-        return
+    ensureConsole(repo, options).then(
+      (running) => {
+        clearTimeout(timer)
+        done(running)
+      },
+      (error: unknown) => {
+        clearTimeout(timer)
+        fail(error)
       }
-      clearTimeout(timer)
-      child.stdout?.off('data', onData)
-      child.stdout?.resume()
-      done(match[0])
-    }
-    child.stdout?.on('data', onData)
-    // Why: sin este listener, un error del pipe tira el proceso principal entero.
-    child.stdout?.on('error', () => undefined)
-    child.once('exit', () => {
-      clearTimeout(timer)
-      fail(exitedFailure(child, lastError()))
-    })
+    )
   })
-}
-
-/** Espera a que la consola conteste con su página y devuelve el pase que trae. */
-async function waitUntilServing(
-  url: string,
-  child: ChildProcess,
-  timeoutMs: number,
-  lastError: () => string
-): Promise<string> {
-  const deadline = Date.now() + timeoutMs
-  while (Date.now() < deadline) {
-    if (childProcessHasExited(child)) {
-      throw exitedFailure(child, lastError())
-    }
-    let response: Response | undefined
-    try {
-      response = await askConsole(url, {}, PROBE_TIMEOUT_MS)
-    } catch {
-      // Todavía no escucha: se vuelve a preguntar.
-    }
-    // Why: sin construir, la consola contesta 503 enseguida y para siempre; esperar no lo arregla.
-    if (response?.status === 503) {
-      throw new DolphinFailure('not-built')
-    }
-    if (response?.ok) {
-      const token = tokenFromConsolePage(await response.text())
-      if (token) {
-        return token
-      }
-      // Why: sin el pase en la página es un Dolphin de antes del pase: construirlo de nuevo lo trae.
-      throw new DolphinFailure('not-built')
-    }
-    await sleep(200)
-  }
-  throw new DolphinFailure('timeout', String(Math.round(timeoutMs / 1000)))
 }
 
 /** Clave del repo: en Windows las rutas no distinguen mayúsculas. */
@@ -202,25 +136,16 @@ function keyOf(repo: string): string {
 async function startConsole(
   repo: string,
   dir: string,
+  entry: readonly string[],
   options: OpenOptions
 ): Promise<RunningConsole> {
   const env = options.env ?? process.env
   const child = spawnProcess({
     program: options.nodeProgram ?? process.execPath,
-    // Why --import y no el cli de tsx: el cli lanza otro proceso, y en Windows matar al hijo deja
-    // al nieto escuchando. Así es uno solo (como lanza Dolphin sus propios procesos).
     // Why --puerto 0: el puerto lo elige el sistema cuando la consola escucha, y ella avisa cuál.
     // Elegir uno libre acá y pasárselo dejaba un hueco en el que otro proceso se lo llevaba, y
     // entonces contestaba otro servidor en su lugar.
-    args: [
-      '--import',
-      'tsx',
-      join(dir, 'src', 'ui-cli.ts'),
-      '--repo',
-      resolve(repo),
-      '--puerto',
-      '0'
-    ],
+    args: [...entry, '--repo', resolve(repo), '--puerto', '0'],
     cwd: dir,
     // Why: con el Electron de la app como Node no hace falta un Node en el PATH. Dolphin se saca
     // la variable al arrancar y solo se la pasa a sus propios procesos (dolphin-app,
@@ -235,10 +160,12 @@ async function startConsole(
   child.once('exit', () => children.delete(child))
   child.once('error', () => undefined)
   const lastError = stderrTail(child)
-  const timeoutMs = options.timeoutMs ?? 20_000
+  const timeoutMs = options.timeoutMs ?? START_TIMEOUT_MS
+  // Why un solo presupuesto: con un tope por paso, dos pasos lentos sumaban el doble de lo dicho.
+  const deadline = Date.now() + timeoutMs
   try {
     const url = await urlFromOutput(child, timeoutMs, lastError)
-    const token = await waitUntilServing(url, child, timeoutMs, lastError)
+    const token = await waitUntilServing(url, child, deadline, timeoutMs, lastError)
     return { url, child, token }
   } catch (error) {
     void forceTerminateProcessTree(child).catch(() => false)
@@ -267,18 +194,22 @@ export async function ensureConsole(repo: string, options: OpenOptions): Promise
     }
   }
 
-  const dir = await resolveDolphinAppDir(options.appPath, options.env ?? process.env)
-  if (
-    !(await rutaExiste(join(dir, 'src', 'ui-cli.ts'))) ||
-    !(await rutaExiste(join(dir, 'node_modules', 'tsx', 'package.json')))
-  ) {
-    throw new DolphinFailure('not-found', dir)
+  const env = options.env ?? process.env
+  const dir = await resolveDolphinAppDir(options.appPath, env)
+  const entry = await consoleEntry(dir)
+  if (!entry) {
+    // Why otro código: la app instalada no trae el núcleo, y «corré npm install en la carpeta
+    // resources de la app» no es algo que nadie pueda hacer.
+    throw new DolphinFailure(
+      installedWithoutCore(options.appPath, env) ? 'not-installed' : 'not-found',
+      dir
+    )
   }
   // Why volver a mirar: mientras se buscaba Dolphin en el disco, otro pedido pudo haberla arrancado.
   if (consoles.has(key)) {
     return ensureConsole(repo, options)
   }
-  const starting = startConsole(repo, dir, options)
+  const starting = startConsole(repo, dir, entry, options)
   consoles.set(key, starting)
   const forget = (): void => {
     if (consoles.get(key) === starting) {
@@ -309,7 +240,7 @@ export async function openDolphinConsole(
   options: OpenOptions
 ): Promise<DolphinConsoleResult> {
   try {
-    return { ok: true, url: (await ensureConsole(repo, options)).url }
+    return { ok: true, url: (await ensureConsoleInTime(repo, options)).url }
   } catch (error) {
     return failureOf(error)
   }
@@ -326,7 +257,7 @@ export async function sendDolphinLive(
 ): Promise<DolphinLiveResult> {
   let running: RunningConsole
   try {
-    running = await ensureConsole(request.repoPath, options)
+    running = await ensureConsoleInTime(request.repoPath, options)
   } catch (error) {
     return failureOf(error)
   }

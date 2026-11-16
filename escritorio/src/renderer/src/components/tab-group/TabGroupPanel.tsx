@@ -24,6 +24,7 @@ import { useEditorGroupFileDropOwner } from '../editor/use-editor-group-file-dro
 import { cn } from '@/lib/class-names'
 import { UNFOCUSED_SPLIT_GROUP_OPACITY } from './split-group-dim'
 import { useWindowBackdropActive } from '@/app-shell/appearance/window-backdrop'
+import { ContadorDeCambios } from '@/components/dolphin/pestanas/ContadorDeCambios'
 import { EditorRevealFlash } from './EditorRevealFlash'
 import { SplitPaneLanding } from './SplitPaneLanding'
 import { isSplitLandingGroup } from '@/store/slices/tabs/split-landing-groups'
@@ -308,6 +309,8 @@ export default function TabGroupPanel({
               className={actionChromeClassName}
               style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
             >
+              {/* Dolphin: el +N −M de la rama, como en la referencia de la ventana de vidrio. */}
+              <ContadorDeCambios worktreeId={worktreeId} />
               <TabBarQuickCommandsButton
                 worktreeId={worktreeId}
                 groupId={groupId}

@@ -1,3 +1,4 @@
+import sierra from '../../../assets/fondos/sierra.webp'
 import merced from '../../../assets/fondos/merced.webp'
 import desfiladero from '../../../assets/fondos/desfiladero.webp'
 import andes from '../../../assets/fondos/andes.webp'
@@ -24,6 +25,7 @@ export type FondoIncluido = {
 }
 
 export const FONDOS_INCLUIDOS: readonly FondoIncluido[] = [
+  { id: 'sierra', url: sierra, obra: 'Sierra Nevada', artista: 'Albert Bierstadt', anio: 1868 },
   { id: 'merced', url: merced, obra: 'Río Merced', artista: 'Albert Bierstadt', anio: 1866 },
   {
     id: 'desfiladero',

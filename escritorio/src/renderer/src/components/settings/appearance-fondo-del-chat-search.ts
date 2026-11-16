@@ -20,7 +20,7 @@ export const getFondoDelChatEntries = createLocalizedCatalog((): SettingsSearchE
     title: translate('settings.appearance.fondoDelChat.title', 'Chat background'),
     description: translate(
       'settings.appearance.fondoDelChat.description',
-      'A painting behind the window. The panels go translucent on top and the text stays readable.'
+      'A painting behind the whole window. The panels are glass on top and the text stays readable.'
     ),
     targetSectionId: 'chat-background',
     keywords: PALABRAS.flatMap(([clave, palabra]) =>

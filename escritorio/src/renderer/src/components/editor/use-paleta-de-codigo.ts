@@ -5,6 +5,7 @@ import { definirTemasDeDolphin, temaDeDolphin } from './tema-dolphin-monaco'
 import { useDocumentDarkTheme } from '@/hooks/use-document-dark-theme'
 import { temaDeCodigo } from '../../../../shared/tema-de-codigo'
 import { fijarTemaDeResaltado } from '@/lib/syntax-highlighting/syntax-highlighter'
+import { usePaisajeActivo } from '../dolphin/paisaje/paisaje-activo'
 import './tema-noche.css'
 
 /**
@@ -23,11 +24,13 @@ export function usePaletaDeCodigo(): void {
   const oscura = useAppStore((s) => s.settings?.paletaDeCodigoOscura)
   const clara = useAppStore((s) => s.settings?.paletaDeCodigoClara)
   const tema = temaDeCodigo(useAppStore((s) => s.settings?.temaDeCodigo))
+  // Con paisaje y paneles de vidrio, el lienzo del editor va sin fondo (`sobreElVidrio`).
+  const vidrio = usePaisajeActivo((s) => s.activo && s.vidrio)
 
   useEffect(() => {
-    definirTemasDeDolphin(monaco.editor, { oscura, clara }, tema)
+    definirTemasDeDolphin(monaco.editor, { oscura, clara }, tema, vidrio)
     monaco.editor.setTheme(temaDeDolphin(oscuro))
-  }, [oscura, clara, oscuro, tema])
+  }, [oscura, clara, oscuro, tema, vidrio])
 
   // El chat colorea con shiki, no con Monaco: lo mismo, del otro lado. Y la marca en <html> es lo
   // que deja a las hojas pintar lo que ningún tema sabe (la barra del diff, los diffs del chat).

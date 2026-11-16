@@ -26,7 +26,7 @@ const SESIONES = [
 function MarcaDelPaisaje({ velo }: { velo: number }): null {
   useLayoutEffect(() => {
     const raiz = document.documentElement
-    raiz.dataset.dolphinPaisaje = ''
+    raiz.dataset.dolphinPaisaje = 'vidrio'
     for (const [nombre, valor] of Object.entries(variablesDelPaisaje(velo))) {
       raiz.style.setProperty(nombre, valor)
     }

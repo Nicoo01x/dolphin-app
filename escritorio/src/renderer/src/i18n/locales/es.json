@@ -276,7 +276,7 @@
       },
       "fondoDelChat": {
         "title": "Fondo del chat",
-        "description": "Una pintura detrás de la ventana. Los paneles quedan translúcidos encima y el texto se sigue leyendo.",
+        "description": "Una pintura detrás de toda la ventana. Los paneles son de vidrio encima y el texto se sigue leyendo.",
         "keyword": {
           "background": "fondo",
           "wallpaper": "fondo de pantalla",
@@ -294,9 +294,11 @@
         "pesada": "Esa imagen pesa más de 25 MB. Elegí una más liviana.",
         "ilegible": "No se pudo leer esa imagen. Probá con otra.",
         "velo": "Velo",
-        "veloAyuda": "Cuánto se oscurece la pintura. Los paneles siempre suman lo que el texto necesita.",
+        "veloAyuda": "Cuánto se oscurece la pintura y cuánto tapa el vidrio de los paneles. El texto se lee igual en todo el recorrido.",
         "desenfoque": "Desenfocar la pintura",
-        "desenfoqueAyuda": "Un desenfoque leve. La trama de la tela se sigue viendo."
+        "desenfoqueAyuda": "Un desenfoque leve. La trama de la tela se sigue viendo.",
+        "panelesOpacos": "Paneles opacos",
+        "panelesOpacosAyuda": "Los paneles tapan la pintura y queda sólo detrás del chat vacío. Para quien prefiere menos transparencia."
       }
     },
     "browser": {
@@ -5476,9 +5478,9 @@
           "titleOne": "Una skill de Dolphin instalada está desactualizada",
           "updateOne": "Actualizar skill",
           "updateMany": "Actualizar skills",
-          "description": "Actualiza {{value0}} para que los Agents sigan las instrucciones actuales de esta versión de Dolphin.",
+          "description": "Actualizá {{value0}} para que los agentes sigan las instrucciones de esta versión de Dolphin.",
           "title_other": "{{count}} skills de Dolphin instaladas están desactualizadas",
-          "title_one": "{{count}} skills de Dolphin instaladas están desactualizadas",
+          "title_one": "{{count}} skill de Dolphin instalada está desactualizada",
           "title_many": "{{count}} skills de Dolphin instaladas están desactualizadas"
         },
         "SkillFreshnessUpdateDialog": {
@@ -18846,9 +18848,10 @@
         },
         "failure": {
           "notFound": "Dolphin no está en {{value0}}: corré npm install ahí, o indicá su carpeta con DOLPHIN_APP_DIR.",
+          "notInstalled": "Esta instalación no trae el núcleo de Dolphin, que es el que corre la consola. Si tenés el repo dolphin-app, corré npm install y npm run ui:build ahí, poné su carpeta en DOLPHIN_APP_DIR y abrí la app de nuevo.",
           "notBuilt": "La consola de Dolphin no está construida: corré npm run ui:build en dolphin-app y probá de nuevo.",
-          "exited": "La consola de Dolphin se cerró al arrancar ({{value0}}).",
-          "timeout": "La consola de Dolphin no contestó en {{value0}} s.",
+          "exited": "La consola de Dolphin se cerró al arrancar ({{value0}}). Revisá ese error y probá de nuevo.",
+          "timeout": "La consola de Dolphin no contestó en {{value0}} s. Probá de nuevo; si vuelve a pasar, cerrá la app y abrila otra vez.",
           "unreachable": "No se pudo hablar con Dolphin: {{value0}}",
           "invalidRequest": "El pedido a Dolphin llegó incompleto.",
           "unknownProject": "{{value0}} no es un proyecto ni un espacio de trabajo de la app.",
@@ -18949,7 +18952,7 @@
           "noFinalLine": "El comando no dejó un renglón final.",
           "incomplete": "El reporte llegó incompleto.",
           "alreadyRunning": "Ya hay un reporte en curso.",
-          "dolphinMissing": "Dolphin no está en {{value0}}."
+          "dolphinMissing": "Dolphin no está en {{value0}}. Reinstalá la app, o poné la carpeta del repo dolphin-app en DOLPHIN_APP_DIR y abrí la app de nuevo."
         },
         "quota": {
           "switched": "Cambié a {{value0}} porque {{value1}} se quedó sin cupo.",
@@ -19003,6 +19006,9 @@
           "unitDay": "d",
           "now": "Ahora"
         },
+        "pestanas": {
+          "contadorDeCambios": "{{value0}} líneas agregadas y {{value1}} borradas en este espacio de trabajo"
+        },
         "paisaje": {
           "preguntaConProyecto": "¿En qué trabajamos en {{value0}}?",
           "pregunta": "¿En qué trabajamos?"
@@ -19048,6 +19054,9 @@
             "codigo": "salió con {{value0}}",
             "fallo": "falló"
           }
+        },
+        "avisos": {
+          "ahoraNo": "Ahora no"
         }
       },
       "linear-issue-attribute-filter-dropdowns": {
@@ -22523,8 +22532,17 @@
       "offTerminal": "¿Prefieres el terminal? Sigue teniendo soporte completo. Tus agentes seguirán abriéndose allí hasta que elijas Chat.",
       "onIntro": "La interfaz de chat ya no es experimental y ahora forma parte de Dolphin. Tus agentes siguen abriéndose como chats, con mensajes enriquecidos, elementos visuales e imágenes.",
       "onTerminal": "El terminal también sigue teniendo soporte completo. Puedes volver a cambiar cualquier agente cuando quieras.",
+      "changeInSettings": "Cambialo cuando quieras en <link>Ajustes → Interfaz de chat</link>.",
       "stayInTerminal": "Seguir en el terminal",
+      "switchToTerminal": "Pasar al terminal",
       "cta": "Usar la interfaz de chat",
+      "saveFailed": "No se pudo prender la interfaz de chat. Prendela en Ajustes → Interfaz de chat.",
+      "terminalSaveFailed": "No se pudo volver al terminal. Apagá la interfaz de chat en Ajustes → Interfaz de chat.",
+      "switched": "Los agentes nuevos ahora se abren en la interfaz de chat. Podés volver cuando quieras en Ajustes → Interfaz de chat.",
+      "switchedNoteTitle": "Los agentes nuevos se van a abrir en la interfaz de chat",
+      "switchedNoteBody": "¿Preferís el terminal? Volvé cuando quieras: buscá <term>Interfaz de chat</term> en Ajustes.",
+      "openSettings": "Abrir ajustes",
+      "dismiss": "Cerrar",
       "demoTabTitle": "Explicar el inicio de sesión",
       "demoPrompt": "Explica cómo funciona el inicio de sesión",
       "demoReply": "El inicio de sesión empieza en {{file}}: el navegador envía a /login, el servidor comprueba la contraseña y crea una sesión, y luego te redirige a la app. Este es el flujo:",
@@ -22532,10 +22550,7 @@
       "demoSession": "Sesión",
       "demoApp": "App",
       "demoPassword": "contraseña",
-      "demoCookie": "cookie",
-      "switchedNoteTitle": "Los agentes nuevos se abrirán en Chat UI",
-      "switchedNoteBody": "¿Prefieres el terminal? Vuelve cuando quieras: busca <term>Chat UI</term> en Ajustes.",
-      "openSettings": "Abrir ajustes"
+      "demoCookie": "cookie"
     },
     "autoDelegationError": "No se pudo prender la delegación automática."
   },
@@ -22831,6 +22846,11 @@
       "description": "El espacio de trabajo activo está oculto en la barra lateral. Mostrarlo solo ajustará los filtros que lo ocultan.",
       "confirm": "Ajustar filtros y mostrar",
       "cancel": "Mantener filtros"
+    },
+    "workspaceLocation": {
+      "local": "En tu computadora",
+      "server": "En un servidor",
+      "serverNamed": "En {{hostName}}"
     },
     "wslMoved": {
       "movedToHost": "Movido al host de {{distro}}",
@@ -23221,6 +23241,21 @@
     },
     "restartedInputNotSent": "El terminal se reinició mientras escribías, así que parte de la entrada puede no haberle llegado. Revisa el nuevo shell antes de volver a escribirla.",
     "typingBeforeStartNotSent": "Algunas teclas pulsadas mientras se iniciaba el terminal no se enviaron.",
+    "windowsFontWeight": {
+      "title": "El texto del terminal en Windows ahora es más fino",
+      "okay": "Listo",
+      "lighterText": "Texto del terminal más fino"
+    },
+    "claudeThemeSyncOffer": {
+      "title": "¿Querés que Claude Code use el tema de Dolphin?",
+      "description": "Claude Code va a usar en este equipo los colores de tu terminal y a seguir los cambios de tema, también fuera de Dolphin. Podés cambiarlo en Ajustes.",
+      "accept": "Usar el tema",
+      "accepted": "Claude Code ya usa el tema de Dolphin",
+      "acceptedDescription": "Las sesiones nuevas de Claude Code en este equipo usan tu tema de Dolphin.",
+      "decline": "No, gracias",
+      "failed": "No se pudo prender el tema de Dolphin en Claude Code",
+      "failedDescription": "Prendelo en Ajustes."
+    },
     "stalledDaemonBanner": {
       "body": "El trabajo en segundo plano en este equipo se ha atascado. Es posible que la escritura y las terminales nuevas no funcionen. Reiniciar el servicio de terminal finaliza sus terminales y comandos en ejecución.",
       "review": "Revisar las opciones de reinicio",

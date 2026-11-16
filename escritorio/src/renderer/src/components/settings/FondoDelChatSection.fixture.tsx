@@ -29,7 +29,14 @@ export const ninguno = defineFixture(
     width: 900,
     render: () => (
       <Seccion
-        inicial={{ fondoDelChat: { fuente: { tipo: 'ninguno' }, velo: 0.7, desenfoque: false } }}
+        inicial={{
+          fondoDelChat: {
+            fuente: { tipo: 'ninguno' },
+            velo: 0.7,
+            desenfoque: false,
+            panelesOpacos: false
+          }
+        }}
       />
     )
   })

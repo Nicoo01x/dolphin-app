@@ -82,6 +82,11 @@
       "confirm": "Adjust filters and reveal",
       "cancel": "Keep filters"
     },
+    "workspaceLocation": {
+      "local": "On your computer",
+      "server": "On a server",
+      "serverNamed": "On {{hostName}}"
+    },
     "wslMoved": {
       "movedToHost": "Moved to {{distro}} host",
       "useHere": "Use on this computer again",
@@ -810,7 +815,7 @@
       },
       "fondoDelChat": {
         "title": "Chat background",
-        "description": "A painting behind the window. The panels go translucent on top and the text stays readable.",
+        "description": "A painting behind the whole window. The panels are glass on top and the text stays readable.",
         "keyword": {
           "background": "background",
           "wallpaper": "wallpaper",
@@ -828,9 +833,11 @@
         "pesada": "That image is over 25 MB. Pick a smaller one.",
         "ilegible": "That image could not be read. Try another one.",
         "velo": "Veil",
-        "veloAyuda": "How much the painting darkens. The panels always add what the text needs.",
+        "veloAyuda": "How much the painting darkens and how much the glass panels cover. The text reads the same across the whole range.",
         "desenfoque": "Blur the painting",
-        "desenfoqueAyuda": "A light blur. The texture of the canvas still shows."
+        "desenfoqueAyuda": "A light blur. The texture of the canvas still shows.",
+        "panelesOpacos": "Opaque panels",
+        "panelesOpacosAyuda": "The panels cover the painting and it only shows behind the empty chat. For anyone who prefers less transparency."
       }
     },
     "browser": {
@@ -19560,9 +19567,10 @@
         },
         "failure": {
           "notFound": "Dolphin is not in {{value0}}: run npm install there, or point DOLPHIN_APP_DIR to its folder.",
+          "notInstalled": "This installation doesn't include the Dolphin core, which is what runs the console. If you have the dolphin-app repo, run npm install and npm run ui:build there, set DOLPHIN_APP_DIR to its folder and open the app again.",
           "notBuilt": "The Dolphin console is not built: run npm run ui:build in dolphin-app and try again.",
-          "exited": "The Dolphin console closed while starting ({{value0}}).",
-          "timeout": "The Dolphin console did not answer in {{value0}} s.",
+          "exited": "The Dolphin console closed while starting ({{value0}}). Check that error and try again.",
+          "timeout": "The Dolphin console did not answer in {{value0}} s. Try again; if it keeps happening, close the app and open it again.",
           "unreachable": "Could not talk to Dolphin: {{value0}}",
           "invalidRequest": "The request to Dolphin came incomplete.",
           "unknownProject": "{{value0}} is not a project or a workspace of the app.",
@@ -19663,7 +19671,7 @@
           "noFinalLine": "The command left no final line.",
           "incomplete": "The report was incomplete.",
           "alreadyRunning": "A report is already in progress.",
-          "dolphinMissing": "Dolphin is not in {{value0}}."
+          "dolphinMissing": "Dolphin is not in {{value0}}. Reinstall the app, or set DOLPHIN_APP_DIR to the dolphin-app repo folder and open the app again."
         },
         "quota": {
           "switched": "Switched to {{value0}} because {{value1}} ran out of quota.",
@@ -19717,6 +19725,9 @@
           "unitDay": "d",
           "now": "Right now"
         },
+        "pestanas": {
+          "contadorDeCambios": "{{value0}} lines added and {{value1}} deleted in this workspace"
+        },
         "paisaje": {
           "preguntaConProyecto": "What should we work on in {{value0}}?",
           "pregunta": "What should we work on?"
@@ -19759,6 +19770,9 @@
             "codigo": "exited with {{value0}}",
             "fallo": "failed"
           }
+        },
+        "avisos": {
+          "ahoraNo": "Not now"
         }
       },
       "linear-issue-attribute-filter-dropdowns": {

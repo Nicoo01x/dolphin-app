@@ -2,7 +2,7 @@ import { homedir } from "node:os";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { createReadStream, createWriteStream } from "node:fs";
+import { createReadStream, createWriteStream, existsSync } from "node:fs";
 import { access, mkdir, open, readFile, stat } from "node:fs/promises";
 import { basename, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -1083,6 +1083,16 @@ async function correrTurno(
 }
 
 /**
+ * Con qué se lanza un comando de Dolphin: el código fuente con tsx en un clon, o su versión
+ * construida (`dist/`) donde no hay fuente, como en la app de escritorio instalada, que trae el
+ * núcleo construido y sin tsx. Lo mismo que elige bin/dolphin.mjs, y en el mismo orden.
+ */
+export function comandoDeDolphin(script: string, raiz: string = RAIZ): string[] {
+  const fuente = join(raiz, "src", script);
+  return existsSync(fuente) ? ["--import", "tsx", fuente] : [join(raiz, "dist", script.replace(/\.ts$/, ".js"))];
+}
+
+/**
  * Lanza un comando de Dolphin, con la salida a `.dolphin/siembras.log`, y si
  * `esperar` espera a que termine (el calendario corre de a un turno) y
  * devuelve su código de salida. Sin esperar, vuelve apenas lanzó: la consola
@@ -1108,7 +1118,7 @@ function lanzarYEsperar(
         // Un log que no se puede escribir no tira el servidor: la siembra corre igual.
         log.on("error", () => {});
         log.write(`\n── ${rotulo} ${new Date().toISOString()}\n`);
-        const proceso = spawn(process.execPath, ["--import", "tsx", join(RAIZ, "src", script), ...args], {
+        const proceso = spawn(process.execPath, [...comandoDeDolphin(script), ...args], {
           cwd: RAIZ,
           windowsHide: true,
           // Con canal: es por donde le llega «cortá» (ver soltarEnlacesAlCortar).

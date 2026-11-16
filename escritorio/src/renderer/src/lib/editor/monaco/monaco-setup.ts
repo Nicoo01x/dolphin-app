@@ -32,7 +32,7 @@ import { installMonacoContextMenuPaste } from '@/components/editor/install-monac
 import { runMonacoSetupSteps } from './monaco-setup-steps'
 import { installMonacoTsWorkerIdleStop } from './monaco-ts-worker-idle-stop'
 import { onPluginFontLoadsChanged } from '@/store/plugins/appearance/plugin-fonts'
-import { definirTemasDeDolphin } from '@/components/editor/tema-dolphin-monaco'
+import { redefinirTemasDeDolphin } from '@/components/editor/tema-dolphin-monaco'
 import '@/components/editor/tema-dolphin.css'
 
 globalThis.MonacoEnvironment = {
@@ -104,7 +104,8 @@ runMonacoSetupSteps([
   ['plugin font remeasure', () => onPluginFontLoadsChanged(() => monaco.editor.remeasureFonts())],
   // Los temas de Dolphin. Se registran una vez acá y no en cada editor: `defineTheme` es global,
   // y hacerlo al montar significaba redefinir cuatro temas por pestaña abierta.
-  ['Dolphin themes', () => definirTemasDeDolphin(monaco.editor)]
+  // Con lo último que pidió `usePaletaDeCodigo`, si ya pidió: si no, pisaría la paleta y el vidrio.
+  ['Dolphin themes', () => redefinirTemasDeDolphin(monaco.editor)]
 ])
 
 loader.config({ monaco })

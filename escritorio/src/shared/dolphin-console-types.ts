@@ -8,6 +8,8 @@ import { z } from 'zod'
 export type DolphinFailureCode =
   /** No está dolphin-app, o le faltan sus dependencias. Detalle: dónde se buscó. */
   | 'not-found'
+  /** La app instalada no trae el núcleo de Dolphin y no se le dijo dónde está. Detalle: dónde se buscó. */
+  | 'not-installed'
   /** La consola no está construida (`npm run ui:build`). */
   | 'not-built'
   /** Se cerró al arrancar. Detalle: el código y su última línea de error. */

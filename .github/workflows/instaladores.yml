@@ -193,6 +193,20 @@ jobs:
           done
           exit 1
 
+      # El núcleo de Dolphin (la raíz del repo: siembras, portón, la consola web) viaja construido
+      # adentro del instalador, en resources/dolphin-app: sin él, la consola de la app instalada no
+      # arranca. Es npm, como en nucleo.yml, y no pnpm como el escritorio. El empaquetado frena si
+      # falta (assertDolphinCoreBuilt) y vuelve a mirar el resultado (verifyPackagedDolphinCore).
+      - name: Construir el núcleo de Dolphin
+        working-directory: .
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          npm run build
+          npm run ui:build
+          test -f dist/ui-cli.js
+          test -f ui/dist/index.html
+
       - name: Compilar la app
         run: pnpm run build:release
 

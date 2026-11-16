@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { applyTerminalAppearance } from './terminal-appearance'
 import { useThemeBackgroundStore } from '@/store/appearance/theme-background'
 import { usePluginFontReady } from '@/store/plugins/appearance/plugin-fonts'
+import { usePaisajeActivo } from '@/components/dolphin/paisaje/paisaje-activo'
 import type { UseTerminalPaneLifecycleDeps } from '../mounting/terminal-pane-lifecycle-types'
 import type { TerminalPaneLifecycleRefs } from '../mounting/use-terminal-pane-lifecycle-refs'
 
@@ -22,6 +23,8 @@ export function useMountedTerminalAppearance(
 ): void {
   // Why: a theme image arrives after plugin themes load, so the single-paint switch must re-run then.
   const themeBackgroundActive = useThemeBackgroundStore((state) => state.active)
+  // Dolphin: lo mismo con el vidrio del paisaje, que también se prende después de montar.
+  const paisajeDeVidrio = usePaisajeActivo((state) => state.vidrio)
   // Why: a plugin terminal font joins the font list only once it loads, so cells re-measure then.
   const terminalFontReady = usePluginFontReady(deps.settings?.terminalFontFamily)
   useEffect(() => {
@@ -42,6 +45,7 @@ export function useMountedTerminalAppearance(
   }, [
     deps.settings,
     themeBackgroundActive,
+    paisajeDeVidrio,
     terminalFontReady,
     deps.systemPrefersDark,
     deps.effectiveMacOptionAsAlt,

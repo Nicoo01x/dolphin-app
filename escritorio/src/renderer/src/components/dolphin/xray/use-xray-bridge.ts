@@ -41,7 +41,7 @@ export function textoDeFalloBug(code: DolphinBugFailureCode, detail?: string): s
   if (code === 'dolphin-missing') {
     return translate(
       'auto.components.dolphin.xray.dolphinMissing',
-      'Dolphin is not in {{value0}}.',
+      'Dolphin is not in {{value0}}. Reinstall the app, or set DOLPHIN_APP_DIR to the dolphin-app repo folder and open the app again.',
       {
         value0: detail ?? ''
       }
