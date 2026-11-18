@@ -143,13 +143,15 @@ jobs:
         working-directory: /
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 12.14.0
-
+      # Why Node antes que pnpm: el instalador de pnpm corre `node install.js`, y esta imagen no
+      # trae Node en el PATH. Al revés, falla con «node: command not found» (ensayo del 18/11).
       - uses: actions/setup-node@v4
         with:
           node-version-file: escritorio/package.json
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.14.0
 
       # Why --ignore-scripts: el postinstall recompila los módulos nativos para Electron y lo
       # prueba abriendo Electron, que en este contenedor no tiene sus bibliotecas gráficas. El
