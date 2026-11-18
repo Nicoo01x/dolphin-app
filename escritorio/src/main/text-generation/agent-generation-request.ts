@@ -126,7 +126,9 @@ export async function runGenerationRequest(input: {
   if (answer === result.rawOutput) {
     return result
   }
-  const rawOutput = cleanGeneratedCommitMessage(answer)
+  const rawOutput = cleanGeneratedCommitMessage(answer, {
+    conservarMarkdown: input.operation === 'edicion-en-el-lugar'
+  })
   return rawOutput
     ? { ...result, rawOutput }
     : { success: false, ...emptyResultFailure(input.operation, plan.label) }

@@ -265,7 +265,7 @@ export const NativeChatComposerActions = memo(function NativeChatComposerActions
         />
       )
     },
-    ...controlesDolphinDelComposer({ terminalTabId, agent }),
+    ...controlesDolphinDelComposer({ terminalTabId }),
     ...(mode
       ? [
           {

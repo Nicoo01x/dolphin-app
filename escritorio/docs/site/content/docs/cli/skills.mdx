@@ -6,6 +6,7 @@ keywords:
   - npx skills add
   - dolphin-cli skill
   - orchestration skill
+  - dolphin-delegar skill
   - Dolphin Computer Use skill
   - dolphin-linear skill
   - dolphin-emulator skill
@@ -17,18 +18,20 @@ Dolphin ships **skills** that agents install into their skill directories. Publi
 
 ## Installable Dolphin skills
 
-Use `npx skills add` with the public Dolphin repo and the skill name. Default agent setup usually installs `dolphin-cli`, `dolphin-computer-use`, and `orchestration`.
+Use `npx skills add` with the public Dolphin repo and the skill name. Default agent setup usually installs `dolphin-cli`, `dolphin-computer-use`, `orchestration` and `dolphin-delegar`.
 
 | Skill                                                     | Install                                                                                             | Use it for                                                    |
 | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
 | [`dolphin-cli`](#dolphin-cli)                             | `npx skills add https://github.com/Nicoo01x/dolphin-app --skill dolphin-cli --global`               | Worktrees, terminals, files, automations, embedded browser.   |
 | [`orchestration`](#orchestration)                         | `npx skills add https://github.com/Nicoo01x/dolphin-app --skill orchestration --global`             | Multi-agent Runs, tasks, supervised workers, messages, gates. |
+| [`dolphin-delegar`](#dolphin-delegar)                     | `npx skills add https://github.com/Nicoo01x/dolphin-app --skill dolphin-delegar --global`           | "Delegate the tasks": one visible Dolphin agent per task.     |
 | [`dolphin-computer-use`](#dolphin-computer-use)           | `npx skills add https://github.com/Nicoo01x/dolphin-app --skill dolphin-computer-use --global`      | Desktop apps via accessibility trees and safe UI actions.     |
 | [`dolphin-linear`](#dolphin-linear)                       | `npx skills add --skill dolphin-linear --global`                                                    | Linear ticket read/write through `dolphin linear`.            |
 | [`dolphin-emulator`](#dolphin-emulator)                   | `npx skills add https://github.com/Nicoo01x/dolphin-app --skill dolphin-emulator --global`          | iOS Simulator control.                                        |
 | [`dolphin-emulator-android`](#dolphin-emulator-android)   | `npx skills add https://github.com/Nicoo01x/dolphin-app --skill dolphin-emulator-android --global`  | Android emulator/device via adb.                              |
 | [`dolphin-per-workspace-env`](#dolphin-per-workspace-env) | `npx skills add https://github.com/Nicoo01x/dolphin-app --skill dolphin-per-workspace-env --global` | Per-workspace environment recipes (`dolphin.yaml`).           |
 | [`dolphin-plugin-authoring`](#dolphin-plugin-authoring)   | `npx skills add https://github.com/Nicoo01x/dolphin-app --skill dolphin-plugin-authoring --global`  | Build, debug and publish Dolphin plugins.                     |
+| [`dolphin-vps`](#dolphin-vps)                             | `npx skills add https://github.com/Nicoo01x/dolphin-app --skill dolphin-vps --global`               | Connect a VPS or server over SSH and fix it when it fails.    |
 
 ## Hybrid stubs vs the live guide
 
@@ -118,6 +121,14 @@ npx skills add https://github.com/Nicoo01x/dolphin-app --skill orchestration --g
 
 Use this when an agent should coordinate other agents through Runs, tasks, supervised workers, and decision gates. See [Orchestration](/docs/cli/orchestration). Always load `dolphin skills get orchestration --full` before mutating orchestration state — the legacy `orchestration run` command is retired.
 
+## dolphin-delegar
+
+```bash
+npx skills add https://github.com/Nicoo01x/dolphin-app --skill dolphin-delegar --global
+```
+
+Use when the person asks an agent to delegate, split the work, use subagents or work in parallel ("delegá las tareas", "usá subagentes"). The agent splits the request into independent tasks, checks which agents are installed with `dolphin agent list`, and starts each task as a supervised worker with `dolphin orchestration worker-start --keep-open`: one tab per task, showing which agent runs it, instead of hidden subagents inside its own process. Dolphin wakes it as each worker reports, and it summarizes the results. It never skips permissions unless the person asks. Installing the orchestration skill from Dolphin installs this one too.
+
 <span id="computer-use" />
 
 ## dolphin-computer-use
@@ -167,6 +178,14 @@ npx skills add https://github.com/Nicoo01x/dolphin-app --skill dolphin-plugin-au
 ```
 
 Use when an agent should make, debug, test or publish a Dolphin plugin: themes, syntaxes, custom editors, TSX components panels and worker commands. Load it with `dolphin skills get dolphin-plugin-authoring`; its references (components, host API, events, manifest fields, CLI) are generated from the running Dolphin.
+
+## dolphin-vps
+
+```bash
+npx skills add https://github.com/Nicoo01x/dolphin-app --skill dolphin-vps --global
+```
+
+Use when work should run on a permanent server (a VPS from Hostinger, DigitalOcean, Hetzner or any machine reachable over SSH), or when one won't connect. The agent checks SSH from this computer, saves the host with `dolphin host add`, connects it with `dolphin host connect` (which installs Dolphin's server) and loops on `dolphin host doctor` until it reports ok. It never handles passwords, passphrases or keys itself. "Fix it with an agent" in Dolphin starts this same flow for a host that failed.
 
 ## Discovery sources
 

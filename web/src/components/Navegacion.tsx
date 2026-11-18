@@ -58,7 +58,7 @@ export function Navegacion() {
           </a>
         </div>
         <a
-          href={enInicio ? "#instalar" : "/docs/instalacion"}
+          href={enInicio ? "#instalar" : "/descargar"}
           className="boton-pill ml-4 h-[32px] flex-none px-3.5 text-[13px] max-[400px]:ml-2"
         >
           Descargar

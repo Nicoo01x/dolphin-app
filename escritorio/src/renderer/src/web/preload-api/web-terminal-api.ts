@@ -187,6 +187,11 @@ export function createSshApi(): NonNullable<Partial<PreloadApi>['ssh']> {
         success: false,
         error: translate('auto.web.web.preload.api.31bfe8ae1a', 'Unavailable in the web client.')
       }),
+    testDraftConnection: () =>
+      Promise.resolve({
+        success: false,
+        error: translate('auto.web.web.preload.api.31bfe8ae1a', 'Unavailable in the web client.')
+      }),
     onStateChanged: () => noopUnsubscribe,
     onTargetRemoved: () => noopUnsubscribe,
     addPortForward: () =>

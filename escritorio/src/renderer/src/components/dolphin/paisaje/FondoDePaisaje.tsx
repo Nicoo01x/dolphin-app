@@ -3,6 +3,7 @@ import { useFondoDelChat, useUrlDelFondo, variablesDelPaisaje } from './use-fond
 import { usePaisajeActivo } from './paisaje-activo'
 import { vidrioDelPaisaje, type VidrioDelPaisaje } from './vidrio-del-paisaje'
 import './paisaje.css'
+import './paisaje-paginas.css'
 
 /**
  * La pintura detrás de la ventana entera (`docs/reforma/chat-con-paisaje.md`).

@@ -27,13 +27,30 @@ describe('el mensaje de un host que no quedó servido', () => {
     ).toContain('noexec')
   })
 
-  it('un motivo que no sabemos leer cae al mensaje general', () => {
+  it('un motivo que no sabemos leer cae al mensaje general, que manda a actualizar', () => {
     const texto = unservedHostServerMessage({
       route: 'unserved',
       reason: 'dolphind_unavailable',
       detail: 'algo_que_no_conocemos'
     })
-    expect(texto).toContain('isn’t supported by this version')
+    expect(texto).toContain('Update Dolphin')
+    expect(texto).not.toContain('older version')
+  })
+
+  it.each([
+    ['libc_unidentified', 'ldd --version'],
+    ['native_preflight', 'glibc 2.28'],
+    ['ssh_tunnel_unavailable', 'AllowTcpForwarding'],
+    ['runtime_self_test', 'self-test'],
+    ['security_software', 'Security software']
+  ])('el motivo %s dice qué arreglar en el host', (detail, remedio) => {
+    const texto = unservedHostServerMessage({
+      route: 'unserved',
+      reason: 'dolphind_unavailable',
+      detail
+    })
+    expect(texto).toContain(remedio)
+    expect(texto).not.toContain('older version')
   })
 
   it('una terminal viva de una version anterior se explica por si misma', () => {

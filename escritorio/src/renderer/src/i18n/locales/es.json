@@ -646,6 +646,15 @@
         "passphraseRequired": "No se pudo leer la clave privada: es una clave OpenSSH cifrada y no se dio la frase de contraseña",
         "permissionDenied": "Permiso denegado",
         "permissionDeniedPublickey": "Permiso denegado (publickey)"
+      },
+      "nextStep": {
+        "hostKey": "SSH no pudo confirmar la identidad de este host. Corré ssh a este host en una terminal para ver por qué y confiá o actualizá su clave; después volvé a conectar.",
+        "auth": "El host no aceptó ningún inicio de sesión de los que ofreció Dolphin. Revisá el usuario y la clave SSH, el ssh-agent o la contraseña de este host, y volvé a conectar.",
+        "passphrase": "Dolphin no pudo desbloquear la clave SSH. Revisá su frase de contraseña y volvé a conectar.",
+        "refused": "Nada aceptó la conexión SSH en esta dirección. Revisá el nombre del host y el puerto, y que sshd esté corriendo en el host.",
+        "hostName": "No se pudo resolver el nombre del host. Revisá el nombre y tu conexión de red.",
+        "unreachable": "No hay ruta de red hasta el host. Revisá tu red o tu VPN y volvé a conectar.",
+        "timeout": "La conexión no terminó a tiempo. Revisá que el host se alcance desde esta computadora (red, VPN, firewall) y volvé a conectar."
       }
     },
     "mcp": {
@@ -1850,6 +1859,9 @@
       "workspacePortBrowserOpen": {
         "systemBrowserHint": "{{shortcut}}+clic para abrir en el navegador del sistema",
         "tooltip": "{{label}}. {{hint}}"
+      },
+      "vpsSetupAgentLaunch": {
+        "noLocalProject": "Abrí primero un proyecto en esta computadora y probá de nuevo. El agente trabaja desde ahí."
       }
     },
     "hooks": {
@@ -7096,7 +7108,9 @@
           "sshImportSynced_other": "Se añadieron {{count}} hosts a Dolphin.",
           "sshImportSynced_many": "Se añadieron {{count}} hosts a Dolphin.",
           "sshConfigPickerInvalidResponse": "Respuesta de host no válida de la configuración SSH",
-          "sshImportSynced": "Se sincronizó {{value0}} host{{value1}}."
+          "sshImportSynced": "Se sincronizó {{value0}} host{{value1}}.",
+          "testFailed": "Dolphin no pudo conectarse a este host: {{reason}}",
+          "saveAnyway": "Guardar igual"
         },
         "ForgetSshWorkspaceDialog": {
           "ghostBody": "{{host}} ya no es un host SSH guardado, por lo que este espacio de trabajo ya no está conectado a un host activo. Solo se puede eliminar de Dolphin — los archivos y ramas en el remoto permanecen intactos.",
@@ -7375,7 +7389,8 @@
         },
         "DolphinSidebarEntry": {
           "dolphin": "Dolphin",
-          "lienzo": "El lienzo: tus ventanas en un plano que se mueve y se acerca"
+          "lienzo": "El lienzo: tus ventanas en un plano que se mueve y se acerca",
+          "delfines": "Delfines: tus bots, sus rutinas y tu servidor"
         }
       },
       "shared": {
@@ -12862,8 +12877,6 @@
           "hostNewer": "Ejecuta una versión del servidor de Dolphin más reciente que esta app; conserva esa versión.",
           "failureDetails": "Detalles",
           "cause": {
-            "unsupportedHost": "Dolphin no tiene una compilación de servidor para este sistema",
-            "artifactsUnavailable": "esta compilación de Dolphin no incluye el servidor",
             "libcUnidentified": "Dolphin no pudo identificar las bibliotecas del sistema del host",
             "runtimeSelfTest": "el runtime del servidor no superó su autocomprobación",
             "securitySoftware": "el software de seguridad modificó el runtime del servidor",
@@ -12872,9 +12885,10 @@
           "updateDeferredLater": "Ejecuta el servidor de Dolphin; se actualizará en una conexión posterior.",
           "updateFailedPrevious": "Ejecuta el servidor de Dolphin en su versión anterior; no se pudo actualizar.",
           "refusedBlocked": "Dolphin aún no está configurado en este host: algo en el host impide el traslado.",
-          "unsupported": "Esta versión de Dolphin no admite este host ({{reason}}). Para seguir usándolo, instala una versión anterior de Dolphin.",
-          "unsupportedUnknown": "Esta versión de Dolphin no admite este host. Para seguir usándolo, instala una versión anterior de Dolphin.",
-          "tunnelUnsupported": "Esta versión de Dolphin no admite este host: su servidor SSH no permite el reenvío de puertos y Dolphin tampoco pudo llegar a su servidor a través de la sesión SSH. Para seguir usándolo, instala una versión anterior de Dolphin.",
+          "missingServerBuild": "Esta copia de Dolphin no trae el servidor para el sistema de este host, así que no tiene nada que instalarle. Actualizá Dolphin en esta computadora a una versión que lo incluya y volvé a conectar.",
+          "cannotRunServer": "Dolphin no puede correr su servidor en este host: {{reason}}. Arreglá eso en el host y volvé a conectar.",
+          "cannotRunServerUnknown": "Dolphin no puede correr su servidor en este host. Actualizá Dolphin en esta computadora y volvé a conectar; en Detalles está la causa.",
+          "tunnelForwardingBlocked": "El servidor SSH de este host no permite el reenvío de puertos, y Dolphin tampoco pudo llegar a su servidor por la sesión SSH. Poné AllowTcpForwarding yes en /etc/ssh/sshd_config del host, reiniciá sshd y volvé a conectar.",
           "setupRetry": "Dolphin no pudo iniciar su servidor en este host. Intenta conectarte de nuevo.",
           "moveHeld": "Dolphin pausó el traslado de los proyectos de este host al servidor de Dolphin del host porque no pudo confirmar la copia del servidor. No se pierde nada: el host conserva sus proyectos y queda bloqueado hasta que termine el traslado. Conéctate de nuevo para reanudarlo. Si el servidor no puede volver, detenlo u olvídalo en Ajustes > Dolphin en tus hosts SSH.",
           "olderTerminalsBridged": "Dolphin aún no está configurado en este host: los terminales iniciados por una versión anterior de Dolphin siguen ejecutándose en los proyectos de este host. Siguen funcionando aquí. Ciérralos o termínalos en el host y vuelve a conectarte.",
@@ -19718,6 +19732,9 @@
         "MapaDeActividad": {
           "enElPeriodo": "{{value0}} en total"
         }
+      },
+      "sshHostRecovery": {
+        "fixWithAgent": "Arreglarlo con un agente"
       }
     },
     "i18n": {
@@ -21961,14 +21978,6 @@
           "no": "No, gracias",
           "delegar": "Delegar en {{value0}}"
         },
-        "orquestacion": {
-          "prendida": "La orquestación inteligente está prendida: el plan abre un compañero por parte, cada uno con su modelo",
-          "apagada": "La orquestación inteligente está apagada: no se delega nada y no aparece nada",
-          "noSeGuardo": "No se pudo guardar la orquestación inteligente.",
-          "on": "Prendida",
-          "off": "Apagada",
-          "nombreCorto": "Orquestación"
-        },
         "referenciaViva": {
           "issue": "Issue",
           "pr": "Pull request",
@@ -22639,11 +22648,16 @@
     },
     "editWithAi": "Editar con IA",
     "inlineEdit": {
-      "placeholder": "Describí el cambio… (Enter para mandarlo, Esc para cancelar)",
+      "placeholder": "Pedí un cambio o preguntá algo… (Enter para mandarlo, Esc para cerrar)",
+      "followUpPlaceholder": "Seguí preguntando o pedí un cambio…",
+      "followUpHint": "Escribí arriba para seguir preguntando",
       "working": "Trabajando…",
       "accept": "Aceptar",
       "discard": "Descartar",
+      "close": "Cerrar",
       "tryAgain": "Probar de nuevo",
+      "agent": "IA",
+      "noChange": "No hace falta cambiar nada: lo seleccionado ya hace lo que pediste.",
       "notInWorktree": "Este archivo no está dentro de un worktree."
     },
     "jumpToNextPendingEdit": "Saltar a la próxima edición pendiente",
@@ -25475,5 +25489,172 @@
     "address": "Dirección",
     "pickProjectTerminal": "Elegí un proyecto en la barra de la izquierda y acá se abre una terminal.",
     "terminalOpening": "Abriendo la terminal…"
+  },
+  "memoriaBaja": {
+    "cartel": {
+      "titulo": "Te queda poca RAM",
+      "tituloSiempre": "El modo poca RAM está prendido",
+      "sinServidor": "Conectá un servidor y corré ahí lo más pesado, con su memoria y no con la de esta computadora.",
+      "conAgente": "O <link>dejá que lo conecte un agente</link>.",
+      "conEspacio": "«{{nombre}}» es lo que más usa. Abrí un espacio igual en {{servidor}} y dormí este: lo que no subiste a git se queda en esta computadora.",
+      "sinEspacio": "Abrí tu próximo espacio en {{servidor}}: corre con la memoria del servidor, no con la de esta computadora.",
+      "conectar": "Conectar un servidor",
+      "correrEn": "Correr en {{servidor}}",
+      "noAvisarMas": "No avisar más",
+      "dormirAca": "Dormirlo acá"
+    },
+    "visual": {
+      "dolphin": "Dolphin",
+      "libresDe": "libres de {{total}}",
+      "libre": "Libre"
+    },
+    "ajuste": {
+      "grupo": "Memoria",
+      "titulo": "Modo poca RAM",
+      "descripcion": "Cuando a esta computadora le falta memoria, Dolphin te avisa a tiempo y te ofrece correr el espacio más pesado en tu servidor. Mientras está prendido, los chats quietos se detienen a los 5 minutos.",
+      "ahora": "Ahora: {{libre}} libres de {{total}}",
+      "activo": "modo poca RAM prendido",
+      "automatico": "Automático",
+      "siempre": "Siempre",
+      "apagado": "Apagado",
+      "umbral": "Avisar con menos de",
+      "umbralDescripcion": "La memoria libre que dispara el aviso.",
+      "gb": "{{gb}} GB",
+      "palabra": {
+        "ram": "ram",
+        "memory": "memoria",
+        "lowMemory": "poca memoria",
+        "crash": "se cuelga",
+        "server": "servidor",
+        "vps": "vps",
+        "performance": "rendimiento"
+      }
+    }
+  },
+  "delfines": {
+    "crear": {
+      "nombreInvalido": "El nombre necesita letras o números, y no puede empezar con un guion.",
+      "error": "No se pudo crear. Probá de nuevo.",
+      "titulo": "Nuevo delfín",
+      "plantilla": "Plantilla",
+      "nombre": "Nombre",
+      "carpeta": "Dónde trabaja",
+      "carpetaVacia": "Tu carpeta personal",
+      "crear": "Crear"
+    },
+    "vista": {
+      "corriendo": "{{corriendo}} de {{total}} corriendo",
+      "titulo": "Delfines",
+      "nuevo": "Nuevo delfín",
+      "rotos": "No se pudieron leer: {{ids}}"
+    },
+    "error": {
+      "sinNucleo": "El núcleo de Dolphin no está donde la app lo busca",
+      "nucleo": "No se pudieron leer tus delfines",
+      "sinNucleoQue": "Reinstalá la app, o apuntá DOLPHIN_APP_DIR a una copia del núcleo.",
+      "nucleoQue": "Tus bots están bien: lo que falló es la lectura. Probá de nuevo.",
+      "reintentar": "Probar de nuevo"
+    },
+    "hablar": {
+      "sinConexion": "El servidor no está conectado. Conectalo y probá de nuevo.",
+      "error": "No contestó. Probá de nuevo.",
+      "nada": "Nada para avisar.",
+      "sinRespuesta": "Sin respuesta.",
+      "pide": "Pide permiso para: {{que}}. Contestale «dale» para que lo haga.",
+      "vacio": "Preguntale lo que quieras. Contesta con su alma y su memoria.",
+      "pensando": "Pensando…",
+      "campo": "Mensaje",
+      "placeholder": "Escribile…",
+      "enviar": "Enviar"
+    },
+    "servidor": {
+      "desconectado": "{{servidor}} se desconectó. Volvé a conectarlo y probá de nuevo.",
+      "sinRespuesta": "El servidor no contestó.",
+      "titulo": "Correr {{nombre}} en tu servidor",
+      "sinServidor": "No hay un servidor conectado",
+      "sinServidorQue": "Conectá un VPS por SSH y el bot sigue trabajando ahí 24/7, aunque esta computadora esté apagada.",
+      "conectar": "Conectar un servidor",
+      "conAgente": "Que lo conecte un agente",
+      "cual": "En qué servidor",
+      "carpeta": "Dónde trabaja en {{servidor}}",
+      "agente": "Arreglarlo con un agente",
+      "revisar": "Revisar de nuevo",
+      "llevar": "Correrlo en {{servidor}}",
+      "revisando": "Revisando qué tiene el servidor…",
+      "listo": "Ya corre en tu servidor",
+      "listoQue": "Sigue trabajando con esta computadora apagada. El de acá se paró y quedó guardado aparte.",
+      "listoSinLinger": "Ya corre, pero se apaga cuando se cierra la sesión de SSH. Prendé el linger una vez, con sudo:",
+      "cerrar": "Listo",
+      "falloApartar": "Ya corre en el servidor, pero el de acá no se pudo parar: {{detalle}}. Paralo con «dolphin bots apartar».",
+      "reintentar": "Probar de nuevo",
+      "copiar": "Copiar el comando",
+      "paso": {
+        "sistema": "Linux con systemd",
+        "sistemaFalta": "Este servidor tiene {{que}}: un bot solo necesita Linux.",
+        "node": "Node 22.12 o más nuevo",
+        "nodeFalta": "Instalalo, o conectá el servidor como servidor de Dolphin, que trae el suyo.",
+        "motor": "{{motor}}, con la sesión iniciada en el servidor",
+        "motorInstalar": "No está instalado ahí. Instalalo en una terminal del servidor:",
+        "motorSesion": "Está instalado pero sin sesión. Iniciala una vez, en una terminal del servidor:",
+        "systemd": "Servicios de usuario (systemd)",
+        "systemdFalta": "No contestan por SSH. Prendé el linger y volvé a conectarte:",
+        "linger": "Sigue corriendo sin una sesión abierta",
+        "lingerAviso": "Sin linger se apaga cuando cerrás el SSH. Pide sudo, una vez:"
+      },
+      "etapa": {
+        "revisar": "Revisando el servidor",
+        "nucleo": "Llevando el núcleo de Dolphin",
+        "bot": "Copiando el bot",
+        "instalar": "Instalándolo como servicio",
+        "verificar": "Esperando que arranque",
+        "apartar": "Parando el de acá"
+      }
+    },
+    "plantilla": {
+      "vigia": {
+        "nombre": "Vigía",
+        "que": "Mira un repo cada 30 minutos y sólo habla si algo se rompe",
+        "sugerido": "Vigía"
+      },
+      "parte": {
+        "nombre": "Parte diario",
+        "que": "Todas las mañanas a las 8, lo que pasó ayer en tus repos",
+        "sugerido": "Parte"
+      },
+      "investigador": {
+        "nombre": "Investigador",
+        "que": "Averigua lo que le pedís, con fuentes",
+        "sugerido": "Investigador"
+      },
+      "escritor": {
+        "nombre": "Escritor",
+        "que": "Escribe una pieza por día y la deja en su carpeta",
+        "sugerido": "Escritor"
+      }
+    },
+    "estado": {
+      "corriendo": "Corriendo",
+      "parado": "Parado",
+      "pausado": "En pausa por el presupuesto",
+      "espera": "Espera tu «dale»",
+      "sinRespuesta": "{{servidor}} no contesta"
+    },
+    "tarjeta": {
+      "corridas": "{{n}} corridas",
+      "mes": "Este mes",
+      "sinRutina": "Cuando le escribís",
+      "sinRutinaDetalle": "Sin rutina: contesta cuando le hablás",
+      "pide": "Quiere: {{que}}",
+      "sinAvisos": "Todavía no avisó nada.",
+      "hablar": "Hablarle",
+      "llevar": "Correr en tu servidor"
+    },
+    "vacio": {
+      "titulo": "Todavía no tenés delfines",
+      "que": "Bots que trabajan solos: miran, informan y escriben con su rutina, y sólo hablan cuando importa."
+    },
+    "ventana": {
+      "cerrar": "Cerrar"
+    }
   }
 }

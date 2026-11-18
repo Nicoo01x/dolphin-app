@@ -203,7 +203,7 @@ export const HANDLER_GROUPS: readonly HandlerGroup[] = [
   },
   {
     name: 'agent-launch',
-    keys: ['agent launch', 'agent delegate'],
+    keys: ['agent launch', 'agent delegate', 'agent list'],
     load: async () => (await import('./handlers/agent-launch.js')).AGENT_LAUNCH_HANDLERS
   },
   {

@@ -12694,8 +12694,6 @@
           "hostNewer": "Exécute une version du serveur Dolphin plus récente que cette app ; il conserve cette version.",
           "failureDetails": "Détails",
           "cause": {
-            "unsupportedHost": "Dolphin n'a pas de build de serveur pour ce système",
-            "artifactsUnavailable": "cette version d'Dolphin n'inclut pas le serveur",
             "libcUnidentified": "Dolphin n'a pas pu identifier les bibliothèques système de l'hôte",
             "runtimeSelfTest": "le runtime du serveur a échoué à son auto-test",
             "securitySoftware": "un logiciel de sécurité a modifié le runtime du serveur",
@@ -12704,9 +12702,6 @@
           "updateDeferredLater": "Exécute le serveur Dolphin ; il se met à jour lors d’une prochaine connexion.",
           "updateFailedPrevious": "Exécute le serveur Dolphin sur sa version précédente ; sa mise à jour a échoué.",
           "refusedBlocked": "Dolphin n’est pas encore installé sur cet hôte : un élément de l’hôte bloque le déplacement.",
-          "unsupported": "Cette version d’Dolphin ne prend pas en charge cet hôte ({{reason}}). Pour continuer à l’utiliser, installez une version antérieure d’Dolphin.",
-          "unsupportedUnknown": "Cette version d’Dolphin ne prend pas en charge cet hôte. Pour continuer à l’utiliser, installez une version antérieure d’Dolphin.",
-          "tunnelUnsupported": "Cette version d’Dolphin ne prend pas en charge cet hôte : son serveur SSH n’autorise pas le transfert de port, et Dolphin n’a pas non plus pu joindre son serveur via la session SSH. Pour continuer à l’utiliser, installez une version antérieure d’Dolphin.",
           "setupRetry": "Dolphin n’a pas pu démarrer son serveur sur cet hôte. Réessayez de vous connecter.",
           "moveHeld": "Dolphin a mis en pause le déplacement des projets de cet hôte vers le serveur Dolphin de l’hôte, car il n’a pas pu confirmer la copie du serveur. Rien n’est perdu : l’hôte conserve ses projets et reste verrouillé jusqu’à la fin du déplacement. Reconnectez-vous pour reprendre. Si le serveur ne peut pas revenir, arrêtez-le ou oubliez-le dans Paramètres > Dolphin sur vos hôtes SSH.",
           "olderTerminalsBridged": "Dolphin n’est pas encore installé sur cet hôte : des terminaux lancés par une version antérieure d’Dolphin sont toujours en cours d’exécution dans les projets de cet hôte. Ils continuent de fonctionner ici. Fermez-les ou arrêtez-les sur l’hôte, puis reconnectez-vous.",

@@ -44,6 +44,13 @@ export function createUiViewActions(set: UISliceSet, get: UISliceGet): Partial<U
       })),
     closeOrchestrationPage: () =>
       set((state) => ({ activeView: state.previousViewBeforeOrchestration })),
+    openDelfinesPage: () =>
+      set((state) => ({
+        activeView: 'delfines',
+        previousViewBeforeDelfines:
+          state.activeView === 'delfines' ? state.previousViewBeforeDelfines : state.activeView
+      })),
+    closeDelfinesPage: () => set((state) => ({ activeView: state.previousViewBeforeDelfines })),
     openSpacePage: () => {
       get().recordFeatureInteraction?.('workspace-cleanup')
       if (typeof window !== 'undefined' && window.api?.workspaceSpace?.openWindow) {

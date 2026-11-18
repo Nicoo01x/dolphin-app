@@ -26,6 +26,7 @@ import { DefaultWindowsProjectRuntimeSetting } from './project-runtime/DefaultWi
 import { defaultScopeHost } from '@/runtime/hosts/selection/default-creation-host'
 import { SettingsGroup } from '../section-layout/SettingsGroup'
 import { GeneralConfirmationsSection } from './GeneralConfirmationsSection'
+import { ModoPocaRamSetting } from './ModoPocaRamSetting'
 import { GeneralSearchResults } from './GeneralSearchResults'
 import { getGeneralSubPageTitle, type GeneralSubPage } from './general-sub-pages'
 import { DOLPHIN_GITHUB_URL } from '../../../../../shared/dolphin-brand'
@@ -261,6 +262,7 @@ function GeneralRootSettings({
         </SettingsGroup>
       ) : null}
       <GeneralConfirmationsSection settings={settings} updateSettings={updateSettings} />
+      <ModoPocaRamSetting settings={settings} updateSettings={updateSettings} query={query} />
       {showNavigation || matchesSettingsSearch(query, autoSaveEntries) ? (
         <SettingsGroup
           title={t('auto.components.settings.GeneralEditorSettingsSection.45c6e85c4d', 'Editor')}

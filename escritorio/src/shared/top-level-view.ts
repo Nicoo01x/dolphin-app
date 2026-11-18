@@ -13,7 +13,8 @@ const TOP_LEVEL_VIEW_LOOKUP: Record<TopLevelView, true> = {
   artifacts: true,
   mobile: true,
   dolphin: true,
-  lienzo: true
+  lienzo: true,
+  delfines: true
 }
 
 export function isTopLevelView(value: unknown): value is TopLevelView {

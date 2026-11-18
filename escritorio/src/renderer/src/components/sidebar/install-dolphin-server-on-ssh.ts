@@ -12,9 +12,10 @@ export type ServerInstallOutcome =
   /** The host already had Dolphin projects, so it was kept as a plain SSH host. */
   | { kind: 'kept-as-host'; reason: string }
   /** Registered, but the install did not finish: the request can be resumed. */
-  | { kind: 'unfinished'; reason: string; requestId: string }
+  | { kind: 'unfinished'; reason: string; requestId: string; sshTargetId?: string; label?: string }
   | { kind: 'invalid'; message: string }
-  | { kind: 'failed'; message: string }
+  /** `label` names the host so an agent can find it if the save got that far. */
+  | { kind: 'failed'; message: string; label?: string }
 
 export type ServerInstallApi = {
   createSshHost: (args: DolphindSshProvisioningRequest) => Promise<DolphindSshProvisioningResult>
@@ -68,6 +69,7 @@ export async function installDolphinServerOnSsh({
   } catch (error) {
     return {
       kind: 'failed',
+      label: armado.target.label,
       message:
         error instanceof Error
           ? error.message
@@ -86,5 +88,11 @@ export async function installDolphinServerOnSsh({
   if (result.repoReadoptions.length > 0) {
     return { kind: 'kept-as-host', reason: outcome.reason }
   }
-  return { kind: 'unfinished', reason: outcome.reason, requestId: result.requestId }
+  return {
+    kind: 'unfinished',
+    reason: outcome.reason,
+    requestId: result.requestId,
+    sshTargetId: result.sshTargetId,
+    label: armado.target.label
+  }
 }

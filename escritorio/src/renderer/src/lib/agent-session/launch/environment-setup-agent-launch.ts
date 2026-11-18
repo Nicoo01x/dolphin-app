@@ -46,14 +46,25 @@ export async function launchEnvironmentSetupAgent(args: {
   recipeId?: string
   failure?: EnvironmentSetupFailureContext
 }): Promise<boolean> {
-  let worktree = pickEnvironmentSetupWorktree(args.repoId)
+  return launchPromptedAgentInRepo(
+    args.repoId,
+    buildEnvironmentSetupAgentPrompt({
+      ...(args.recipeId ? { recipeId: args.recipeId } : {}),
+      ...(args.failure ? { failure: args.failure } : {})
+    })
+  )
+}
+
+/** Start the default agent in a new tab of one of the repo's workspaces, with `prompt` submitted. */
+export async function launchPromptedAgentInRepo(repoId: string, prompt: string): Promise<boolean> {
+  let worktree = pickEnvironmentSetupWorktree(repoId)
   if (!worktree) {
     // The sidebar loads worktrees lazily; a project never expanded this session has none yet.
     await useAppStore
       .getState()
-      .fetchWorktrees(args.repoId)
+      .fetchWorktrees(repoId)
       .catch(() => false)
-    worktree = pickEnvironmentSetupWorktree(args.repoId)
+    worktree = pickEnvironmentSetupWorktree(repoId)
   }
   if (!worktree) {
     toast.error(
@@ -82,10 +93,7 @@ export async function launchEnvironmentSetupAgent(args: {
     ...captureAgentTabLaunchContext(worktreeId),
     agent,
     worktreeId,
-    prompt: buildEnvironmentSetupAgentPrompt({
-      ...(args.recipeId ? { recipeId: args.recipeId } : {}),
-      ...(args.failure ? { failure: args.failure } : {})
-    }),
+    prompt,
     promptDelivery: 'submit-after-ready',
     launchSource: 'unknown',
     beforeSurfaceOpen: () =>

@@ -32,6 +32,10 @@ export type SshApi = {
   testConnection: (args: {
     targetId: string
   }) => Promise<{ success: boolean; error?: string; state?: SshConnectionState }>
+  /** Tries a host before it is saved; nothing is published or set up on it. */
+  testDraftConnection: (args: {
+    target: SshTargetCreateInput
+  }) => Promise<{ success: boolean; error?: string }>
   onStateChanged: (
     callback: (data: { targetId: string; state: SshConnectionState }) => void
   ) => () => void

@@ -27,6 +27,7 @@ import {
 } from './ssh-ipc-context'
 import { requestDesktopBrowserBridgeReconcile } from '../browser/desktop-browser-bridge-reconcile'
 import { listUnrestoredPortForwards } from './ssh-port-forward-unrestored'
+import { noteSshStateForLastFailure } from '../../ssh/connection/ssh-last-connect-failure'
 
 export function broadcastSshState(
   getMainWindow: () => BrowserWindow | null,
@@ -42,6 +43,8 @@ export function broadcastSshState(
     return
   }
   const enrichedState = withSshRemotePlatform(targetId, state)
+  // Kept for `dolphin host doctor`: a failed connect leaves no state behind to read it from.
+  noteSshStateForLastFailure(targetId, enrichedState)
   const win = getMainWindow()
   if (win && !win.isDestroyed()) {
     win.webContents.send('ssh:state-changed', { targetId, state: enrichedState })

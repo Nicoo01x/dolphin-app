@@ -5,8 +5,22 @@ function isJcodeJsonResult(value: unknown): value is JcodeJsonResult {
   return typeof value === 'object' && value !== null && 'text' in value
 }
 
+/**
+ * Opciones de la limpieza.
+ *
+ * `conservarMarkdown` (Dolphin, Cmd+K): la respuesta puede ser un texto en markdown para leer o un
+ * reemplazo marcado con su cerca, y el editor decide cuál es por esa cerca. Pelar la cerca que
+ * envuelve todo o la viñeta de la primera línea —lo que un asunto de commit necesita— borraría
+ * justo esa señal y rompería la lista del principio. Se sigue sacando lo que no es la respuesta:
+ * el sobre JSON, el preámbulo de progreso y el razonamiento.
+ */
+export type OpcionesDeLimpieza = { conservarMarkdown?: boolean }
+
 /** Remove surrounding whitespace, one enclosing fence, CLI progress preambles and leading reasoning from generated answers. */
-export function cleanGeneratedCommitMessage(raw: string): string {
+export function cleanGeneratedCommitMessage(
+  raw: string,
+  opciones: OpcionesDeLimpieza = {}
+): string {
   // Scan boundaries instead of allocating newline arrays for large generated bodies.
   let text = normalizeGeneratedCommitMessageLineFeeds(raw).trim()
 
@@ -38,6 +52,9 @@ export function cleanGeneratedCommitMessage(raw: string): string {
   }
 
   text = stripLeadingReasoningBlock(text)
+  if (opciones.conservarMarkdown) {
+    return text
+  }
 
   const fenced = findEnclosingCommitMessageFenceBody(text)
   if (fenced !== null) {

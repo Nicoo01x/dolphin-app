@@ -1,0 +1,28 @@
+# Dolphin
+
+> Dolphin es una app de escritorio y una CLI open source (licencia MIT) para trabajar con varios agentes de código a la vez —Claude Code, Codex, Antigravity y otros— cada uno en su propia rama (git worktree), con un portón que prueba cada rama antes de que entre a la tuya. Corre en tu máquina con tus propias cuentas; no hay cuenta de Dolphin. Windows, macOS y Linux.
+
+Lo que hace:
+- Varios agentes en paralelo sin pisarse: cada uno en su worktree, a la vista en la app.
+- Delegar desde el chat: le decís «delegá las tareas» a Claude y reparte el trabajo en agentes de Dolphin que ves trabajar.
+- El portón: corre los tests, el linter y los chequeos de cada rama; lo barato primero.
+- Memoria: lo que le corregís a un agente se vuelve un chequeo que corre para siempre.
+- Delfines: bots con rutina y tope de gasto, que se pueden llevar a tu propio VPS.
+- VPS propio: conectás un servidor Linux por SSH y los agentes trabajan ahí.
+- Modo poca RAM: avisa antes de que la compu se cuelgue y ofrece mandar lo pesado al servidor.
+
+## Páginas
+
+- [Inicio](https://odolphin.tech/): qué es y cómo se trabaja con Dolphin
+- [Descargar](https://odolphin.tech/descargar): instaladores para Windows, macOS y Linux
+- [Preguntas frecuentes](https://odolphin.tech/preguntas): precio, instalación, delegar, VPS, privacidad
+- [App de escritorio](https://odolphin.tech/escritorio): el editor, el chat y los espacios de trabajo
+- [Bots](https://odolphin.tech/bots): los Delfines por dentro
+- [Documentación](https://odolphin.tech/docs): instalación, primeros pasos, el portón, la CLI
+- [Novedades](https://odolphin.tech/novedades): qué cambió en cada versión
+- [Privacidad](https://odolphin.tech/privacidad): qué sale de tu máquina
+
+## Código
+
+- [Repositorio en GitHub](https://github.com/Nicoo01x/dolphin-app)
+- [Versiones e instaladores](https://github.com/Nicoo01x/dolphin-app/releases)

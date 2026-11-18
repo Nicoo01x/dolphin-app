@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   aplicarEdicionEnElLugar,
   codigoDeLaRespuesta,
+  lineasDelCambio,
   pedidoDeEdicion,
   sangriaDelTramo
 } from './edicion-en-el-lugar'
@@ -86,6 +87,26 @@ describe('respetar la sangría al reemplazar', () => {
   it('devuelve el tramo que ocupa lo nuevo, para pintarle el diff', () => {
     const { tramoNuevo } = aplicarEdicionEnElLugar(texto, tramo, 'x')
     expect(tramoNuevo).toEqual({ desde: tramo.desde, hasta: tramo.desde + 1 })
+  })
+})
+
+describe('las líneas que muestra el diff', () => {
+  const archivo = 'function f() {\n  return a - b\n}\n'
+
+  it('son líneas enteras, con la sangría que van a tener, y su número en el archivo', () => {
+    // La selección arranca después de la sangría, como en el editor.
+    const tramo = { desde: archivo.indexOf('return'), hasta: archivo.indexOf('\n}') }
+    expect(lineasDelCambio(archivo, tramo, 'const r = a + b\nreturn r')).toEqual({
+      antes: '  return a - b',
+      despues: '  const r = a + b\n  return r',
+      primeraLinea: 2
+    })
+  })
+
+  it('un reemplazo igual a lo que había no cambia ninguna línea', () => {
+    const tramo = { desde: archivo.indexOf('return'), hasta: archivo.indexOf('\n}') }
+    const { antes, despues } = lineasDelCambio(archivo, tramo, 'return a - b')
+    expect(despues).toBe(antes)
   })
 })
 

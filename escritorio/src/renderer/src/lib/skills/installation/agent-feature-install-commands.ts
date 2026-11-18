@@ -3,7 +3,7 @@ import { buildAgentFeatureSkillInstallCommand as buildPinnedSkillInstallCommand 
 import {
   DOLPHIN_CLI_SKILL_NAME,
   DOLPHIN_LINEAR_SKILL_NAME,
-  ORCHESTRATION_SKILL_NAME
+  ORCHESTRATION_SKILL_NAMES
 } from './agent-feature-skill-names'
 
 /**
@@ -30,14 +30,12 @@ export function buildAgentFeatureSkillInstallCommand(skillNames: readonly string
   })
 }
 
-export const ORCHESTRATION_SKILL_INSTALL_COMMAND = buildAgentFeatureSkillInstallCommand([
-  ORCHESTRATION_SKILL_NAME
-])
+export const ORCHESTRATION_SKILL_INSTALL_COMMAND =
+  buildAgentFeatureSkillInstallCommand(ORCHESTRATION_SKILL_NAMES)
 
-export const DOLPHIN_CLI_ORCHESTRATION_SKILL_INSTALL_COMMAND = buildAgentFeatureSkillInstallCommand([
-  DOLPHIN_CLI_SKILL_NAME,
-  ORCHESTRATION_SKILL_NAME
-])
+export const DOLPHIN_CLI_ORCHESTRATION_SKILL_INSTALL_COMMAND = buildAgentFeatureSkillInstallCommand(
+  [DOLPHIN_CLI_SKILL_NAME, ...ORCHESTRATION_SKILL_NAMES]
+)
 
 export const DOLPHIN_LINEAR_SKILL_INSTALL_COMMAND = buildAgentFeatureSkillInstallCommand([
   DOLPHIN_LINEAR_SKILL_NAME

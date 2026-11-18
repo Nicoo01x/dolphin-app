@@ -4,7 +4,10 @@ import { OrchestrationSkillPromptDialog } from './OrchestrationSkillPromptDialog
 import { buildSkillCommandForRuntime } from '../../../lib/skills/runtime/skill-runtime-command'
 import { ORCHESTRATION_SKILL_INSTALL_COMMAND } from '@/lib/skills/installation/agent-feature-install-commands'
 import { ArrowRightLeft, GitBranch, ListChecks, Workflow, type LucideIcon } from 'lucide-react'
-import { ORCHESTRATION_SKILL_NAME } from '@/lib/skills/installation/agent-feature-skill-names'
+import {
+  ORCHESTRATION_SKILL_NAME,
+  ORCHESTRATION_SKILL_NAMES
+} from '@/lib/skills/installation/agent-feature-skill-names'
 import type { SkillUsageExample } from '@/lib/skills/examples/skill-usage-example'
 import { getOrchestrationUsageExamples } from '@/components/orchestration/setup/orchestration-usage-examples'
 import {
@@ -120,7 +123,7 @@ export function OrchestrationPane({
               'auto.components.settings.OrchestrationPane.9bedd2a6e5',
               'Enables agents to hand off context and coordinate work through Dolphin.'
             )}
-            skillNames={[ORCHESTRATION_SKILL_NAME]}
+            skillNames={ORCHESTRATION_SKILL_NAMES}
             installed={orchestrationSkillDetected}
             loading={orchestrationSkillLoading}
             error={activeSkillRuntime.installDisabledReason ?? orchestrationSkillError}

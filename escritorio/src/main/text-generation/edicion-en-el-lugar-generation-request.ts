@@ -1,6 +1,7 @@
-import { codigoDeLaRespuesta } from '../../shared/edicion-en-el-lugar-respuesta'
+import { leerRespuestaDeEdicion } from '../../shared/edicion-en-el-lugar-respuesta'
 import type { ResolvedSourceControlAiGenerationParams } from '../../shared/source-control/ai/source-control-ai-operation-resolution'
 import { runGenerationRequest } from './agent-generation-request'
+import { emptyResultFailure } from './source-control-agent-failure'
 import { spawnSourceControlAgent } from './source-control-agent-launch'
 import type {
   CommitMessageGenerationTarget,
@@ -43,8 +44,9 @@ export function revisarElPedidoDeEdicion(
  *
  * Va por la misma vía que el mensaje de commit y el nombre de la conversación —misma cola, mismos
  * límites, mismo manejo de fallas— en vez de abrir un camino nuevo. Lo único propio es cómo se lee
- * la respuesta: acá lo que vuelve se escribe derecho adentro de un archivo de la persona, así que
- * pasa por `codigoDeLaRespuesta`, que saca el código de la cerca y deja afuera la charla.
+ * la respuesta: lo que vuelve puede terminar escrito adentro de un archivo de la persona, así que
+ * pasa por `leerRespuestaDeEdicion`, que separa un reemplazo (el código de su cerca, sin la charla)
+ * de una respuesta a una pregunta, que se muestra y no se aplica nunca.
  *
  * El prompt ya viene armado: lo construye el editor, que es el único que sabe qué hay alrededor
  * de la selección.
@@ -62,14 +64,22 @@ export async function generarEdicionEnElLugar(input: {
   if (!result.success) {
     return result
   }
-  // Why no hay guardia de vacío acá: `runGenerationRequest` ya rechaza una salida vacía, y lo hace
-  // después de limpiar las cercas — una respuesta que es sólo ```` ```ts\n``` ```` también cae ahí.
-  // Se probó con un agente propio y con uno de fábrica: los dos fallan antes de llegar a este
-  // punto. Una guardia más sería código que no corre nunca.
+  // La salida en blanco la rechaza `runGenerationRequest`. Lo que no puede rechazar es una cerca
+  // vacía (```` ```ts\n``` ````): para esta operación ya no pela cercas, porque la cerca es lo que
+  // separa un reemplazo de una respuesta. Un reemplazo vacío no se ofrece: aceptarlo borraría lo
+  // seleccionado por un error del modelo.
+  const respuesta = leerRespuestaDeEdicion(result.rawOutput)
+  if (respuesta.tipo === 'edicion' && respuesta.codigo.trim() === '') {
+    return {
+      success: false,
+      ...emptyResultFailure('edicion-en-el-lugar', result.agentLabel ?? 'The agent')
+    }
+  }
   return {
     success: true,
-    codigo: codigoDeLaRespuesta(result.rawOutput),
-    agentLabel: result.agentLabel
+    ...respuesta,
+    agentLabel: result.agentLabel,
+    agentId: input.params.agentId
   }
 }
 

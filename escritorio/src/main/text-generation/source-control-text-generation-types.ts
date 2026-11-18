@@ -7,6 +7,7 @@ import type {
 } from '../../shared/source-control/ai/generation/commit-message-agent-spec'
 import type { CommitMessagePlan } from '../../shared/source-control/ai/generation/commit-message-plan'
 import type { TextGenerationFailureFields } from '../../shared/text-generation-failure-copy'
+import type { RespuestaDeEdicion } from '../../shared/edicion-en-el-lugar-respuesta'
 
 export type GenerateCommitMessageResult =
   | { success: true; message: string; agentLabel?: string }
@@ -51,7 +52,7 @@ export type TextGenerationOperation =
   | 'jira-issue-summary'
   | 'conversation-name'
   // Dolphin: editar con IA adentro del editor (Cmd+K). Es la única cuyo resultado se escribe
-  // derecho en un archivo de la persona, así que su salida se lee con `codigoDeLaRespuesta`.
+  // derecho en un archivo de la persona, así que su salida se lee con `leerRespuestaDeEdicion`.
   | 'edicion-en-el-lugar'
 
 export type CommitMessageGenerationTarget =
@@ -94,9 +95,13 @@ export type GenerateConversationNameResult =
       failureOutput?: AgentGenerationFailureOutput
     }
 
-/** Lo que devuelve editar con IA en el lugar: el código ya pelado de cercas y de charla. */
+/**
+ * Lo que devuelve editar con IA en el lugar: un reemplazo ya pelado de cercas y de charla, o una
+ * respuesta para leer cuando el pedido fue una pregunta. `agentId` dice qué agente contestó, para
+ * que el editor muestre su marca.
+ */
 export type GenerateEdicionEnElLugarResult =
-  | { success: true; codigo: string; agentLabel?: string }
+  | ({ success: true; agentLabel?: string; agentId?: string } & RespuestaDeEdicion)
   | {
       success: false
       error: string

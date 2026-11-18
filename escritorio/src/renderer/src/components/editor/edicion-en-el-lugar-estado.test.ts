@@ -55,6 +55,47 @@ describe('el camino que funciona', () => {
   })
 })
 
+describe('una respuesta sin cambio', () => {
+  const contestado = correr(abierto, [
+    { tipo: 'enviar', instruccion: '¿para qué sirve?' },
+    { tipo: 'contesto', texto: 'Arma el encabezado.', revision: 1 }
+  ]).estado
+
+  it('queda a la vista para leer, con lo que se preguntó', () => {
+    expect(contestado).toMatchObject({
+      fase: 'respuesta',
+      instruccion: '¿para qué sirve?',
+      texto: 'Arma el encabezado.'
+    })
+  })
+
+  // Lo que no puede pasar nunca: que Aceptar escriba la explicación en el archivo.
+  it('aceptar no aplica nada', () => {
+    const paso = pasoDeEdicion(contestado, { tipo: 'aceptar' })
+    expect(paso.efecto.tipo).toBe('nada')
+    expect(paso.estado).toBe(contestado)
+  })
+
+  it('se puede seguir preguntando, y lo que se habló viaja con el pedido', () => {
+    const paso = pasoDeEdicion(contestado, { tipo: 'enviar', instruccion: '¿y si es nulo?' })
+    expect(paso.estado.fase).toBe('esperando')
+    expect(paso.efecto).toEqual({
+      tipo: 'pedirAlModelo',
+      tramo: TRAMO,
+      instruccion: '¿y si es nulo?',
+      revision: 1,
+      previa: { pedido: '¿para qué sirve?', respuesta: 'Arma el encabezado.' }
+    })
+  })
+
+  it('una respuesta que llega tarde se tira igual que un reemplazo', () => {
+    const esperando = correr(abierto, [{ tipo: 'enviar', instruccion: 'x' }]).estado
+    expect(pasoDeEdicion(esperando, { tipo: 'contesto', texto: 't', revision: 9 }).estado).toBe(
+      esperando
+    )
+  })
+})
+
 describe('lo que llega tarde no escribe nada', () => {
   it('una respuesta después de cancelar se tira', () => {
     const final = correr(abierto, [

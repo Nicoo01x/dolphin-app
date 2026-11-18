@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
+import { ContadorDeVisitas } from "@/components/ContadorDeVisitas";
+import { DatosEstructurados } from "@/components/DatosEstructurados";
 import { Movimiento } from "@/components/Movimiento";
 import { ScrollSuave } from "@/components/ScrollSuave";
-import { SITIO, SITIO_PUBLICADO } from "@/lib/contenido";
+import { REPO, SITIO, SITIO_PUBLICADO } from "@/lib/contenido";
 import "./globals.css";
 
 // Una sola familia para los títulos y para el texto, como Linear, que es la referencia que eligió
@@ -40,8 +42,46 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "Dolphin",
     locale: "es_AR",
-    ...(SITIO_PUBLICADO ? { url: "/" } : {}),
+    // La tarjeta de compartir (scripts/imagen-para-compartir.mjs). Sin dominio no va: Next la
+    // resolvería contra localhost y la vista previa saldría rota.
+    ...(SITIO_PUBLICADO ? { url: "/", images: [{ url: "/og.png", width: 1200, height: 630, alt: "Dolphin: el tablero con los agentes trabajando" }] } : {}),
   },
+  twitter: {
+    card: "summary_large_image",
+    title: TITULO,
+    description: DESCRIPCION,
+    ...(SITIO_PUBLICADO ? { images: ["/og.png"] } : {}),
+  },
+  keywords: [
+    "Claude Code",
+    "Codex",
+    "agentes de código",
+    "orquestador de agentes",
+    "IA para programar",
+    "worktrees",
+    "open source",
+    "alternativa a Cursor",
+  ],
+};
+
+/** Qué es Dolphin y quién lo hace, para buscadores y asistentes. Va en todas las páginas. */
+const DATOS_DEL_SITIO = {
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "Organization", "@id": `${SITIO}/#org`, name: "Dolphin", url: SITIO, logo: `${SITIO}/icon.svg`, sameAs: [REPO] },
+    { "@type": "WebSite", "@id": `${SITIO}/#web`, name: "Dolphin", url: SITIO, inLanguage: "es", publisher: { "@id": `${SITIO}/#org` } },
+    {
+      "@type": "SoftwareApplication",
+      name: "Dolphin",
+      description: DESCRIPCION,
+      applicationCategory: "DeveloperApplication",
+      operatingSystem: "Windows, macOS, Linux",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      downloadUrl: `${SITIO}/descargar`,
+      license: "https://opensource.org/licenses/MIT",
+      publisher: { "@id": `${SITIO}/#org` },
+    },
+  ],
 };
 
 export const viewport: Viewport = { themeColor: "#07090c" };
@@ -60,7 +100,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             hermes-agent. Se fue con el rediseño del 01/11: Linear no encuadra nada, y un borde de
             color alrededor de todo es justo lo que hacía que la página se viera como una plantilla
             y no como un producto. */}
+        <DatosEstructurados datos={DATOS_DEL_SITIO} />
         <ScrollSuave />
+        <ContadorDeVisitas />
         <Movimiento>{children}</Movimiento>
       </body>
     </html>

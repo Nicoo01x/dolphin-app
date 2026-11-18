@@ -124,7 +124,8 @@ export const TopLevelViewSchema = z.enum([
   // El lienzo faltaba acá desde que se agregó a `TopLevelView`: un cliente pareado que pedía esa
   // vista se comía el rechazo del payload entero, y el guardián de paridad dejaba el repo sin
   // compilar. Toda vista nueva va en los dos lados.
-  'lienzo'
+  'lienzo',
+  'delfines'
 ])
 
 export const UiUpdateFields = z

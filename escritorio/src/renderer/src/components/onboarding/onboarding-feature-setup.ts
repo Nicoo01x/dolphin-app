@@ -6,7 +6,7 @@ import {
   COMPUTER_USE_SKILL_NAME,
   DOLPHIN_LINEAR_SKILL_NAME,
   DOLPHIN_CLI_SKILL_NAME,
-  ORCHESTRATION_SKILL_NAME
+  ORCHESTRATION_SKILL_NAMES
 } from '@/lib/skills/installation/agent-feature-skill-names'
 import { BROWSER_USE_ENABLED_STORAGE_KEY } from '@/lib/browser/browser-use-setup-state'
 import { e2eConfig } from '@/app-shell/startup/e2e-config'
@@ -40,11 +40,12 @@ export const ONBOARDING_FEATURE_SETUP_IDS: readonly OnboardingFeatureSetupId[] =
   'linearTickets'
 ]
 
-const FEATURE_SKILL_NAMES: Record<OnboardingFeatureSetupId, string> = {
-  browserUse: DOLPHIN_CLI_SKILL_NAME,
-  computerUse: COMPUTER_USE_SKILL_NAME,
-  orchestration: ORCHESTRATION_SKILL_NAME,
-  linearTickets: DOLPHIN_LINEAR_SKILL_NAME
+const FEATURE_SKILL_NAMES: Record<OnboardingFeatureSetupId, readonly string[]> = {
+  browserUse: [DOLPHIN_CLI_SKILL_NAME],
+  computerUse: [COMPUTER_USE_SKILL_NAME],
+  // Prendido por defecto: así dolphin-delegar viene instalada desde el primer arranque.
+  orchestration: ORCHESTRATION_SKILL_NAMES,
+  linearTickets: [DOLPHIN_LINEAR_SKILL_NAME]
 }
 
 const FEATURE_TELEMETRY_IDS: Record<
@@ -93,7 +94,7 @@ export function selectedOnboardingFeatureSetupIds(
 export function onboardingFeatureSetupSkillNames(
   selection: OnboardingFeatureSetupSelection
 ): string[] {
-  return selectedOnboardingFeatureSetupIds(selection).map((id) => FEATURE_SKILL_NAMES[id])
+  return selectedOnboardingFeatureSetupIds(selection).flatMap((id) => FEATURE_SKILL_NAMES[id])
 }
 
 export function onboardingFeatureSetupTelemetryFeature(

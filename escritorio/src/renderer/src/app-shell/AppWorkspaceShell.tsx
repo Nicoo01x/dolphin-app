@@ -16,6 +16,7 @@ import { RightSidebarToggle, TitlebarMainStrip } from './TitlebarMainStrip'
 import type { AppChromeLayout } from './use-app-chrome-layout'
 import type { FloatingWorkspacePanelState } from './use-floating-workspace-panel'
 import { useLeaveEmptyRestoredWorkspace } from './use-leave-empty-restored-workspace'
+import { MARCA_DE_PAGINA, muestraUnaPagina } from '../components/dolphin/paisaje/marca-de-pagina'
 
 // Skips the shell render each workspace switch causes; its props only change on toggle.
 const MemoFloatingTerminalToggleButton = memo(FloatingTerminalToggleButton)
@@ -38,6 +39,7 @@ const WorkspaceSpacePage = lazy(() => import('../components/workspace-space/Work
 const MobilePage = lazy(() => import('../components/mobile/MobilePage'))
 const DolphinPage = lazy(() => import('../components/dolphin/DolphinPage'))
 const LienzoPage = lazy(() => import('../components/lienzo/LienzoPage'))
+const DelfinesPage = lazy(() => import('../components/dolphin/delfines/DelfinesPage'))
 const Terminal = lazy(() => import('../components/Terminal'))
 
 type WorktreeSidebarScrollRefs = {
@@ -107,6 +109,7 @@ function ActivePage({ layout }: { layout: AppChromeLayout }): React.JSX.Element 
       {activeView === 'mobile' ? <MobilePage /> : null}
       {activeView === 'dolphin' ? <DolphinPage /> : null}
       {activeView === 'lienzo' ? <LienzoPage /> : null}
+      {activeView === 'delfines' ? <DelfinesPage /> : null}
       {activeView === 'terminal' && creationLayoutActive && activePendingCreationId ? (
         <PendingCreationSurface
           creationId={activePendingCreationId}
@@ -199,6 +202,7 @@ export function AppWorkspaceShell(props: {
               {layout.stackedSidebarOpen &&
               layout.activeView !== 'automations' &&
               layout.activeView !== 'orchestration' &&
+              layout.activeView !== 'delfines' &&
               layout.activeView !== 'artifacts' ? (
                 <div className="titlebar">{titlebarMainStrip}</div>
               ) : null}
@@ -218,7 +222,10 @@ export function AppWorkspaceShell(props: {
                     <RightSidebarToggle />
                   </div>
                 )}
-                <div className="flex flex-1 min-w-0 min-h-0 flex-col">
+                <div
+                  className="flex flex-1 min-w-0 min-h-0 flex-col"
+                  {...(muestraUnaPagina(layout) ? MARCA_DE_PAGINA : undefined)}
+                >
                   {layout.shouldMountTerminalWorkbench ? (
                     <TerminalWorkbenchContainer isVisible={layout.terminalWorkbenchVisible}>
                       <Suspense fallback={null}>

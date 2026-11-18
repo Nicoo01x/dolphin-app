@@ -31,6 +31,7 @@ import type { PaletaDeCodigoSettings } from './paleta-de-codigo'
 import type { TemaDeCodigoSettings } from './tema-de-codigo'
 import type { FondoDelChatSettings } from './fondo-del-chat'
 import type { PrediccionDeEdicionSettings } from './prediccion-de-edicion-settings'
+import type { ModoPocaRamSettings } from './modo-poca-ram'
 import type { TemaDeLaInterfazSettings } from './tema-de-la-interfaz-settings'
 import type { GlobalSettingsEditor } from './global-settings-editor-types'
 
@@ -65,6 +66,7 @@ export type GlobalSettingsBase = AntigravityChatAuthSettings &
   AgentCrossReviewSettings &
   DelegacionAutomaticaSettings &
   PrediccionDeEdicionSettings &
+  ModoPocaRamSettings &
   PaletaDeCodigoSettings &
   TemaDeCodigoSettings &
   FondoDelChatSettings &

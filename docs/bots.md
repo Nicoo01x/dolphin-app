@@ -59,7 +59,28 @@ dolphin bots correr                                    # los prende en esta term
 dolphin bots instalar | desinstalar                    # como servicio del sistema
 dolphin bots webhook [--puerto 4890]                   # recibe los eventos firmados
 dolphin bots borrar <id>
+dolphin bots historial <id>                            # la charla y los partes
 ```
+
+Con `--json` (`dolphin bots --json`, `nuevo`, `hablar`, `dale`, `historial`, `instalar`) cada comando
+imprime un solo JSON, sin colores: es lo que lee la página «Delfines» de la app de escritorio, acá o
+por SSH en tu servidor. No lleva el token de Telegram ni el secreto de los eventos.
+
+## Llevarlo a otra máquina
+
+Un bot es su carpeta, así que mudarlo es copiarla. Del otro lado se le cambia lo único que no viaja,
+la carpeta donde trabaja:
+
+```bash
+dolphin bots importar ./vigia --carpeta ~/proyectos/tienda   # [--reemplazar] para llevarlo de nuevo
+dolphin bots apartar vigia      # en la máquina de origen: deja de correr acá, queda en ~/.dolphin/bots-en-servidor
+dolphin bots instalar --comando "/ruta/a/node /ruta/a/bin/dolphin.mjs bots correr"
+```
+
+`--comando` es para una máquina donde `dolphin` no está en el PATH (la app lleva el núcleo a tu
+servidor sin instalarlo con npm); en Linux el servicio se lleva además el PATH de la sesión, porque
+systemd no lo hereda y sin él el bot no encuentra a `claude` ni a `codex`. La app hace todo esto sola
+con «Correr en tu servidor».
 
 ## Siempre prendidos
 

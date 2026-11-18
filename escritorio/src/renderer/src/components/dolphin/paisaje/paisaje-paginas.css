@@ -1,0 +1,81 @@
+/*
+ * Las páginas que no son un espacio de trabajo sobre el vidrio: Ajustes, Skills, Tareas (Issues ·
+ * PRs · Proyectos y el detalle de cada uno), Automatizaciones, Orquestación, Actividad, la consola
+ * de Dolphin y las demás. Pedido de Nico el 17/11/2026: «que también tenga el fondo que usamos en
+ * el chat, que esté en todos lados».
+ *
+ * El contenedor de las páginas lleva la marca (`marca-de-pagina.ts`, en `AppWorkspaceShell`): es un
+ * panel más, y el vidrio y las juntas los pone `paisaje.css`. Lo de acá es lo que cada página pinta
+ * adentro con los tokens de la base y que taparía el vidrio:
+ *
+ * - El fondo de la página y de sus marcos (`bg-background`) pasa a transparente.
+ * - Lo que la base tiñe con `--muted`, `--accent`, `--card` o `--secondary` (franjas, tarjetas, lo
+ *   elegido, los botones secundarios) toma el realce del vidrio, la tinta del texto al 10 %: un
+ *   tono por encima de la página, como la fila elegida de la barra lateral.
+ * - Los controles (botones y buscadores con `bg-background`) van un tono más claro que el vidrio,
+ *   como el compositor del chat, y otro tono más al pasar el mouse.
+ * - Lo que se queda pegado al hacer scroll (encabezados, las celdas fijas de la tabla de tareas)
+ *   es vidrio, que tapa lo que se desliza por debajo (`paisaje.css`); el realce de la fila al
+ *   pasar el mouse va encima.
+ *
+ * «Paneles opacos» no necesita nada aparte: el vidrio pasa a su tinta entera y estas reglas dejan
+ * la página en el mismo tono que la barra lateral.
+ *
+ * Como el resto de `paisaje.css`, sin capa: le gana a las clases de Tailwind, también a sus
+ * `hover:`. Por eso el mouse sobre un control se marca acá, con un segundo realce encima del primero.
+ */
+:root[data-dolphin-paisaje] [data-dolphin-pagina] {
+  --muted: var(--paisaje-realce);
+  --accent: var(--paisaje-realce);
+  --card: var(--paisaje-realce);
+  --secondary: var(--paisaje-realce);
+}
+
+/* El inicio sin espacio de trabajo pinta su fondo por clase, no con Tailwind. */
+:root[data-dolphin-paisaje] [data-dolphin-pagina] .landing {
+  background: transparent;
+}
+
+:root[data-dolphin-paisaje]
+  [data-dolphin-pagina]
+  .bg-background:not(button, input, textarea, [data-slot$='-thumb']) {
+  background-color: transparent;
+}
+
+:root[data-dolphin-paisaje]
+  [data-dolphin-pagina]
+  :is(button, input, textarea):is(.bg-background, [class*='bg-background/']) {
+  background-color: var(--paisaje-realce);
+}
+
+:root[data-dolphin-paisaje]
+  [data-dolphin-pagina]
+  :is(button, input, textarea):is(.bg-background, [class*='bg-background/']):hover:not(:disabled) {
+  box-shadow: inset 0 0 0 100vmax var(--paisaje-realce);
+}
+
+/* La tira de 12 px a la izquierda de cada celda fija (`before:bg-inherit`) hereda sólo el color:
+   acá hereda el vidrio entero, o se vería pasar la fila por esa rendija. */
+:root[data-dolphin-paisaje] [data-dolphin-pagina] [data-task-list-scroll] .sticky::before {
+  background-image: inherit;
+  background-size: inherit;
+  background-position: inherit;
+  background-repeat: inherit;
+  background-attachment: inherit;
+  box-shadow: inherit;
+}
+
+/* La fila al pasar el mouse: el realce encima del vidrio de las celdas fijas, igual que en el resto
+   de la fila (`hover:bg-accent`, que acá es el realce). */
+:root[data-dolphin-paisaje] [data-dolphin-pagina] .group\/github-task-row:hover > .sticky {
+  box-shadow: inset 0 0 0 100vmax var(--paisaje-realce);
+}
+
+/* El degradé que corta un texto largo (`from-background to-transparent`, como el del prompt de una
+   automatización) se fundía hacia el negro del lienzo. Acá es vidrio (`paisaje.css`) que se
+   desvanece con una máscara: se funde hacia el vidrio de atrás, que es el mismo. */
+:root[data-dolphin-paisaje]
+  :is(.workspace-sidebar-seam, [data-dolphin-pagina])
+  .from-background.to-transparent.bg-gradient-to-t {
+  mask-image: linear-gradient(to top, black, transparent);
+}

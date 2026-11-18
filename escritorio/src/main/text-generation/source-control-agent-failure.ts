@@ -164,7 +164,9 @@ export function finalizeFromAgentOutput(args: {
       failureOutput: captureFailureOutput(label, code, stdout, stderr)
     }
   }
-  const cleaned = cleanGeneratedCommitMessage(parsed?.ok ? parsed.text : stdout)
+  const cleaned = cleanGeneratedCommitMessage(parsed?.ok ? parsed.text : stdout, {
+    conservarMarkdown: args.operation === 'edicion-en-el-lugar'
+  })
   if (cleaned) {
     return { success: true, rawOutput: cleaned, agentLabel: label }
   }

@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { GitBranch, LayoutGrid, PanelTop, ScanEye } from 'lucide-react'
+import { Bot, GitBranch, LayoutGrid, PanelTop, ScanEye } from 'lucide-react'
 import { useAppStore } from '@/store'
 import { cn } from '@/lib/class-names'
 import { translate } from '@/i18n/i18n'
@@ -15,13 +15,15 @@ import { useXrayBridge } from '../dolphin/xray/use-xray-bridge'
  * consola ya tiene adentro: se navegaba lo mismo por dos lados. Ahora la barra dice dónde estás y
  * las vistas se eligen en la barra de arriba de la consola, que por eso dejó de esconderse.
  *
- * Al lado van las tres cosas que no viven adentro de la consola: la isla (Ctrl+Alt+D), X-ray
- * (Ctrl+Alt+X) y Orquestación, que es una pantalla de la app.
+ * Al lado van las cosas que no viven adentro de la consola: la isla (Ctrl+Alt+D), X-ray
+ * (Ctrl+Alt+X), y Delfines y Orquestación, que son pantallas de la app.
  */
 export function DolphinSidebarEntry(): React.JSX.Element | null {
   const openDolphinPage = useAppStore((s) => s.openDolphinPage)
   const active = useAppStore((s) => s.activeView === 'dolphin')
   const openOrchestrationPage = useAppStore((s) => s.openOrchestrationPage)
+  const openDelfinesPage = useAppStore((s) => s.openDelfinesPage)
+  const enDelfines = useAppStore((s) => s.activeView === 'delfines')
   const setActiveView = useAppStore((s) => s.setActiveView)
   useXrayBridge(true)
   // Why opcional: la web y los tests no tienen el puente de Dolphin; ahí la isla no existe.
@@ -40,6 +42,10 @@ export function DolphinSidebarEntry(): React.JSX.Element | null {
   const orquestacionLabel = translate(
     'auto.components.sidebar.SidebarNav.orchestration',
     'Orchestration'
+  )
+  const delfinesLabel = translate(
+    'auto.components.sidebar.DolphinSidebarEntry.delfines',
+    'Dolphins: your bots, their routines and your server'
   )
   const lienzoLabel = translate(
     'auto.components.sidebar.DolphinSidebarEntry.lienzo',
@@ -78,6 +84,19 @@ export function DolphinSidebarEntry(): React.JSX.Element | null {
         className={botonChico}
       >
         <LayoutGrid aria-hidden="true" className="size-3.5" />
+      </button>
+      <button
+        type="button"
+        aria-label={delfinesLabel}
+        title={delfinesLabel}
+        onClick={openDelfinesPage}
+        aria-current={enDelfines ? 'page' : undefined}
+        className={cn(
+          botonChico,
+          enDelfines && 'bg-worktree-sidebar-foreground/10 text-worktree-sidebar-foreground'
+        )}
+      >
+        <Bot aria-hidden="true" className="size-3.5" />
       </button>
       <button
         type="button"

@@ -77,6 +77,8 @@ export type HostListEntry = {
   machineName?: string
   connected?: boolean
   connectionStatus?: string
+  /** SSH rows: why the last connect failed; `dolphin host doctor` explains it. */
+  lastFailure?: { reason: string; nextStep: string }
 }
 
 // Explicit host selectors prevent callers from using a display name on the wrong host scope.
@@ -108,12 +110,13 @@ function formatHostConnection(host: HostListEntry): string {
   if (host.kind !== 'ssh') {
     return ''
   }
+  const failed = host.lastFailure ? `  last failure: ${host.lastFailure.reason}` : ''
   if (host.connected === undefined) {
-    return `connection unknown${host.connectionStatus ? ` (${host.connectionStatus})` : ''}`
+    return `connection unknown${host.connectionStatus ? ` (${host.connectionStatus})` : ''}${failed}`
   }
   return host.connected
     ? `connected${host.connectionStatus ? ` (${host.connectionStatus})` : ''}`
-    : `not connected${host.connectionStatus ? ` (${host.connectionStatus})` : ''}`
+    : `not connected${host.connectionStatus ? ` (${host.connectionStatus})` : ''}${failed}`
 }
 
 export function formatCliStatus(status: CliStatusResult): string {
@@ -130,7 +133,9 @@ export function formatCliStatus(status: CliStatusResult): string {
     `runtimeId: ${status.runtime.runtimeId ?? 'none'}`,
     `graphState: ${status.graph.state}`,
     ...(status.runtime.degradations ?? []).map((degradation) => `degraded: ${degradation.message}`),
-    ...(status.caller === undefined ? [] : [`dolphinSessionId: ${formatStatusCaller(status.caller)}`])
+    ...(status.caller === undefined
+      ? []
+      : [`dolphinSessionId: ${formatStatusCaller(status.caller)}`])
   ].join('\n')
 }
 

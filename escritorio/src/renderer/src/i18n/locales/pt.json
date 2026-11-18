@@ -9191,8 +9191,6 @@
           "hostNewer": "Executa uma versão do servidor Dolphin mais recente que este aplicativo; essa versão será mantida.",
           "failureDetails": "Detalhes",
           "cause": {
-            "unsupportedHost": "O Dolphin não tem uma compilação do servidor para este sistema",
-            "artifactsUnavailable": "esta compilação do Dolphin não inclui o servidor",
             "libcUnidentified": "o Dolphin não conseguiu identificar as bibliotecas do sistema do host",
             "runtimeSelfTest": "o ambiente de execução do servidor falhou no autoteste",
             "securitySoftware": "um software de segurança alterou o ambiente de execução do servidor",
@@ -9201,9 +9199,6 @@
           "updateDeferredLater": "Executa o servidor Dolphin; ele será atualizado em uma conexão futura.",
           "updateFailedPrevious": "Executa o servidor Dolphin na versão anterior; a atualização falhou.",
           "refusedBlocked": "O Dolphin ainda não está configurado neste host: algo no host está impedindo a movimentação.",
-          "unsupported": "Este host não é compatível com esta versão do Dolphin ({{reason}}). Para continuar usando-o, instale uma versão anterior do Dolphin.",
-          "unsupportedUnknown": "Este host não é compatível com esta versão do Dolphin. Para continuar usando-o, instale uma versão anterior do Dolphin.",
-          "tunnelUnsupported": "Este host não é compatível com esta versão do Dolphin: seu servidor SSH não permite encaminhamento de portas, e o Dolphin também não conseguiu acessar o servidor pela sessão SSH. Para continuar usando-o, instale uma versão anterior do Dolphin.",
           "setupRetry": "O Dolphin não conseguiu iniciar o servidor neste host. Tente conectar novamente.",
           "moveHeld": "O Dolphin pausou a movimentação dos projetos deste host para o servidor Dolphin porque não conseguiu confirmar a cópia no servidor. Nada foi perdido: o host mantém seus projetos e permanece bloqueado até a movimentação terminar. Conecte novamente para retomar. Se o servidor não puder voltar, pare-o ou esqueça-o em Configurações > Dolphin nos seus hosts SSH.",
           "olderTerminalsBridged": "O Dolphin ainda não está configurado neste host: terminais iniciados por uma versão anterior do Dolphin ainda estão em execução nos projetos deste host. Eles continuam funcionando aqui. Feche-os ou encerre-os no host e conecte novamente.",

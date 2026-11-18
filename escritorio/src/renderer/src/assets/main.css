@@ -2777,78 +2777,7 @@ html.native-shell .app-layout {
   box-shadow: inset 0 0 0 1px rgb(0 0 0 / 8%);
 }
 
-/* El cuadrito de Cmd+K. Va anclado a una línea del editor, así que hereda su tipografía y se
-   queda angosto: es una instrucción de una línea, no un panel. */
-.monaco-editor .dolphin-cmdk {
-  display: flex;
-  width: min(560px, 70vw);
-  flex-direction: column;
-  gap: 6px;
-  border-radius: 8px;
-  background: var(--card, #171717);
-  padding: 8px;
-  box-shadow:
-    0 1px 2px rgb(0 0 0 / 30%),
-    0 8px 24px rgb(0 0 0 / 28%);
-  font-family: var(--app-font-family, inherit);
-  font-size: 12px;
-}
-
-.monaco-editor .dolphin-cmdk-entrada {
-  width: 100%;
-  border: 0;
-  border-radius: 6px;
-  background: var(--input, rgb(255 255 255 / 6%));
-  padding: 7px 9px;
-  color: inherit;
-  font: inherit;
-  outline-offset: 2px;
-}
-
-.monaco-editor .dolphin-cmdk-entrada:disabled {
-  opacity: 0.6;
-}
-
-.monaco-editor .dolphin-cmdk-estado {
-  margin: 0;
-  opacity: 0.7;
-}
-
-.monaco-editor .dolphin-cmdk-estado.es-falla {
-  color: var(--destructive, #f87171);
-  opacity: 1;
-}
-
-.monaco-editor .dolphin-cmdk-previa {
-  max-height: 180px;
-  overflow: auto;
-  margin: 0;
-  border-radius: 6px;
-  background: var(--muted, rgb(255 255 255 / 4%));
-  padding: 7px 9px;
-  font-family: inherit;
-  white-space: pre;
-}
-
-.monaco-editor .dolphin-cmdk-barra {
-  display: flex;
-  gap: 6px;
-}
-
-.monaco-editor .dolphin-cmdk-boton {
-  border: 0;
-  border-radius: 6px;
-  background: var(--primary, #e5e5e5);
-  padding: 5px 10px;
-  color: var(--primary-foreground, #171717);
-  font: inherit;
-  cursor: pointer;
-}
-
-.monaco-editor .dolphin-cmdk-boton:nth-child(n + 2) {
-  background: var(--input, rgb(255 255 255 / 8%));
-  color: inherit;
-}
+/* El cuadrito de Cmd+K vive en components/editor/cuadrito-de-edicion.css. */
 
 /* El cartel de la tecla va discreto: fondo translúcido y el color del texto del editor. Estuvo
    en positivo —blanco lleno con texto invertido— y adentro del código un bloque blanco es un

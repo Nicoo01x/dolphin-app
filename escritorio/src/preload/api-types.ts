@@ -1,5 +1,7 @@
 import type { PresenciaDeDolphin } from '../shared/discord-presencia'
+import type { AvisoDeMemoriaBaja, EstadoDeMemoriaBaja } from '../shared/modo-poca-ram'
 import type { LspApi } from './api/lsp-bridge'
+import type { DelfinesApi } from './api/delfines-api'
 import type { CheckpointsApi } from '../shared/checkpoints-de-codigo-tipos'
 import type {
   ClaudeAccountsApi,
@@ -181,6 +183,14 @@ export type PreloadApi = {
   wslDriveUnc: WslDriveUncConversionApi
   pwsh: RuntimeApi['pwsh']
   discord: { publicarPresencia: (estado: PresenciaDeDolphin) => void }
+  /** Dolphin, sólo escritorio: el aviso de poca RAM. La web no mira la memoria de esta máquina. */
+  memoriaBaja?: {
+    alAvisar: (callback: (aviso: AvisoDeMemoriaBaja) => void) => () => void
+    silenciar: () => Promise<void>
+    estado: () => Promise<EstadoDeMemoriaBaja>
+  }
+  /** Dolphin, sólo escritorio: los bots, acá o en tu servidor. */
+  delfines?: DelfinesApi
   checkpoints: CheckpointsApi
   gitBash: RuntimeApi['gitBash']
   plugins: PluginsApi

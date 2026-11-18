@@ -126,6 +126,7 @@ export type UiViewHistory =
   | 'mobile'
   | 'dolphin'
   | 'lienzo'
+  | 'delfines'
 
 /** Una carpeta con su consola de Dolphin y el nombre con que se la muestra. */
 export type DolphinPageTarget = { path: string; label: string }
@@ -180,6 +181,7 @@ export type UISliceCore = {
   previousViewBeforeMobile: Exclude<UiViewHistory, 'mobile'>
   previousViewBeforeArtifacts: Exclude<UiViewHistory, 'artifacts'>
   previousViewBeforeDolphin: Exclude<UiViewHistory, 'dolphin'>
+  previousViewBeforeDelfines: Exclude<UiViewHistory, 'delfines'>
   /** La consola que muestra la página de Dolphin si no es la del proyecto activo: la del worktree
    *  donde sembró el modo live. */
   appPageTarget: DolphinPageTarget | null
@@ -215,6 +217,8 @@ export type UISliceCore = {
   closeAutomationsPage: () => void
   openOrchestrationPage: () => void
   closeOrchestrationPage: () => void
+  openDelfinesPage: () => void
+  closeDelfinesPage: () => void
   openSpacePage: () => void
   closeSpacePage: () => void
   openSkillsPage: () => void

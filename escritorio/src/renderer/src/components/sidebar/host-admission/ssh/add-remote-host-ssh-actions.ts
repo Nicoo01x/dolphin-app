@@ -19,6 +19,13 @@ import {
 } from '../../../../../../shared/ssh-types'
 
 import { isDuplicateSshTargetAlias } from './ssh-target-duplicate'
+import { formatSshFailureWithNextStep } from '../../../settings/ssh/targets/ssh-user-facing-error'
+
+/** Try the host before saving it; a failure stays on the form instead of becoming a toast. */
+export type SshHostSaveTest = {
+  run: (target: SshTargetCreateInput) => Promise<{ success: boolean; error?: string }>
+  onFailed: (message: string) => void
+}
 
 type SshApi = {
   listTargets: () => Promise<SshTarget[]>
@@ -39,7 +46,8 @@ export async function saveNewSshHostFromForm<T extends SavedSshHost>({
   ssh,
   recordSshRepoReadoptions,
   setSshTargetsMetadata,
-  recordFeatureInteraction
+  recordFeatureInteraction,
+  testFirst
 }: {
   form: EditingTarget
   ssh: {
@@ -51,7 +59,9 @@ export async function saveNewSshHostFromForm<T extends SavedSshHost>({
   recordSshRepoReadoptions: (readoptions: readonly SshRepoReadoption[]) => void
   setSshTargetsMetadata: (targets: T[]) => void
   recordFeatureInteraction: (feature: 'ssh') => void
-}): Promise<'saved' | 'validation-failed' | 'failed'> {
+  /** Absent for a paired server's host, which this computer can't test, and for Save anyway. */
+  testFirst?: SshHostSaveTest
+}): Promise<'saved' | 'validation-failed' | 'test-failed' | 'failed'> {
   const armado = sshTargetFromForm(form)
   if (!armado.ok) {
     toast.error(armado.message)
@@ -81,6 +91,19 @@ export async function saveNewSshHostFromForm<T extends SavedSshHost>({
         )
       )
       return 'validation-failed'
+    }
+
+    if (testFirst) {
+      const tested = await testFirst.run(target)
+      if (!tested.success) {
+        testFirst.onFailed(
+          formatSshFailureWithNextStep(
+            tested.error ??
+              translate('auto.components.settings.SshPane.0cda732f43', 'Connection test failed')
+          )
+        )
+        return 'test-failed'
+      }
     }
 
     const result = await ssh.addTarget({ target })

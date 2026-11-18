@@ -2,13 +2,19 @@ import { translate } from '@/i18n/i18n'
 import type { OnMount } from '@monaco-editor/react'
 import type { IDisposable, editor } from 'monaco-editor'
 import { crearCuadrito, type Cuadrito } from './edicion-en-el-lugar-cuadrito'
-import { aplicarEdicionEnElLugar, pedidoDeEdicion, type Tramo } from './edicion-en-el-lugar'
+import {
+  aplicarEdicionEnElLugar,
+  lineasDelCambio,
+  pedidoDeEdicion,
+  type Tramo
+} from './edicion-en-el-lugar'
 import { accionDelAcorde, esSoloModificador } from './acordes-de-ctrl-k'
 import { avisoDeFocoDelEditor } from './aviso-de-foco-del-editor'
 import {
   EDICION_CERRADA,
   pasoDeEdicion,
   type EstadoEdicion,
+  type IntercambioPrevio,
   type SucesoEdicion
 } from './edicion-en-el-lugar-estado'
 
@@ -23,7 +29,8 @@ type MonacoApi = Parameters<OnMount>[1]
  *   y una respuesta de otra versión se tira. El tramo se midió en el documento de antes; aplicarlo
  *   «donde más o menos iba» escribe en el lugar equivocado de un archivo de la persona.
  * - **Nada se escribe sin que alguien lo mire.** Lo que contesta el modelo se muestra y recién se
- *   aplica al aceptar. El botón dice Accept porque eso es lo que hace.
+ *   aplica al aceptar. El botón dice Accept porque eso es lo que hace, y sólo aparece cuando hay un
+ *   reemplazo que cambia algo: una pregunta vuelve como respuesta para leer, sin nada que aceptar.
  * - **Se aplica como UNA edición del editor**, no reemplazando el documento: así Ctrl+Z la
  *   deshace igual que si la hubieras tipeado, y el resto del archivo no se toca.
  *
@@ -106,7 +113,17 @@ export function instalarEdicionEnElLugar(args: {
     editorInstance.focus()
   }
 
-  const pedir = async (tramo: Tramo, instruccion: string, deLaRevision: number): Promise<void> => {
+  // Lo que quedaría en el archivo si se acepta, con la sangría que le pone `aplicar`: es lo que el
+  // diff muestra, y lo que decide si el reemplazo cambia algo.
+  const vistaPrevia = (tramo: Tramo, codigo: string) =>
+    lineasDelCambio(editorInstance.getModel()?.getValue() ?? '', tramo, codigo)
+
+  const pedir = async (
+    tramo: Tramo,
+    instruccion: string,
+    deLaRevision: number,
+    previa: IntercambioPrevio | undefined
+  ): Promise<void> => {
     const model = editorInstance.getModel()
     const worktreePath = leerWorktreePath()
     if (!model || !worktreePath) {
@@ -126,13 +143,34 @@ export function instalarEdicionEnElLugar(args: {
         seleccion: texto.slice(tramo.desde, tramo.hasta),
         antes: texto.slice(Math.max(0, tramo.desde - CONTEXTO), tramo.desde),
         despues: texto.slice(tramo.hasta, tramo.hasta + CONTEXTO),
-        rutaDelArchivo
+        rutaDelArchivo,
+        previa
       })
     })
+    if (!respuesta.success) {
+      despachar({ tipo: 'fallo', motivo: respuesta.error, revision: deLaRevision })
+      return
+    }
+    const agente = { id: respuesta.agentId, nombre: respuesta.agentLabel }
+    if (respuesta.tipo === 'respuesta') {
+      despachar({ tipo: 'contesto', texto: respuesta.texto, agente, revision: deLaRevision })
+      return
+    }
+    // Un reemplazo que deja el fragmento igual no es un cambio: no hay nada que aceptar, y
+    // mostrarlo con un Aceptar haría pensar que algo va a pasar. Se decide por el resultado.
+    const vista = vistaPrevia(tramo, respuesta.codigo)
     despachar(
-      respuesta.success
-        ? { tipo: 'llego', codigo: respuesta.codigo, revision: deLaRevision }
-        : { tipo: 'fallo', motivo: respuesta.error, revision: deLaRevision }
+      vista.antes === vista.despues
+        ? {
+            tipo: 'contesto',
+            texto: translate(
+              'editor.inlineEdit.noChange',
+              'Nothing to change in the selection: it already does what you asked.'
+            ),
+            agente,
+            revision: deLaRevision
+          }
+        : { tipo: 'llego', codigo: respuesta.codigo, agente, revision: deLaRevision }
     )
   }
 
@@ -141,26 +179,33 @@ export function instalarEdicionEnElLugar(args: {
     estado = paso.estado
     mostrar(cuadrito?.dibujar(estado) ?? false)
     if (paso.efecto.tipo === 'pedirAlModelo') {
-      void pedir(paso.efecto.tramo, paso.efecto.instruccion, paso.efecto.revision)
+      void pedir(
+        paso.efecto.tramo,
+        paso.efecto.instruccion,
+        paso.efecto.revision,
+        paso.efecto.previa
+      )
     } else if (paso.efecto.tipo === 'aplicar') {
       aplicar(paso.efecto.tramo, paso.efecto.codigo)
     }
   }
 
-  cuadrito = crearCuadrito({
-    enviar: (instruccion) => despachar({ tipo: 'enviar', instruccion }),
-    aceptar: () => despachar({ tipo: 'aceptar' }),
-    descartar: () => {
-      despachar({ tipo: 'cancelar' })
-      editorInstance.focus()
-    },
-    reintentar: () => {
-      if (estado.fase === 'fallo') {
-        despachar({ tipo: 'abrir', tramo: estado.tramo, revision: revision() })
-        enfocarElCuadrito()
+  cuadrito = crearCuadrito(
+    {
+      enviar: (instruccion) => despachar({ tipo: 'enviar', instruccion }),
+      aceptar: () => despachar({ tipo: 'aceptar' }),
+      descartar: () => {
+        despachar({ tipo: 'cancelar' })
+        editorInstance.focus()
+      },
+      reintentar: () => {
+        if (estado.fase === 'fallo') {
+          despachar({ tipo: 'enviar', instruccion: estado.instruccion })
+        }
       }
-    }
-  })
+    },
+    { ruta: rutaDelArchivo, vistaPrevia }
+  )
 
   const nodo = cuadrito.nodo
   // Captura antes que el campo y que Monaco: la tecla que sigue a Ctrl+K puede ser la segunda
@@ -181,6 +226,18 @@ export function instalarEdicionEnElLugar(args: {
     void editorInstance.getAction(accion)?.run()
   }
   nodo.addEventListener('keydown', alApretarEnElCuadrito, true)
+  // El cuadrito crece cuando llega la respuesta (y otra vez cuando el resaltado del código termina
+  // de cargar). Monaco lo ubicó arriba de la línea con el alto de antes: sin volver a medirlo, lo
+  // nuevo baja y tapa la selección que se está editando.
+  const medir =
+    typeof ResizeObserver === 'undefined'
+      ? null
+      : new ResizeObserver(() => {
+          if (visible && widget) {
+            editorInstance.layoutContentWidget(widget)
+          }
+        })
+  medir?.observe(nodo)
   widget = {
     getId: () => 'dolphin.edicionEnElLugar',
     getDomNode: () => nodo,
@@ -267,8 +324,10 @@ export function instalarEdicionEnElLugar(args: {
   return {
     dispose: () => {
       nodo.removeEventListener('keydown', alApretarEnElCuadrito, true)
+      medir?.disconnect()
       avisarFoco(false)
       mostrar(false)
+      cuadrito?.desmontar()
       for (const descartable of descartables) {
         descartable.dispose()
       }

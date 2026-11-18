@@ -68,3 +68,21 @@
 :root:not(.dark) .lo-que-hizo-codigo {
   background: #f7f7f7;
 }
+
+/* ── Sobre el vidrio del paisaje ───────────────────────────────────────────────────────────────
+   Nico, 17/11/2026: «un poquito más traslúcida». Con fondo y paneles de vidrio, la ventana es la
+   tinta del vidrio de los paneles (`paisaje.css`) con su misma opacidad, que sale de la cuenta de
+   AA del texto atenuado: a través se ve la ventana de atrás, ya velada y desenfocada por el fondo
+   del diálogo. No lleva la pintura esmerilada fija de los paneles: la ventana se mueve con
+   `transform` (nace del botón, se arrastra) y ahí `background-attachment: fixed` no calza.
+
+   El código va un tono más opaco: la misma tinta otra vez encima, así el diff se lee sobre casi
+   nada de lo de atrás. Con «Paneles opacos» la marca es `opaco` y queda la ventana de siempre. */
+:root[data-dolphin-paisaje='vidrio'] .lo-que-hizo-ventana {
+  --muted-foreground: var(--paisaje-atenuado);
+  background: rgb(var(--paisaje-tinta-vidrio) / var(--paisaje-alfa));
+}
+
+:root[data-dolphin-paisaje='vidrio'] .lo-que-hizo-codigo {
+  background: rgb(var(--paisaje-tinta-vidrio) / var(--paisaje-alfa));
+}

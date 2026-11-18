@@ -5,7 +5,7 @@ import { useAppStore } from '@/store/index'
 import { useMountedRef } from '@/hooks/useMountedRef'
 import { useTranslate } from '@/i18n/use-translate'
 import { isConnectingSshStatus } from '../../../../ssh/ssh-connection-recoverability'
-import { formatSshUserFacingError } from './ssh-user-facing-error'
+import { formatSshFailureWithNextStep } from './ssh-user-facing-error'
 
 type TestOutcome = { ok: true } | { ok: false; message: string }
 
@@ -46,20 +46,21 @@ export function useSshTargetTests(): {
     try {
       const result = await window.api.ssh.testConnection({ targetId })
       recordFeatureInteraction('ssh')
+      // Both failure paths lead with the next step, not SSH's raw words alone.
       return result.success
         ? { ok: true }
         : {
             ok: false,
-            message:
-              result.error ??
-              t('auto.components.settings.SshPane.0cda732f43', 'Connection test failed')
+            message: result.error
+              ? formatSshFailureWithNextStep(result.error)
+              : t('auto.components.settings.SshPane.0cda732f43', 'Connection test failed')
           }
     } catch (err) {
       return {
         ok: false,
         message:
           err instanceof Error
-            ? formatSshUserFacingError(err.message)
+            ? formatSshFailureWithNextStep(err.message)
             : t('auto.components.settings.SshPane.68c13b4589', 'Test failed')
       }
     } finally {

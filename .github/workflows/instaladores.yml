@@ -20,8 +20,9 @@
 #     DOLPHIN_MAC_RELEASE=1 más el certificado. Ninguna de las dos está puesta acá: sin ellas el
 #     build no declara un `publisherName` que no tiene, y la actualización de Windows no se rechaza
 #     a sí misma.
-#   - No arma la plantilla de `dolphind` para hosts remotos sin toolchain (son 8 ranuras, una por
-#     runner). Sin DOLPHIN_REQUIRE_DOLPHIND_TEMPLATE=1 el empaquetado la saltea limpio.
+#   - La plantilla de `dolphind` (el servidor que se le instala a un VPS) trae sólo la ranura
+#     linux-x64-glibc, no las 8: arm64, musl y los escritorios como destino necesitarían un runner
+#     cada uno. La arma el job `plantilla-dolphind` y los tres instaladores la llevan adentro.
 #   - No compila Linux arm64: necesitaría otro runner. Cuando se sume, también va en
 #     `verify-release-required-assets.mjs`.
 
@@ -100,11 +101,99 @@ jobs:
           gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft --verify-tag \
             --title "Dolphin ${TAG#v}" --notes-file "$notas" "${previa[@]}"
 
+  # El servidor que «conectar una máquina» le sube a un VPS. Sin esta plantilla adentro del
+  # instalador, conectar un host Linux dice «esta copia de Dolphin no trae el servidor para ese
+  # sistema» y no hay nada que instalar. Por ahora una sola ranura, linux-x64-glibc: es la de un VPS
+  # típico (Ubuntu/Debian x64, glibc 2.28 o más). El verificador acepta una plantilla parcial.
+  plantilla-dolphind:
+    name: Servidor para VPS (linux-x64-glibc)
+    runs-on: ubuntu-latest
+    # Why manylinux_2_28 y no el runner pelado: compilado en un Ubuntu nuevo, node-pty tira de
+    # símbolos de glibc/libstdc++ que un VPS con Ubuntu 20.04/22.04 no tiene. Este contenedor fija
+    # el piso en glibc 2.28, el mismo del Node que se le sube al host.
+    container: quay.io/pypa/manylinux_2_28_x86_64@sha256:407f771c51a2c3e83ebe5a7970b4289ead3a6db21d9b9c089168775cad11d328
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+        working-directory: escritorio
+    env:
+      # La imagen pone /opt/clang primero en el PATH; la ranura se compila con su gcc-toolset.
+      CC: gcc
+      CXX: g++
+      PYTHON: /opt/python/cp312-cp312/bin/python3
+    steps:
+      - name: Herramientas que la imagen no trae
+        working-directory: /
+        run: |
+          for herramienta in git ps unzip which xz; do
+            if ! command -v "$herramienta" >/dev/null 2>&1; then
+              dnf --disablerepo='epel*' install -y git procps-ng unzip which xz
+              break
+            fi
+          done
+
+      - uses: actions/checkout@v4
+
+      # El armado pide `git rev-parse HEAD` (las skills oficiales se fijan a ese commit), y adentro
+      # del contenedor el dueño del checkout no es el usuario que corre git.
+      - name: Confiar en el checkout
+        working-directory: /
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.14.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: escritorio/package.json
+
+      # Why --ignore-scripts: el postinstall recompila los módulos nativos para Electron y lo
+      # prueba abriendo Electron, que en este contenedor no tiene sus bibliotecas gráficas. El
+      # servidor no usa Electron: su node-pty lo compila el paso siguiente contra el Node fijado.
+      - name: Instalar dependencias
+        run: |
+          for intento in 1 2 3; do
+            pnpm install --frozen-lockfile --ignore-scripts && exit 0
+            echo "::warning::pnpm install falló (intento $intento); reintentando."
+            sleep 20
+          done
+          exit 1
+
+      - name: Compilar y probar node-pty para esta ranura
+        run: |
+          pnpm build:dolphind-prebuilds
+          pnpm build:dolphind-prebuilds --require-slots linux-x64-glibc
+          pnpm build:dolphind-prebuilds --smoke
+
+      - name: Armar la plantilla
+        run: |
+          pnpm build:dolphind-template --targets linux-x64-glibc
+          {
+            echo '### Servidor para VPS'
+            echo '```'
+            du -sh out/dolphind-template out/dolphind-template/targets/*
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dolphind-template
+          path: escritorio/out/dolphind-template/
+          # Las marcas .server-target y .runtime-node de cada ranura son archivos ocultos: sin
+          # esto se pierden y el verificador del empaquetado rechaza la plantilla.
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+
   compilar:
     name: Instalador de ${{ matrix.nombre }}
-    needs: borrador
+    needs: [borrador, plantilla-dolphind]
     # Why así: a mano no hay borrador (el job se saltea) y la compilación tiene que correr igual.
-    if: ${{ !cancelled() && (needs.borrador.result == 'success' || needs.borrador.result == 'skipped') }}
+    if: ${{ !cancelled() && needs.plantilla-dolphind.result == 'success' && (needs.borrador.result == 'success' || needs.borrador.result == 'skipped') }}
     strategy:
       fail-fast: false
       matrix:
@@ -221,8 +310,17 @@ jobs:
       # `minimumSystemVersion`, y sin ese campo una Mac con un macOS más viejo que el piso
       # (LSMinimumSystemVersion 13.4) instalaría una versión que no abre. Hay que estamparlo entre
       # el empaquetado y la subida, y `--publish` sube apenas termina. Windows y Linux suben solos.
+      # Después de compilar la app, como hacía el armado original: así nada del build la pisa.
+      - name: Servidor para VPS adentro del instalador
+        uses: actions/download-artifact@v4
+        with:
+          name: dolphind-template
+          path: escritorio/out/dolphind-template
+
       - name: Empaquetar (y subir al borrador, salvo macOS)
         env:
+          # Que un instalador sin el servidor para VPS no vuelva a salir en silencio.
+          DOLPHIN_REQUIRE_DOLPHIND_TEMPLATE: '1'
           # El token de la corrida alcanza para subir a una release del mismo repo. La app instalada
           # no lleva ninguno: lee la release pública.
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

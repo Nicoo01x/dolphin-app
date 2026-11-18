@@ -27,6 +27,7 @@ export function createUiTaskActions(set: UISliceSet, get: UISliceGet): Partial<U
     previousViewBeforeMobile: 'terminal',
     previousViewBeforeArtifacts: 'terminal',
     previousViewBeforeDolphin: 'terminal',
+    previousViewBeforeDelfines: 'terminal',
     appPageTarget: null,
     appPageVista: 'tablero',
     dolphinNuevaTarea: null,

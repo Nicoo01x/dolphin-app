@@ -4,6 +4,7 @@ import type { DolphinRuntimeService } from '../../runtime/dolphin-runtime'
 import { registrarIsla } from '../../dolphin/dolphin-isla'
 import { registrarXray } from '../../dolphin/dolphin-xray'
 import { registerDolphinHandlers } from '../dolphin'
+import { registerDelfinesHandlers } from '../delfines'
 import { registrarLsp } from '../lsp'
 
 let registrado = false
@@ -26,4 +27,5 @@ export function registrarHandlersDolphin(store: Store, runtime: DolphinRuntimeSe
   registrarIsla(store)
   registrarXray()
   registerDolphinHandlers(store, runtime)
+  registerDelfinesHandlers(store)
 }

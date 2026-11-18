@@ -12700,8 +12700,6 @@
           "hostNewer": "Führt eine neuere Version des Dolphin-Servers als diese App aus; diese Version wird beibehalten.",
           "failureDetails": "Details",
           "cause": {
-            "unsupportedHost": "Dolphin hat keinen Server-Build für dieses System",
-            "artifactsUnavailable": "Dieser Dolphin-Build enthält keinen Server",
             "libcUnidentified": "Dolphin konnte die Systembibliotheken des Hosts nicht erkennen",
             "runtimeSelfTest": "Der Selbsttest der Server-Laufzeitumgebung ist fehlgeschlagen",
             "securitySoftware": "Sicherheitssoftware hat die Server-Laufzeitumgebung verändert",
@@ -12710,9 +12708,6 @@
           "updateDeferredLater": "Führt den Dolphin-Server aus; er wird bei einer späteren Verbindung aktualisiert.",
           "updateFailedPrevious": "Führt die vorherige Version des Dolphin-Servers aus; das Update ist fehlgeschlagen.",
           "refusedBlocked": "Dolphin ist auf diesem Host noch nicht eingerichtet: Ein Hindernis auf dem Host verhindert die Verschiebung.",
-          "unsupported": "Dieser Host wird von dieser Dolphin-Version nicht unterstützt ({{reason}}). Eine ältere Dolphin-Version installieren, um ihn weiter zu verwenden.",
-          "unsupportedUnknown": "Dieser Host wird von dieser Dolphin-Version nicht unterstützt. Eine ältere Dolphin-Version installieren, um ihn weiter zu verwenden.",
-          "tunnelUnsupported": "Dieser Host wird von dieser Dolphin-Version nicht unterstützt: Sein SSH-Server erlaubt keine Portweiterleitung, und Dolphin konnte seinen Server auch nicht über die SSH-Sitzung erreichen. Eine ältere Dolphin-Version installieren, um ihn weiter zu verwenden.",
           "setupRetry": "Dolphin konnte seinen Server auf diesem Host nicht starten. Erneut verbinden.",
           "moveHeld": "Dolphin hat die Verschiebung der Projekte dieses Hosts auf dessen Dolphin-Server angehalten, weil die Kopie des Servers nicht bestätigt werden konnte. Nichts ist verloren: Der Host behält seine Projekte und bleibt gesperrt, bis die Verschiebung abgeschlossen ist. Zum Fortsetzen erneut verbinden. Falls der Server nicht wieder verfügbar wird, ihn unter „Einstellungen > Dolphin auf SSH-Hosts“ stoppen oder vergessen.",
           "olderTerminalsBridged": "Dolphin ist auf diesem Host noch nicht eingerichtet: In seinen Projekten laufen noch Terminals, die von einer älteren Dolphin-Version gestartet wurden. Sie funktionieren hier weiterhin. Diese schließen oder auf dem Host beenden und anschließend erneut verbinden.",

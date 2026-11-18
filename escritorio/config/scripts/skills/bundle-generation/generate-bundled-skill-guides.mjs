@@ -18,12 +18,14 @@ const CANONICAL_GUIDE_NAMES = [
   'jira-tickets',
   'linear-tickets',
   'dolphin-cli',
+  'dolphin-delegar',
   'dolphin-emulator',
   'dolphin-emulator-android',
   'dolphin-jira',
   'dolphin-linear',
   'dolphin-per-workspace-env',
   'dolphin-plugin-authoring',
+  'dolphin-vps',
   'orchestration'
 ]
 
@@ -33,12 +35,14 @@ const GUIDE_ALIASES = {
   'jira-tickets': [],
   'linear-tickets': [],
   'dolphin-cli': ['orca-cli'],
+  'dolphin-delegar': [],
   'dolphin-emulator': ['orca-emulator'],
   'dolphin-emulator-android': ['orca-emulator-android'],
   'dolphin-jira': ['orca-jira'],
   'dolphin-linear': ['orca-linear'],
   'dolphin-per-workspace-env': ['orca-per-workspace-env'],
   'dolphin-plugin-authoring': [],
+  'dolphin-vps': [],
   orchestration: []
 }
 
@@ -49,12 +53,14 @@ const STUB_TOPICS = [
   'jira-tickets',
   'linear-tickets',
   'dolphin-cli',
+  'dolphin-delegar',
   'dolphin-emulator',
   'dolphin-emulator-android',
   'dolphin-jira',
   'dolphin-linear',
   'dolphin-per-workspace-env',
   'dolphin-plugin-authoring',
+  'dolphin-vps',
   'orchestration'
 ]
 

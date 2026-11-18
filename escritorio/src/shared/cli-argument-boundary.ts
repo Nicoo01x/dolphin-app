@@ -35,6 +35,7 @@ export const CLI_BOOLEAN_FLAGS = new Set([
   'include-remote',
   'include-visual-layouts',
   'index-status',
+  'install-server',
   'interactive',
   'interrupt',
   'keep-open',

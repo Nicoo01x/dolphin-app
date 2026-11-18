@@ -12141,8 +12141,6 @@
           "hostNewer": "이 앱보다 새로운 Dolphin 서버를 실행합니다. 해당 버전을 유지합니다.",
           "failureDetails": "세부 정보",
           "cause": {
-            "unsupportedHost": "Dolphin에는 이 시스템용 서버 빌드가 없습니다",
-            "artifactsUnavailable": "이 Dolphin 빌드에는 서버가 포함되어 있지 않습니다",
             "libcUnidentified": "Dolphin이 호스트의 시스템 라이브러리를 식별하지 못했습니다",
             "runtimeSelfTest": "서버 런타임이 자체 테스트에 실패했습니다",
             "securitySoftware": "보안 소프트웨어가 서버 런타임을 변경했습니다",
@@ -12151,9 +12149,6 @@
           "updateDeferredLater": "Dolphin 서버를 실행합니다. 다음 연결 시 업데이트됩니다.",
           "updateFailedPrevious": "Dolphin 서버를 이전 버전으로 실행합니다. 업데이트에 실패했습니다.",
           "refusedBlocked": "아직 이 호스트에 Dolphin이 설정되지 않음: 호스트의 무언가가 이동을 막고 있습니다.",
-          "unsupported": "이 버전의 Dolphin은 이 호스트를 지원하지 않습니다({{reason}}). 계속 사용하려면 이전 버전의 Dolphin을 설치하세요.",
-          "unsupportedUnknown": "이 버전의 Dolphin은 이 호스트를 지원하지 않습니다. 계속 사용하려면 이전 버전의 Dolphin을 설치하세요.",
-          "tunnelUnsupported": "이 버전의 Dolphin은 이 호스트를 지원하지 않습니다. 호스트의 SSH 서버가 포트 포워딩을 허용하지 않으며, SSH 세션을 통해서도 Dolphin 서버에 연결할 수 없었습니다. 계속 사용하려면 이전 버전의 Dolphin을 설치하세요.",
           "setupRetry": "Dolphin이 이 호스트에서 서버를 시작하지 못했습니다. 다시 연결해 보세요.",
           "moveHeld": "서버의 사본을 확인하지 못해 Dolphin이 이 호스트의 프로젝트를 호스트의 Dolphin 서버로 옮기는 작업을 일시 중지했습니다. 손실된 것은 없습니다. 이동이 끝날 때까지 호스트는 프로젝트를 유지한 채 잠겨 있습니다. 다시 연결하면 재개됩니다. 서버를 되살릴 수 없다면 설정 > SSH 호스트의 Dolphin에서 중지하거나 잊기를 선택하세요.",
           "olderTerminalsBridged": "아직 이 호스트에 Dolphin이 설정되지 않았습니다. 이전 버전의 Dolphin에서 시작한 터미널이 이 호스트의 프로젝트에서 아직 실행 중입니다. 터미널은 여기에서 계속 작동합니다. 닫거나 호스트에서 종료한 후 다시 연결하세요.",

@@ -2,6 +2,7 @@ import { BrowserWindow, ipcMain } from 'electron'
 import type { MemorySnapshot } from '../../shared/process-stats-types'
 import type { Store } from '../persistence/loading-store/store'
 import { collectMemorySnapshot } from '../memory/collector'
+import { registerMemoriaBajaHandlers } from './memoria-baja'
 
 import {
   assertResourceViewVisible,
@@ -20,4 +21,6 @@ export function registerMemoryHandlers(store: Store): void {
   ipcMain.handle('memory:resourceWindowVisible', (event) =>
     isResourceWindowVisible(BrowserWindow.fromWebContents(event.sender))
   )
+  // Dolphin: el modo poca RAM vive al lado de la foto de memoria, de la que toma lo que más pesa.
+  registerMemoriaBajaHandlers(store)
 }

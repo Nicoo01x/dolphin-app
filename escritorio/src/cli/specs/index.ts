@@ -11,6 +11,7 @@ import { ORCHESTRATION_COMMAND_SPECS } from './orchestration'
 import { withFullRecordFlag } from './orchestration-full-record-flag'
 import { COMPUTER_COMMAND_SPECS } from './computer'
 import { ENVIRONMENT_COMMAND_SPECS } from './environment'
+import { HOST_SETUP_COMMAND_SPECS } from './host-setup'
 import { MANAGED_SERVER_COMMAND_SPECS } from './managed-server'
 import { AGENT_HOOK_COMMAND_SPECS } from './agent-hooks'
 import { AGENT_LAUNCH_COMMAND_SPECS } from './agent-launch'
@@ -56,6 +57,7 @@ export const COMMAND_SPECS: CommandSpec[] = [
   ...TERMINAL_DAEMON_COMMAND_SPECS,
   ...INTROSPECTION_COMMAND_SPECS,
   ...ENVIRONMENT_COMMAND_SPECS,
+  ...HOST_SETUP_COMMAND_SPECS,
   ...MANAGED_SERVER_COMMAND_SPECS,
   ...JIRA_COMMAND_SPECS,
   ...LINEAR_COMMAND_SPECS,

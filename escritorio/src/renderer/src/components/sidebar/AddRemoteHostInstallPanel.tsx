@@ -8,6 +8,23 @@ import { translate } from '@/i18n/i18n'
 import type { EditingTarget } from '../ssh-host-form/ssh-target-draft'
 import { SshHostFields } from './host-admission/ssh/AddRemoteHostFields'
 import type { ServerInstallOutcome } from './install-dolphin-server-on-ssh'
+import { FixHostWithAgentButton } from '../ssh-host-recovery/FixHostWithAgentButton'
+import type { VpsSetupAgentContext } from '../../../../shared/vps-setup-agent-prompt'
+
+/** A failure an agent can pick up: the save or the install broke, not the form. */
+function agentContextFor(outcome: ServerInstallOutcome | null): VpsSetupAgentContext | null {
+  if (outcome?.kind === 'failed') {
+    return { error: outcome.message, ...(outcome.label ? { label: outcome.label } : {}) }
+  }
+  if (outcome?.kind === 'unfinished') {
+    return {
+      error: outcome.reason,
+      ...(outcome.sshTargetId ? { targetId: outcome.sshTargetId } : {}),
+      ...(outcome.label ? { label: outcome.label } : {})
+    }
+  }
+  return null
+}
 
 /**
  * Connect a machine: its SSH details, a name, and Dolphin installs its server on it.
@@ -29,7 +46,8 @@ export function AddRemoteHostInstallPanel({
   onFormChange,
   onNameChange,
   onSubmit,
-  onCancel
+  onCancel,
+  onAgentLaunched
 }: {
   form: EditingTarget
   name: string
@@ -40,8 +58,11 @@ export function AddRemoteHostInstallPanel({
   onNameChange: (value: string) => void
   onSubmit: () => void
   onCancel: () => void
+  /** The dialog closes once an agent took the failure over. */
+  onAgentLaunched?: () => void
 }): React.JSX.Element {
   const nameId = React.useId()
+  const agentContext = agentContextFor(outcome)
   return (
     <>
       <DialogHeader>
@@ -82,11 +103,16 @@ export function AddRemoteHostInstallPanel({
           className="flex items-start gap-2 rounded-md border border-border/70 bg-muted/40 px-3 py-2 text-xs"
         >
           <TriangleAlert className="mt-0.5 size-3.5 shrink-0 text-amber-500/80" />
-          <p className="min-w-0 text-muted-foreground">
-            {outcome.kind === 'kept-as-host' || outcome.kind === 'unfinished'
-              ? outcome.reason
-              : outcome.message}
-          </p>
+          <div className="min-w-0 space-y-2">
+            <p className="text-muted-foreground">
+              {outcome.kind === 'kept-as-host' || outcome.kind === 'unfinished'
+                ? outcome.reason
+                : outcome.message}
+            </p>
+            {agentContext ? (
+              <FixHostWithAgentButton context={agentContext} onLaunched={onAgentLaunched} />
+            ) : null}
+          </div>
         </div>
       ) : null}
 

@@ -1,5 +1,8 @@
 import type { JSX } from 'react'
-import { ORCHESTRATION_SKILL_NAME } from '@/lib/skills/installation/agent-feature-skill-names'
+import {
+  ORCHESTRATION_SKILL_NAME,
+  ORCHESTRATION_SKILL_NAMES
+} from '@/lib/skills/installation/agent-feature-skill-names'
 import type { InstalledAgentSkillState } from '@/hooks/skills/discovery/useInstalledAgentSkills'
 import { useActiveProjectSkillRuntime } from '@/hooks/skills/runtime/useActiveProjectSkillRuntime'
 import { AgentSkillSetupPanel } from '../skills/setup/AgentSkillSetupPanel'
@@ -22,7 +25,7 @@ export function OrchestrationSetupCard(props: {
         'auto.components.settings.OrchestrationSetupCard.e7d2a5146c',
         'Enables agents to hand off context and coordinate work through Dolphin.'
       )}
-      skillNames={[ORCHESTRATION_SKILL_NAME]}
+      skillNames={ORCHESTRATION_SKILL_NAMES}
       installed={skill.installed}
       loading={skill.loading}
       error={activeSkillRuntime.installDisabledReason ?? skill.error}

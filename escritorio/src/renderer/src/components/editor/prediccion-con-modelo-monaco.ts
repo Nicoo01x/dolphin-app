@@ -203,5 +203,10 @@ export function instalarPrediccionConModelo(args: {
  */
 async function preguntarPorIpc(prompt: string, worktreePath: string): Promise<string | undefined> {
   const respuesta = await window.api.editor.generateInlineEdit({ worktreePath, prompt })
-  return respuesta.success ? respuesta.codigo : undefined
+  if (!respuesta.success) {
+    return undefined
+  }
+  // La predicción pide el texto pelado: si volvió como «respuesta» (sin cerca), ese texto es la
+  // sugerencia, y `sugerenciaDeLaRespuesta` lo termina de limpiar igual que antes.
+  return respuesta.tipo === 'edicion' ? respuesta.codigo : respuesta.texto
 }

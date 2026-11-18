@@ -20,9 +20,9 @@ import { remoteServerPairingFailureMessage } from '@/lib/remote-pairing/remote-s
 import {
   addAllSshConfigHostsToDolphin,
   loadSshConfigHostsForPicker,
-  prefillFormFromSshConfigHost,
-  saveNewSshHostFromForm
+  prefillFormFromSshConfigHost
 } from './add-remote-host-ssh-actions'
+import { useSshHostFormSave } from './use-ssh-host-form-save'
 
 export type AddRemoteHostMode = 'ssh' | 'server' | 'wsl' | 'server-ssh'
 
@@ -76,6 +76,14 @@ export function AddRemoteHostDialog({
   // Connecting a machine keeps its own in-flight flag: it takes minutes and the dialog may be
   // closed while it runs, unlike every other flow in here.
   const instalacion = useInstallServerOnSsh({ form: sshForm })
+  const sshSave = useSshHostFormSave({
+    form: sshForm,
+    setIsSaving,
+    onSaved: () => {
+      reset()
+      onOpenChange(null)
+    }
+  })
 
   const busy = isSaving || isBulkImporting || resolvingConfigAlias !== null
 
@@ -102,6 +110,7 @@ export function AddRemoteHostDialog({
     instalacion.reset()
     setPairingCode('')
     setAllowLoopback(false)
+    sshSave.clearTestFailure()
   }
 
   // A machine that came up closes the dialog. Watched instead of called from the hook so the
@@ -125,25 +134,6 @@ export function AddRemoteHostDialog({
     }
     reset()
     onOpenChange(null)
-  }
-
-  const saveSshHost = async () => {
-    setIsSaving(true)
-    try {
-      const outcome = await saveNewSshHostFromForm({
-        form: sshForm,
-        ssh: window.api.ssh,
-        recordSshRepoReadoptions,
-        setSshTargetsMetadata,
-        recordFeatureInteraction
-      })
-      if (outcome === 'saved') {
-        reset()
-        onOpenChange(null)
-      }
-    } finally {
-      setIsSaving(false)
-    }
   }
 
   const loadSshConfigHosts = async (query = '', options?: { refresh?: boolean }) => {
@@ -385,6 +375,7 @@ export function AddRemoteHostDialog({
             onNameChange={instalacion.setName}
             onSubmit={() => void instalacion.install()}
             onCancel={close}
+            onAgentLaunched={close}
           />
         ) : renderMode === 'ssh' ? (
           <AddRemoteHostSshFormPanel
@@ -392,8 +383,14 @@ export function AddRemoteHostDialog({
             disabled={busy}
             preferAdvancedOpen={preferAdvancedOpen}
             configIdentityAlias={configFilledAlias}
-            onFormChange={setSshForm}
-            onSubmit={() => void saveSshHost()}
+            testFailure={sshSave.testFailure}
+            onFormChange={(update) => {
+              sshSave.clearTestFailure()
+              setSshForm(update)
+            }}
+            onSubmit={() => void sshSave.save()}
+            onSaveAnyway={() => void sshSave.save(true)}
+            onAgentLaunched={close}
             onCancel={close}
             onFillFromConfig={() => void openSshConfigPicker()}
           />

@@ -133,3 +133,5 @@ export type TopLevelView =
   | 'dolphin'
   /** El escritorio de Dolphin: un plano con ventanas que se mueven y se acercan (ver components/lienzo). */
   | 'lienzo'
+  /** Los bots de Dolphin (`dolphin bots`): su estado, hablarles y llevarlos a tu servidor. */
+  | 'delfines'

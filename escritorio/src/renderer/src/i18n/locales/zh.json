@@ -12384,8 +12384,6 @@
           "hostNewer": "运行的 Dolphin 服务器比此应用新，它会保留该版本",
           "failureDetails": "详情",
           "cause": {
-            "unsupportedHost": "Dolphin 没有适用于此系统的服务器构建",
-            "artifactsUnavailable": "此 Dolphin 构建不包含该服务器",
             "libcUnidentified": "Dolphin 无法识别主机的系统库",
             "runtimeSelfTest": "服务器的运行时未通过自检",
             "securitySoftware": "安全软件更改了服务器的运行时",
@@ -12394,9 +12392,6 @@
           "updateDeferredLater": "运行 Dolphin 服务器，它会在下次连接时更新",
           "updateFailedPrevious": "在其先前版本上运行 Dolphin 服务器，更新失败",
           "refusedBlocked": "此主机尚未设置 Dolphin：主机上的某些因素阻止了迁移",
-          "unsupported": "此版本的 Dolphin 不支持此主机（{{reason}}），如需继续使用，请安装旧版本的 Dolphin",
-          "unsupportedUnknown": "此版本的 Dolphin 不支持此主机，如需继续使用，请安装旧版本的 Dolphin",
-          "tunnelUnsupported": "此版本的 Dolphin 不支持此主机：其 SSH 服务器不允许端口转发，Dolphin 也无法通过 SSH 会话连接到其服务器，如需继续使用，请安装旧版本的 Dolphin",
           "setupRetry": "Dolphin 无法在此主机上启动其服务器，请重新连接",
           "moveHeld": "由于无法确认服务器上的副本，Dolphin 已暂停将此主机的项目迁移到主机上的 Dolphin 服务器，没有任何数据丢失：在迁移完成之前，主机会保留其项目并保持锁定，重新连接即可继续，如果服务器无法恢复，请在“设置 > SSH 主机上的 Dolphin”中停止或忘记它",
           "olderTerminalsBridged": "此主机尚未设置 Dolphin：由旧版本 Dolphin 启动的终端仍在此主机的项目中运行，它们在这里仍可正常使用，请关闭它们或在主机上结束它们，然后重新连接",

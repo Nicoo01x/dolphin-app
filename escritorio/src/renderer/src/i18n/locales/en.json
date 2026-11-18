@@ -544,11 +544,16 @@
     },
     "editWithAi": "Edit with AI",
     "inlineEdit": {
-      "placeholder": "Describe the edit…  (Enter to send, Esc to cancel)",
+      "placeholder": "Ask for an edit or a question…  (Enter to send, Esc to close)",
+      "followUpPlaceholder": "Keep asking, or ask for an edit…",
+      "followUpHint": "Type above to keep asking",
       "working": "Working…",
       "accept": "Accept",
       "discard": "Discard",
+      "close": "Close",
       "tryAgain": "Try again",
+      "agent": "AI",
+      "noChange": "Nothing to change in the selection: it already does what you asked.",
       "notInWorktree": "This file is not inside a worktree."
     },
     "jumpToNextPendingEdit": "Jump to the next pending edit",
@@ -1180,6 +1185,15 @@
         "passphraseRequired": "Cannot parse privateKey: Encrypted private OpenSSH key detected, but no passphrase given",
         "permissionDenied": "Permission denied",
         "permissionDeniedPublickey": "Permission denied (publickey)"
+      },
+      "nextStep": {
+        "hostKey": "SSH couldn’t confirm this host’s identity. Run ssh to this host in a terminal to see why and trust or update its key, then connect again.",
+        "auth": "The host didn’t accept any sign-in Dolphin offered. Check the user name and the key, ssh-agent or password for this host, then connect again.",
+        "passphrase": "Dolphin couldn’t unlock the SSH key. Check its passphrase, then connect again.",
+        "refused": "Nothing accepted the SSH connection at this address. Check the host name and port, and that sshd is running on the host.",
+        "hostName": "The host name couldn’t be looked up. Check the name and your network connection.",
+        "unreachable": "There’s no network route to the host. Check your network or VPN, then connect again.",
+        "timeout": "The connection didn’t finish in time. Check that the host is reachable from this computer (network, VPN, firewall), then connect again."
       }
     },
     "shortcuts": {
@@ -2544,6 +2558,9 @@
       "workspacePortBrowserOpen": {
         "systemBrowserHint": "{{shortcut}}+click to open in the system browser",
         "tooltip": "{{label}}. {{hint}}"
+      },
+      "vpsSetupAgentLaunch": {
+        "noLocalProject": "Open a project on this computer first, then try again. The agent works from there."
       }
     },
     "hooks": {
@@ -7785,7 +7802,9 @@
           "sshImportSynced_one": "Added {{count}} host to Dolphin.",
           "sshImportSynced_other": "Added {{count}} hosts to Dolphin.",
           "sshConfigPickerInvalidResponse": "Invalid SSH config host response",
-          "sshImportSynced": "Added {{value0}} host{{value1}} to Dolphin."
+          "sshImportSynced": "Added {{value0}} host{{value1}} to Dolphin.",
+          "testFailed": "Dolphin couldn’t connect to this host: {{reason}}",
+          "saveAnyway": "Save anyway"
         },
         "ForgetSshWorkspaceDialog": {
           "ghostBody": "{{host}} is no longer a saved SSH host, so this workspace is no longer connected to a live host. It can only be removed from Dolphin — files and branches on the remote are left untouched.",
@@ -8072,7 +8091,8 @@
         },
         "DolphinSidebarEntry": {
           "dolphin": "Dolphin",
-          "lienzo": "The canvas: your windows on a plane that pans and zooms"
+          "lienzo": "The canvas: your windows on a plane that pans and zooms",
+          "delfines": "Dolphins: your bots, their routines and your server"
         }
       },
       "shared": {
@@ -13449,8 +13469,6 @@
           "hostNewer": "Runs a newer version of Dolphin’s server than this app; it keeps that version.",
           "failureDetails": "Details",
           "cause": {
-            "unsupportedHost": "Dolphin has no server build for this system",
-            "artifactsUnavailable": "this Dolphin build doesn’t include the server",
             "libcUnidentified": "Dolphin couldn’t identify the host’s system libraries",
             "runtimeSelfTest": "the server’s runtime failed its self-test",
             "securitySoftware": "security software changed the server’s runtime",
@@ -13459,9 +13477,10 @@
           "updateDeferredLater": "Runs Dolphin’s server; it updates on a later connect.",
           "updateFailedPrevious": "Runs Dolphin’s server on its previous version; updating it failed.",
           "refusedBlocked": "Dolphin isn’t set up on this host yet: something on the host stops the move.",
-          "unsupported": "This host isn’t supported by this version of Dolphin ({{reason}}). To keep using it, install an older version of Dolphin.",
-          "unsupportedUnknown": "This host isn’t supported by this version of Dolphin. To keep using it, install an older version of Dolphin.",
-          "tunnelUnsupported": "This host isn’t supported by this version of Dolphin: its SSH server doesn’t allow port forwarding, and Dolphin couldn’t reach its server through the SSH session either. To keep using it, install an older version of Dolphin.",
+          "missingServerBuild": "This copy of Dolphin doesn’t include the server for this host’s system, so there’s nothing to install there. Update Dolphin on this computer to a version that includes it, then connect again.",
+          "cannotRunServer": "Dolphin can’t run its server on this host: {{reason}}. Fix that on the host, then connect again.",
+          "cannotRunServerUnknown": "Dolphin can’t run its server on this host. Update Dolphin on this computer, then connect again; Details shows the cause.",
+          "tunnelForwardingBlocked": "This host’s SSH server doesn’t allow port forwarding, and Dolphin couldn’t reach its server through the SSH session either. Set AllowTcpForwarding yes in the host’s /etc/ssh/sshd_config, restart sshd, then connect again.",
           "setupRetry": "Dolphin couldn’t start its server on this host. Try connecting again.",
           "setupFreeHostSpace": "This host doesn’t have enough free disk space for Dolphin to keep a backup of its server data while starting it. Free up space on the host, then connect again.",
           "setupStopUnmanagedRuntime": "A Dolphin server this app didn’t start still appears to be using this host’s Dolphin data. Stop it on the host, then connect again. This host’s Details, in Settings > SSH Hosts, names its process.",
@@ -20417,6 +20436,9 @@
         "MapaDeActividad": {
           "enElPeriodo": "{{value0}} in all"
         }
+      },
+      "sshHostRecovery": {
+        "fixWithAgent": "Fix it with an agent"
       }
     },
     "i18n": {
@@ -22897,14 +22919,6 @@
           "ayuda": "Each part opens as a job in this project, on the same engine.",
           "no": "No thanks",
           "delegar": "Hand it to {{value0}}"
-        },
-        "orquestacion": {
-          "prendida": "Intelligent Orchestration is on: the plan opens one teammate per part, each with its own model",
-          "apagada": "Intelligent Orchestration is off: nothing is delegated and nothing pops up",
-          "noSeGuardo": "Could not save Intelligent Orchestration.",
-          "on": "On",
-          "off": "Off",
-          "nombreCorto": "Orchestration"
         },
         "referenciaViva": {
           "issue": "Issue",
@@ -25981,5 +25995,172 @@
     "address": "Address",
     "pickProjectTerminal": "Pick a project in the left bar and a terminal opens here.",
     "terminalOpening": "Opening the terminal…"
+  },
+  "memoriaBaja": {
+    "cartel": {
+      "titulo": "You’re running low on RAM",
+      "tituloSiempre": "Low RAM mode is on",
+      "sinServidor": "Connect a server and run the heaviest work there, on its memory instead of this computer’s.",
+      "conAgente": "Or <link>let an agent connect it</link>.",
+      "conEspacio": "“{{nombre}}” uses the most. Open a workspace like it on {{servidor}} and put this one to sleep: anything you haven’t pushed to git stays on this computer.",
+      "sinEspacio": "Open your next workspace on {{servidor}}: it runs on the server’s memory, not this computer’s.",
+      "conectar": "Connect a server",
+      "correrEn": "Run on {{servidor}}",
+      "noAvisarMas": "Don’t warn me again",
+      "dormirAca": "Sleep it here"
+    },
+    "visual": {
+      "dolphin": "Dolphin",
+      "libresDe": "free of {{total}}",
+      "libre": "Free"
+    },
+    "ajuste": {
+      "grupo": "Memory",
+      "titulo": "Low RAM mode",
+      "descripcion": "When this computer runs short on memory, Dolphin tells you in time and offers to run the heaviest workspace on your server. While it is on, idle chats stop after 5 minutes.",
+      "ahora": "Now: {{libre}} free of {{total}}",
+      "activo": "low RAM mode on",
+      "automatico": "Automatic",
+      "siempre": "Always on",
+      "apagado": "Off",
+      "umbral": "Warn below",
+      "umbralDescripcion": "Free memory that sets off the warning.",
+      "gb": "{{gb}} GB",
+      "palabra": {
+        "ram": "ram",
+        "memory": "memory",
+        "lowMemory": "low memory",
+        "crash": "crash",
+        "server": "server",
+        "vps": "vps",
+        "performance": "performance"
+      }
+    }
+  },
+  "delfines": {
+    "crear": {
+      "nombreInvalido": "The name needs letters or numbers, and cannot start with a dash.",
+      "error": "Could not create it. Try again.",
+      "titulo": "New dolphin",
+      "plantilla": "Template",
+      "nombre": "Name",
+      "carpeta": "Where it works",
+      "carpetaVacia": "Your home folder",
+      "crear": "Create"
+    },
+    "vista": {
+      "corriendo": "{{corriendo}} of {{total}} running",
+      "titulo": "Dolphins",
+      "nuevo": "New dolphin",
+      "rotos": "Could not read: {{ids}}"
+    },
+    "error": {
+      "sinNucleo": "Dolphin’s core is not where the app looks for it",
+      "nucleo": "Could not read your dolphins",
+      "sinNucleoQue": "Reinstall the app, or point DOLPHIN_APP_DIR at a copy of the core.",
+      "nucleoQue": "Your bots are fine: this is only the reading. Try again.",
+      "reintentar": "Try again"
+    },
+    "hablar": {
+      "sinConexion": "The server is not connected. Connect it and try again.",
+      "error": "It did not answer. Try again.",
+      "nada": "Nothing to report.",
+      "sinRespuesta": "No answer.",
+      "pide": "It asks for permission: {{que}}. Reply «dale» to let it.",
+      "vacio": "Ask it anything. It answers with its soul and its memory.",
+      "pensando": "Thinking…",
+      "campo": "Message",
+      "placeholder": "Write to it…",
+      "enviar": "Send"
+    },
+    "servidor": {
+      "desconectado": "{{servidor}} disconnected. Reconnect it and try again.",
+      "sinRespuesta": "The server did not answer.",
+      "titulo": "Run {{nombre}} on your server",
+      "sinServidor": "No server connected",
+      "sinServidorQue": "Connect a VPS by SSH and the bot keeps working there 24/7, even with this computer off.",
+      "conectar": "Connect a server",
+      "conAgente": "Let an agent connect it",
+      "cual": "Which server",
+      "carpeta": "Where it works on {{servidor}}",
+      "agente": "Fix it with an agent",
+      "revisar": "Check again",
+      "llevar": "Run it on {{servidor}}",
+      "revisando": "Checking what the server has…",
+      "listo": "It is running on your server",
+      "listoQue": "It keeps working with this computer off. The one here stopped and was kept aside.",
+      "listoSinLinger": "It is running, but it stops when the SSH session closes. Turn on linger once, with sudo:",
+      "cerrar": "Done",
+      "falloApartar": "It is running on the server, but the one here could not be stopped: {{detalle}}. Stop it with «dolphin bots apartar».",
+      "reintentar": "Try again",
+      "copiar": "Copy the command",
+      "paso": {
+        "sistema": "Linux with systemd",
+        "sistemaFalta": "This server runs {{que}}: a bot on its own needs Linux.",
+        "node": "Node 22.12 or newer",
+        "nodeFalta": "Install it, or connect the server as a Dolphin server: that one brings its own.",
+        "motor": "{{motor}}, signed in on the server",
+        "motorInstalar": "It is not installed there. Install it in a terminal on the server:",
+        "motorSesion": "It is installed but not signed in. Sign in once, in a terminal on the server:",
+        "systemd": "User services (systemd)",
+        "systemdFalta": "They do not answer over SSH. Turn on linger and reconnect:",
+        "linger": "Keeps running with no session open",
+        "lingerAviso": "Without linger it stops when you close SSH. Needs sudo, once:"
+      },
+      "etapa": {
+        "revisar": "Checking the server",
+        "nucleo": "Bringing Dolphin’s core",
+        "bot": "Copying the bot",
+        "instalar": "Installing it as a service",
+        "verificar": "Waiting for it to start",
+        "apartar": "Stopping the one here"
+      }
+    },
+    "plantilla": {
+      "vigia": {
+        "nombre": "Lookout",
+        "que": "Watches a repo every 30 minutes and only speaks up when something breaks",
+        "sugerido": "Lookout"
+      },
+      "parte": {
+        "nombre": "Daily report",
+        "que": "Every morning at 8, what happened yesterday in your repos",
+        "sugerido": "Report"
+      },
+      "investigador": {
+        "nombre": "Researcher",
+        "que": "Looks things up when you ask, with sources",
+        "sugerido": "Researcher"
+      },
+      "escritor": {
+        "nombre": "Writer",
+        "que": "Writes a piece every day and leaves it in its folder",
+        "sugerido": "Writer"
+      }
+    },
+    "estado": {
+      "corriendo": "Running",
+      "parado": "Stopped",
+      "pausado": "Paused by its budget",
+      "espera": "Waiting for your OK",
+      "sinRespuesta": "{{servidor}} is not answering"
+    },
+    "tarjeta": {
+      "corridas": "{{n}} runs",
+      "mes": "This month",
+      "sinRutina": "When you write",
+      "sinRutinaDetalle": "No routine: it answers when you talk to it",
+      "pide": "Wants to: {{que}}",
+      "sinAvisos": "Nothing to report yet.",
+      "hablar": "Talk to it",
+      "llevar": "Run on your server"
+    },
+    "vacio": {
+      "titulo": "No dolphins yet",
+      "que": "Bots that work on their own: they watch, report and write on a schedule, and only speak up when it matters."
+    },
+    "ventana": {
+      "cerrar": "Close"
+    }
   }
 }

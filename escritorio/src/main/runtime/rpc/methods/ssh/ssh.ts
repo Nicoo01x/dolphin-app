@@ -8,6 +8,11 @@ import {
   SshTargetManagementUnservedError
 } from '../../../../ssh/targets/ssh-target-registry'
 import { isManagedDolphindSshTarget } from '../../../../ssh/targets/ssh-target-runtime-ownership'
+import {
+  forgetLastSshConnectFailure,
+  getLastSshConnectFailure,
+  noteSshConnectErrorForLastFailure
+} from '../../../../ssh/connection/ssh-last-connect-failure'
 import { browseSshDirectory } from '../../../../ssh/filesystem/ssh-remote-directory-browse'
 import { defineMethod } from '../../core'
 import {
@@ -19,6 +24,7 @@ import type {
   SshTargetSummary
 } from '../../../../../shared/ssh-types'
 import { isRemoteCliControlAllowed } from '../../../../../shared/ssh-remote-cli-control'
+import type { SshConnectionFailure } from '../../../../../shared/ssh-connect-failure-kind'
 import type {
   SshEditableTarget,
   SshEditableTargetField,
@@ -33,12 +39,15 @@ import {
 } from '../../../../../shared/rpc-contract/ssh-params'
 
 // Keep generation optional so older server rows still key by target id.
+// `lastFailure` is optional and new: older clients ignore it, agents read it in `host list`.
 function toSshTargetSummary(
   target: SshTargetRecord
-): SshTargetSummary & Pick<SshEditableTarget, 'managedServer'> {
+): SshTargetSummary &
+  Pick<SshEditableTarget, 'managedServer'> & { lastFailure?: SshConnectionFailure } {
   const { id, label, generation } = target
   const state = getRegisteredSshState(id)
   const remotePlatform = state?.remotePlatform
+  const lastFailure = getLastSshConnectFailure(id)
   return {
     id,
     label,
@@ -46,6 +55,7 @@ function toSshTargetSummary(
     connected: state?.status === 'connected',
     ...(state?.status === undefined ? {} : { connectionStatus: state.status }),
     ...(remotePlatform === undefined ? {} : { remotePlatform }),
+    ...(lastFailure ? { lastFailure } : {}),
     ...(isManagedDolphindSshTarget(target) ? { managedServer: true as const } : {})
   }
 }
@@ -96,22 +106,30 @@ export const SSH_METHODS = [
     name: 'ssh.getState',
     permission: 'workspace',
     params: SshTarget,
-    handler: (params) => ({
-      state: getPublicSshState(getRegisteredSshState(params.targetId) ?? null)
-    })
+    // `lastFailure` survives the failed session's teardown; the redacted `error` does not.
+    handler: (params) => {
+      const lastFailure = getLastSshConnectFailure(params.targetId)
+      return {
+        state: getPublicSshState(getRegisteredSshState(params.targetId) ?? null),
+        ...(lastFailure ? { lastFailure } : {})
+      }
+    }
   }),
   defineMethod({
     name: 'ssh.connect',
     permission: 'host-admin',
     params: SshConnect,
     handler: async (params) => {
+      // A reason left by an earlier attempt must not explain this one.
+      forgetLastSshConnectFailure(params.targetId)
       try {
         const state = await connectRegisteredSshTarget(params.targetId, {
           automatic: params.automatic === true
         })
         return { state: getPublicSshState(state) }
-      } catch {
+      } catch (error) {
         const state = getRegisteredSshState(params.targetId)
+        noteSshConnectErrorForLastFailure(params.targetId, error, state)
         throw new Error(getPublicSshError(state?.status ?? 'error'))
       }
     }

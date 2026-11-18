@@ -6,6 +6,7 @@ import { PAGINAS, rutaDe } from "@/lib/docs/paginas";
 export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const rutas = ["/", "/escritorio", "/bots", "/novedades", ...PAGINAS.map((p) => rutaDe(p.slug))];
+  // /admin no va: es la puerta del panel, no una página para buscadores (robots.ts la excluye).
+  const rutas = ["/", "/descargar", "/preguntas", "/escritorio", "/bots", "/novedades", "/privacidad", ...PAGINAS.map((p) => rutaDe(p.slug))];
   return rutas.map((r) => ({ url: `${SITIO}${r === "/" ? "" : r}`, changeFrequency: "weekly", priority: r === "/" ? 1 : 0.7 }));
 }

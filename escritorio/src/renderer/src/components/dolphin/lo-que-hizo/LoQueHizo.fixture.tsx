@@ -4,6 +4,7 @@ import type { NativeChatMessage } from '../../../../../shared/native-chat/native
 import { fijarTemaDeResaltado } from '@/lib/syntax-highlighting/syntax-highlighter'
 import { CapaDePaisaje } from '../paisaje/FondoDePaisaje'
 import { fondoIncluido } from '../paisaje/fondos'
+import { EscenaConPaisaje, esperarEscena } from '../paisaje/escena-con-paisaje'
 import { loQueHizo } from './pasos'
 import { TarjetaLoQueHizo, type DatosDeLoQueHizo } from './TarjetaLoQueHizo'
 
@@ -123,6 +124,45 @@ export const turnoConPr = defineFixture(
     width: 1000,
     setup: conNoche,
     render: () => <Escena datos={DATOS} />
+  })
+)
+
+/**
+ * Como se abre en la app: sobre la ventana de vidrio (un panel con la conversación), con el velo y
+ * el desenfoque del fondo de la ventana (`VentanaLoQueHizo`) entre los dos.
+ */
+function EscenaSobreElVidrio({ opaco = false }: { opaco?: boolean }): React.JSX.Element {
+  return (
+    <EscenaConPaisaje alto={860} opaco={opaco}>
+      <div data-dolphin-panel="fixture" className="flex min-h-0 flex-1 flex-col gap-4 p-10">
+        <p className="max-w-xl text-sm text-foreground">
+          Era la fecha: Safari la lee como hora local y el mes queda en octubre.
+        </p>
+      </div>
+      <div className="absolute inset-0 grid place-items-center bg-black/11 p-4 backdrop-blur-[6px]">
+        <div className="lo-que-hizo-ventana flex max-h-[85vh] w-[46rem] max-w-full flex-col overflow-hidden rounded-[20px]">
+          <TarjetaLoQueHizo datos={DATOS} onCerrar={() => undefined} />
+        </div>
+      </div>
+    </EscenaConPaisaje>
+  )
+}
+
+export const sobreElVidrio = defineFixture(
+  enCastellano({
+    width: 1000,
+    setup: conNoche,
+    interact: esperarEscena,
+    render: () => <EscenaSobreElVidrio />
+  })
+)
+/** «Paneles opacos»: la ventana vuelve a ser la de siempre. */
+export const sobreElVidrioOpaco = defineFixture(
+  enCastellano({
+    width: 1000,
+    setup: conNoche,
+    interact: esperarEscena,
+    render: () => <EscenaSobreElVidrio opaco />
   })
 )
 

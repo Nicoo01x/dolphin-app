@@ -10,7 +10,10 @@ description: >-
   "abrí otro agente". ChatGPT, GPT and OpenAI mean the codex agent; never use
   codex:rescue or a plugin that runs it outside Dolphin. Also use when you are a
   dispatched worker (a prompt with Task and Dispatch IDs: ask, worker_done).
-  Otherwise prefer your own subagents, including for long or parallel work. Use
+  When the user asks to split the work ("delegá las tareas", "usá subagentes",
+  "en paralelo"), follow `dolphin skills get dolphin-delegar`: Dolphin workers
+  the user can watch.
+  Otherwise prefer your own subagents for work nobody asked to see. Use
   `dolphin-cli` to hand work off with nothing expected back ("hand off", "give
   this to another agent", "another worktree"), and for terminals, shell commands
   and worktree management.

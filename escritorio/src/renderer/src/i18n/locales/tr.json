@@ -12677,8 +12677,6 @@
           "hostNewer": "Bu uygulamadakinden daha yeni bir Dolphin sunucusu sürümü çalışıyor; mevcut sürüm korunur.",
           "failureDetails": "Ayrıntılar",
           "cause": {
-            "unsupportedHost": "Dolphin'nın bu sistem için bir sunucu derlemesi yok",
-            "artifactsUnavailable": "bu Dolphin derlemesi sunucuyu içermiyor",
             "libcUnidentified": "Dolphin ana makinenin sistem kitaplıklarını belirleyemedi",
             "runtimeSelfTest": "sunucunun çalışma zamanı kendi testini geçemedi",
             "securitySoftware": "güvenlik yazılımı sunucunun çalışma zamanını değiştirdi",
@@ -12687,9 +12685,6 @@
           "updateDeferredLater": "Dolphin sunucusu çalışıyor; sonraki bir bağlantıda güncellenecek.",
           "updateFailedPrevious": "Dolphin sunucusunun önceki sürümü çalışıyor; güncelleme başarısız oldu.",
           "refusedBlocked": "Dolphin bu ana makinede henüz kurulu değil: ana makinedeki bir durum taşımayı engelliyor.",
-          "unsupported": "Bu ana makine Dolphin'nın bu sürümü tarafından desteklenmiyor ({{reason}}). Kullanmaya devam etmek için Dolphin'nın eski bir sürümünü yükleyin.",
-          "unsupportedUnknown": "Bu ana makine Dolphin'nın bu sürümü tarafından desteklenmiyor. Kullanmaya devam etmek için Dolphin'nın eski bir sürümünü yükleyin.",
-          "tunnelUnsupported": "Bu ana makine Dolphin'nın bu sürümü tarafından desteklenmiyor: SSH sunucusu port yönlendirmeye izin vermiyor ve Dolphin kendi sunucusuna SSH oturumu üzerinden de ulaşamadı. Kullanmaya devam etmek için Dolphin'nın eski bir sürümünü yükleyin.",
           "setupRetry": "Dolphin bu ana makinede sunucusunu başlatamadı. Yeniden bağlanmayı deneyin.",
           "moveHeld": "Dolphin, sunucudaki kopyayı doğrulayamadığı için bu ana makinenin projelerini Dolphin sunucusuna taşımayı duraklattı. Hiçbir şey kaybolmadı: ana makine projelerini korur ve taşıma tamamlanana kadar kilitli kalır. Sürdürmek için yeniden bağlanın. Sunucu yeniden çalıştırılamıyorsa Ayarlar > SSH sunucularınızda Dolphin bölümünden durdurun veya unutun.",
           "olderTerminalsBridged": "Dolphin bu ana makinede henüz kurulu değil: Dolphin'nın eski bir sürümünün başlattığı terminaller bu ana makinenin projelerinde hâlâ çalışıyor. Burada çalışmaya devam ederler. Onları kapatın veya ana makinede sonlandırın, ardından yeniden bağlanın.",

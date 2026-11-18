@@ -13,6 +13,9 @@ import { escucharWebhook } from "./bots-webhook.js";
 import { C, pintar, tabla, titulo } from "./salida.js";
 import { cambiarMotor } from "./bots/motor.js";
 import { confirmarPresupuesto, leerPendienteDePresupuesto, puedeCorrer } from "./bots/presupuesto.js";
+import { instantaneaDeBot, instantaneaDeManada } from "./bots/instantanea.js";
+import { apartarBot, importarBot } from "./bots/mudanza.js";
+import { leerHistorial } from "./bots/almacen.js";
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
@@ -41,6 +44,10 @@ const { values, positionals } = parseArgs({
     puerto: { type: "string", default: "4890" },
     host: { type: "string" },
     demo: { type: "boolean", default: false },
+    // Para la app de escritorio (y cualquiera que lea la salida): un JSON por comando, sin colores.
+    json: { type: "boolean", default: false },
+    comando: { type: "string" },
+    reemplazar: { type: "boolean", default: false },
   },
 });
 
@@ -50,13 +57,19 @@ const error = (texto: string): never => {
 };
 const exigir = (valor: string | undefined, texto: string): string => valor?.trim() || error(texto);
 const pausa = (ms: number) => new Promise<void>((resolver) => setTimeout(resolver, ms));
+const comoJson = values.json;
+const imprimirJson = (dato: unknown): void => {
+  console.log(JSON.stringify(dato));
+};
 const leerEntrada = async (): Promise<string> => {
   const partes: string[] = [];
   for await (const parte of entrada) partes.push(String(parte));
   return partes.join("");
 };
 
-if (!comando || comando === "lista" || comando === "listar") {
+if ((!comando || comando === "lista" || comando === "listar") && comoJson) {
+  imprimirJson(await instantaneaDeManada());
+} else if (!comando || comando === "lista" || comando === "listar") {
   const servicio = await estadoServicio();
   const bots = await listarBots();
   console.log(
@@ -101,16 +114,23 @@ if (!comando || comando === "lista" || comando === "listar") {
     ...((values.presupuesto || values.corridas || values.aviso || values["aviso-corridas"]) ? { presupuesto: { ...(values.presupuesto ? { usdPorMes: Number(values.presupuesto) } : {}), ...(values.corridas ? { corridasPorMes: Number(values.corridas) } : {}), ...(values.aviso ? { avisoUsd: Number(values.aviso) } : {}), ...(values["aviso-corridas"] ? { avisoCorridasPorMes: Number(values["aviso-corridas"]) } : {}) } } : {}),
     ...(values.entorno?.length ? { entorno: values.entorno } : {}),
   });
-  console.log(`Creado ${bot.nombre} (${bot.id}) con ${bot.motor}.`);
+  if (comoJson) imprimirJson(await instantaneaDeBot(bot, await estadoServicio()));
+  else console.log(`Creado ${bot.nombre} (${bot.id}) con ${bot.motor}.`);
+} else if (comando === "historial") {
+  const entradas = await leerHistorial(exigir(primero, "falta el id del bot"), 50);
+  if (comoJson) imprimirJson(entradas);
+  else for (const e of entradas) console.log(`${pintar(new Date(e.cuando).toLocaleString("es-AR"), C.tenue)}  ${e.quien}: ${e.texto}`);
 } else if (comando === "hablar") {
   const bot = await leerBot(exigir(primero, "falta el id del bot"));
-  const texto = exigir([segundo, tercero, ...positionals.slice(4)].filter(Boolean).join(" "), "falta el mensaje");
+  const texto = exigir([segundo, tercero, ...positionals.slice(4)].filter(Boolean).join(" ") || (comoJson && !entrada.isTTY ? (await leerEntrada()).trim() : ""), "falta el mensaje");
   const resultado = await pensar(bot, texto);
-  console.log(resultado.texto || (resultado.nada ? "Nada para avisar." : "Sin respuesta."));
-  if (resultado.pidePermiso) console.log(`Permiso: ${resultado.pidePermiso}`);
+  if (comoJson) imprimirJson({ texto: resultado.texto, nada: resultado.nada, ...(resultado.pidePermiso ? { pidePermiso: resultado.pidePermiso } : {}), ...(resultado.pausado ? { pausado: true } : {}) });
+  else console.log(resultado.texto || (resultado.nada ? "Nada para avisar." : "Sin respuesta."));
+  if (resultado.pidePermiso && !comoJson) console.log(`Permiso: ${resultado.pidePermiso}`);
 } else if (comando === "dale") {
   const resultado = await confirmar(await leerBot(exigir(primero, "falta el id del bot")));
-  console.log(resultado.texto || "Listo.");
+  if (comoJson) imprimirJson({ texto: resultado.texto, nada: resultado.nada });
+  else console.log(resultado.texto || "Listo.");
 } else if (comando === "motor") {
   const bot = await leerBot(exigir(primero, "falta el id del bot"));
   if (segundo !== "claude" && segundo !== "codex") error("el motor debe ser claude o codex");
@@ -193,8 +213,19 @@ if (!comando || comando === "lista" || comando === "listar") {
   const checkpoint = await deshacerCheckpoint(id);
   console.log(`Checkpoint de ${id} restaurado (${checkpoint.creado}).`);
 } else if (comando === "instalar") {
-  await instalarServicio();
-  console.log("Servicio de bots instalado: va a arrancar al iniciar sesión.");
+  // Con --comando (la app, en un servidor) el servicio se lleva el PATH de esta sesión: systemd no
+  // lo hereda, y sin él el bot no encuentra a claude ni a codex.
+  const unidad = await instalarServicio({ ...(values.comando ? { comando: values.comando, ...(process.env.PATH ? { entorno: { PATH: process.env.PATH } } : {}) } : {}) });
+  if (comoJson) imprimirJson({ unidad });
+  else console.log("Servicio de bots instalado: va a arrancar al iniciar sesión.");
+} else if (comando === "importar") {
+  const bot = await importarBot({ origen: exigir(primero, "falta la carpeta del bot que llegó"), carpeta: exigir(values.carpeta, "falta --carpeta, donde va a trabajar"), reemplazar: values.reemplazar });
+  if (comoJson) imprimirJson(await instantaneaDeBot(bot, await estadoServicio()));
+  else console.log(`Bot ${bot.id} listo en esta máquina; trabaja en ${bot.carpeta}.`);
+} else if (comando === "apartar") {
+  const guardado = await apartarBot(exigir(primero, "falta el id del bot"));
+  if (comoJson) imprimirJson({ guardado });
+  else console.log(`El bot ${primero} ya no corre en esta máquina; quedó guardado en ${guardado}.`);
 } else if (comando === "desinstalar") {
   await desinstalarServicio();
   console.log("Servicio de bots desinstalado.");

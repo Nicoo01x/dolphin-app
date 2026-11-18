@@ -1,0 +1,38 @@
+# El servicio de odolphin.tech/api (web/servidor). Va en /etc/systemd/system/odolphin-api.service.
+#
+# Corre con un usuario que systemd crea y borra solo (DynamicUser): no puede tocar nada del VPS
+# fuera de su carpeta de datos (/var/lib/odolphin-api, StateDirectory). Los secretos van en
+# /etc/odolphin-api.env (root, 600): DOLPHIN_ADMIN_CLAVE, DOLPHIN_ADMIN_SECRETO y, si hay,
+# DOLPHIN_TELEGRAM_TOKEN / DOLPHIN_TELEGRAM_CHAT / GITHUB_TOKEN. Ver web/DEPLOY.md.
+
+[Unit]
+Description=odolphin.tech API (reportes de crash, contadores y panel)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/opt/node24/bin/node --disable-warning=ExperimentalWarning /opt/odolphin-api/servidor.mjs
+EnvironmentFile=/etc/odolphin-api.env
+Environment=DOLPHIN_API_PUERTO=18800
+Environment=DOLPHIN_API_DATOS=/var/lib/odolphin-api
+Environment=NODE_ENV=production
+DynamicUser=yes
+StateDirectory=odolphin-api
+WorkingDirectory=/opt/odolphin-api
+Restart=on-failure
+RestartSec=3
+# Endurecido: sin escritura fuera de su carpeta, sin privilegios nuevos, sin dispositivos.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryMax=300M
+
+[Install]
+WantedBy=multi-user.target

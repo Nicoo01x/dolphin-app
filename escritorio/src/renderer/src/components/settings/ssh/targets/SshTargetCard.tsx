@@ -25,6 +25,8 @@ import {
   SshTargetServerStatusLine,
   type SshTargetServerDialog
 } from '../server-actions/SshTargetServerStatus'
+import { FixHostWithAgentButton } from '../../../ssh-host-recovery/FixHostWithAgentButton'
+import { formatSshFailureWithNextStep } from './ssh-user-facing-error'
 import { translate } from '@/i18n/i18n'
 import { useTranslate } from '@/i18n/use-translate'
 import { cn } from '@/lib/class-names'
@@ -115,6 +117,11 @@ export function SshTargetCard({
   const keyName = sshIdentityFileName(target.identityFile)
   const servedByDolphinServer =
     isManagedServerSshHost(target) || state?.managedServer?.kind === 'managed'
+  const failed =
+    status === 'error' ||
+    status === 'auth-failed' ||
+    status === 'reconnection-failed' ||
+    state?.managedServer?.kind === 'relay'
 
   const handleCardRef = useCallback((node: HTMLDivElement | null): void => {
     // Root attachment guards async completions after card removal without a passive effect.
@@ -243,9 +250,22 @@ export function SshTargetCard({
         {/* Wrap host-key errors so the trailing recovery command remains reachable. */}
         {/* An unserved host's status line below says why, translated; this is its English twin. */}
         {state?.error && state.managedServer?.kind !== 'relay' ? (
-          <p className="mt-0.5 text-xs text-destructive [overflow-wrap:anywhere]">{state.error}</p>
+          <p className="mt-0.5 text-xs text-destructive [overflow-wrap:anywhere]">
+            {formatSshFailureWithNextStep(state.error)}
+          </p>
         ) : null}
         <SshTargetServerStatusLine target={target} state={state} onOpenDialog={setServerDialog} />
+        {failed && !hasActionInFlight ? (
+          <div className="mt-1.5">
+            <FixHostWithAgentButton
+              context={{
+                targetId: target.id,
+                label: target.label,
+                ...(state?.error ? { error: state.error } : {})
+              }}
+            />
+          </div>
+        ) : null}
       </div>
 
       <div className="flex shrink-0 items-center gap-2">

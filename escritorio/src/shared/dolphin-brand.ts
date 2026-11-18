@@ -57,10 +57,12 @@ export function getDolphinUpdateRepository(): string | null {
  *
  * Why: los de la base van a su servidor y de ahí a su Slack: mandarle desde Dolphin el
  * texto de alguien, su cuenta de GitHub y los registros de diagnóstico es darle datos a otra app.
- * Mientras sea null no sale nada: el formulario no se ofrece y un reporte de crash queda para
- * copiarlo a mano.
+ * Por eso van al servidor propio de odolphin.tech (`web/servidor/` en este repo), que los muestra
+ * en el panel de admin (odolphin.tech/admin) y no los reenvía a nadie. Sale sólo lo que la persona
+ * acepta mandar desde el cartel de crash o desde «Enviar comentarios».
+ * Con null no sale nada: el formulario no se ofrece y un reporte de crash queda para copiarlo a mano.
  */
-export const DOLPHIN_FEEDBACK_URL: string | null = null
+export const DOLPHIN_FEEDBACK_URL: string | null = 'https://odolphin.tech/api/reportes'
 
 /**
  * La comunidad de Dolphin. Mientras sean null, los botones no salen.

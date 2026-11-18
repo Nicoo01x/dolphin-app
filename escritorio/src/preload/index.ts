@@ -12,6 +12,8 @@ import { wslDriveProjectApi } from './api/wsl-drive-project-bridge'
 import { wslDriveUncConversionApi } from './api/wsl-drive-unc-conversion-bridge'
 import { pwshApi } from './api/pwsh-bridge'
 import { discordApi } from './api/discord-bridge'
+import { memoriaBajaApi } from './api/memoria-baja-bridge'
+import { delfinesApi } from './api/delfines-bridge'
 import { checkpointsApi } from './api/checkpoints-bridge'
 import { gitBashApi } from './api/git-bash-bridge'
 import { pluginsApi } from './api/plugins-bridge'
@@ -119,6 +121,8 @@ const api = {
   wslDriveUnc: wslDriveUncConversionApi,
   pwsh: pwshApi,
   discord: discordApi,
+  memoriaBaja: memoriaBajaApi,
+  delfines: delfinesApi,
   checkpoints: checkpointsApi,
   gitBash: gitBashApi,
   plugins: pluginsApi,

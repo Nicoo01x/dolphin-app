@@ -13,13 +13,14 @@ import type { Translate } from '@/i18n/use-translate'
 
 /**
  * Qué tanto pesa un aviso. El orden es lo que se muestra primero:
+ * - `urgente`: algo se puede caer si no se hace nada (queda poca RAM).
  * - `uso`: cambia cómo usás la app (la interfaz de chat).
  * - `accion`: te pide hacer algo (actualizar skills).
  * - `preferencia`: un gusto que se puede elegir después (tema de Claude Code, texto del terminal).
  */
-export type Importancia = 'uso' | 'accion' | 'preferencia'
+export type Importancia = 'urgente' | 'uso' | 'accion' | 'preferencia'
 
-const RANGO: Record<Importancia, number> = { uso: 0, accion: 1, preferencia: 2 }
+const RANGO: Record<Importancia, number> = { urgente: 0, uso: 1, accion: 2, preferencia: 3 }
 
 /** Entre un aviso y el siguiente: que se note que se fue uno antes de que llegue el otro. */
 export const RESPIRO_ENTRE_AVISOS_MS = 700
@@ -66,6 +67,11 @@ export type EstadoDeLaCola = {
   readonly avisos: readonly AvisoEnCola[]
   /** El que está en pantalla; mientras haya uno, no entra otro. */
   readonly visible: string | null
+  /**
+   * El urgente en pantalla, encima de lo que haya: otro aviso, un modal de la app o la bienvenida.
+   * Va aparte de `visible` porque no lo reemplaza: al cerrarse, lo de abajo sigue como estaba.
+   */
+  readonly urgente: string | null
   readonly ultimoCierre: number | null
   readonly preferenciasMostradas: number
   readonly llegadas: number
@@ -74,6 +80,7 @@ export type EstadoDeLaCola = {
 export const COLA_VACIA: EstadoDeLaCola = {
   avisos: [],
   visible: null,
+  urgente: null,
   ultimoCierre: null,
   preferenciasMostradas: 0,
   llegadas: 0
@@ -90,12 +97,24 @@ export type Turno =
   | { readonly tipo: 'esperar'; readonly ms: number }
   | { readonly tipo: 'nada' }
 
-/** Qué hace la cola ahora: mostrar el que sigue, esperar un rato, o nada. */
-export function turnoDeLaCola(estado: EstadoDeLaCola, ahora: number): Turno {
-  if (estado.visible !== null) {
+const esUrgente = (aviso: Aviso): boolean => aviso.importancia === 'urgente'
+
+/**
+ * Qué hace la cola ahora: mostrar el que sigue, esperar un rato, o nada.
+ *
+ * `enPausa` es que hay otra ventana a la vista (un modal de la app, la bienvenida): un aviso común
+ * espera a que se cierre, porque encima de otra ventana es justo el apilado que esta cola vino a
+ * sacar. Lo urgente no espera a nada, ni al respiro: algo se puede caer mientras tanto.
+ */
+export function turnoDeLaCola(estado: EstadoDeLaCola, ahora: number, enPausa = false): Turno {
+  const urgente = estado.urgente === null ? ordenarAvisos(estado.avisos).find(esUrgente) : undefined
+  if (urgente) {
+    return { tipo: 'mostrar', aviso: urgente }
+  }
+  if (enPausa || estado.visible !== null || estado.urgente !== null) {
     return { tipo: 'nada' }
   }
-  const [primero] = ordenarAvisos(estado.avisos)
+  const [primero] = ordenarAvisos(estado.avisos.filter((aviso) => !esUrgente(aviso)))
   if (!primero) {
     return { tipo: 'nada' }
   }
@@ -128,7 +147,10 @@ export function encolar(estado: EstadoDeLaCola, aviso: Aviso): EstadoDeLaCola {
 
 export function mostrar(estado: EstadoDeLaCola, id: string): EstadoDeLaCola {
   const aviso = estado.avisos.find((enCola) => enCola.id === id)
-  if (!aviso || estado.visible !== null) {
+  if (aviso && esUrgente(aviso)) {
+    return estado.urgente === null ? { ...estado, urgente: id } : estado
+  }
+  if (!aviso || estado.visible !== null || estado.urgente !== null) {
     return estado
   }
   return {
@@ -144,11 +166,12 @@ export function quitar(estado: EstadoDeLaCola, id: string, ahora: number): Estad
   if (!estado.avisos.some((enCola) => enCola.id === id)) {
     return estado
   }
-  const estabaALaVista = estado.visible === id
+  const estabaALaVista = estado.visible === id || estado.urgente === id
   return {
     ...estado,
     avisos: estado.avisos.filter((enCola) => enCola.id !== id),
-    visible: estabaALaVista ? null : estado.visible,
+    visible: estado.visible === id ? null : estado.visible,
+    urgente: estado.urgente === id ? null : estado.urgente,
     ultimoCierre: estabaALaVista ? ahora : estado.ultimoCierre
   }
 }

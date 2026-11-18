@@ -13,6 +13,7 @@ export const SECCIONES: readonly (Enlace & { readonly siempre?: boolean })[] = [
   { href: "/escritorio", nombre: "Escritorio" },
   { href: "/bots", nombre: "Bots", siempre: true },
   { href: "/docs", nombre: "Docs", siempre: true },
+  { href: "/preguntas", nombre: "Preguntas" },
   { href: "/novedades", nombre: "Novedades" },
 ];
 
@@ -26,8 +27,10 @@ export const PIE: readonly { readonly titulo: string; readonly enlaces: readonly
       { href: "/#agentes", nombre: "Con qué agentes" },
       { href: "/#ademas", nombre: "Todo lo demás" },
       { href: "/escritorio", nombre: "App de escritorio" },
-      { href: "/#preguntas", nombre: "Preguntas" },
+      { href: "/descargar", nombre: "Descargar" },
+      { href: "/preguntas", nombre: "Preguntas" },
       { href: "/novedades", nombre: "Novedades" },
+      { href: "/privacidad", nombre: "Privacidad" },
     ],
   },
   {

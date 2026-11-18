@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { contarDescarga } from "@/lib/contador";
 import { INSTALADORES, SISTEMAS, sistemaDelNavegador, type Sistema } from "@/lib/descargas";
 
 /**
@@ -27,7 +28,7 @@ export function Descargar({ alinear = "centro", conNota = true }: { readonly ali
 
   return (
     <div className={`flex flex-col ${centro ? "items-center text-center" : "items-start"}`}>
-      <a href={elegido.url} className="boton-pill h-11 px-5" download>
+      <a href={elegido.url} className="boton-pill h-11 px-5" download onClick={() => contarDescarga(elegido.sistema)}>
         <IconoBajar />
         Descargar para {elegido.nombre}
       </a>
@@ -36,7 +37,12 @@ export function Descargar({ alinear = "centro", conNota = true }: { readonly ali
         {otros.map((o, i) => (
           <span key={o.sistema}>
             {i > 0 ? " y " : ""}
-            <a href={o.url} className="text-tinta underline decoration-espuma/30 underline-offset-[3px] transition-colors hover:text-espuma" download>
+            <a
+              href={o.url}
+              className="text-tinta underline decoration-espuma/30 underline-offset-[3px] transition-colors hover:text-espuma"
+              download
+              onClick={() => contarDescarga(o.sistema)}
+            >
               {o.nombre}
             </a>
           </span>

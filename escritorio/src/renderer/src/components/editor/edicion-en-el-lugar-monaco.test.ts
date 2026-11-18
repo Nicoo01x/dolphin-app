@@ -1,7 +1,11 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@/i18n/i18n', () => ({ translate: (_clave: string, texto: string) => texto }))
+// Parcial: el cuerpo del cuadrito es React y arrastra módulos que leen otras cosas de i18n.
+vi.mock('@/i18n/i18n', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  translate: (_clave: string, texto: string) => texto
+}))
 
 import { instalarEdicionEnElLugar } from './edicion-en-el-lugar-monaco'
 
@@ -48,6 +52,7 @@ function montar(opciones: { fueraDeLaVista?: boolean } = {}) {
       widget.getDomNode().remove()
     },
     render: dibujar,
+    layoutContentWidget: vi.fn(),
     revealRangeInCenterIfOutsideViewport: vi.fn(),
     addAction: (a: { run: () => void }) => {
       accion = a

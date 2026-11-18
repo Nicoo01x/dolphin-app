@@ -87,7 +87,8 @@ export const ENVIRONMENT_HANDLERS: Record<string, CommandHandler> = {
       selector: `--host ssh:${target.id}`,
       ...(target.connected === undefined ? {} : { connected: target.connected }),
       ...(target.connectionStatus ? { connectionStatus: target.connectionStatus } : {}),
-      ...(target.remotePlatform ? { platform: target.remotePlatform } : {})
+      ...(target.remotePlatform ? { platform: target.remotePlatform } : {}),
+      ...(target.lastFailure ? { lastFailure: target.lastFailure } : {})
     }))
     // Read the local pairing store without dialing every server, so listing works offline.
     const localStatus = await readLocalHostDescriptor(client)
@@ -127,7 +128,9 @@ export const ENVIRONMENT_HANDLERS: Record<string, CommandHandler> = {
         `Unknown SSH target in --host ssh:${targetId}: this Dolphin host has no SSH target with that id.`,
         {
           knownSshTargets: targets,
-          nextSteps: ['Run `dolphin host list` to see each SSH target and its --host ssh:<id> flag.']
+          nextSteps: [
+            'Run `dolphin host list` to see each SSH target and its --host ssh:<id> flag.'
+          ]
         }
       )
     }

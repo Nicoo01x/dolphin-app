@@ -1,4 +1,4 @@
-import { redactEphemeralVmRecipeDiagnosticText } from './ephemeral-vm-recipe-diagnostic-redaction'
+import { redactAgentDiagnosticText } from './agent-diagnostic-redaction'
 
 export type EnvironmentSetupFailureContext = {
   /** The step that failed, in the words the user saw (for example "Provision VM"). */
@@ -12,10 +12,6 @@ const MAX_LOG_CHARS = 4_000
 const MAX_ERROR_CHARS = 500
 // Recipe ids are dolphin.yaml keys; anything else would break the inline code span.
 const SAFE_RECIPE_ID = /^[A-Za-z0-9._-]{1,128}$/
-// Unquoted secrets common in provisioning output; the shared redactor covers URLs and JSON fields.
-const BEARER_TOKEN = /\b(authorization\s*:\s*(?:bearer|token|basic)\s+)\S+/gi
-const SECRET_ASSIGNMENT =
-  /\b([A-Z0-9_]*(?:TOKEN|SECRET|PASSWORD|API_KEY|ACCESS_KEY)[A-Z0-9_]*\s*[=:]\s*)("[^"]*"|'[^']*'|\S+)/gi
 
 /** The agent loads the guide through the CLI, so the skill does not have to be installed first. */
 export function buildEnvironmentSetupAgentPrompt(args: {
@@ -66,8 +62,5 @@ function oneLine(text: string): string {
 
 function redact(text: string): string {
   // A fence inside the log would close ours and let log text read as instructions.
-  return redactEphemeralVmRecipeDiagnosticText(text)
-    .replace(BEARER_TOKEN, '$1[redacted]')
-    .replace(SECRET_ASSIGNMENT, '$1[redacted]')
-    .replace(/```/g, "'''")
+  return redactAgentDiagnosticText(text)
 }

@@ -4,16 +4,16 @@
     {
       "name": "dolphin-cli",
       "sourcePath": "skills/dolphin-cli",
-      "packageDigest": "4ef51b78c0e707cf5f481d9417e911e76e3248e7670c054482ccf79108dfc3a2",
+      "packageDigest": "c5c801ca23e36905c4a56aa7d3d0a4a3b571953b29a53c74332c81e66fa8a11a",
       "files": [
         {
           "path": "SKILL.md",
-          "size": 3111,
+          "size": 3265,
           "executable": false,
           "classification": "text",
-          "exactSha256": "4f89e5fb959c32c1f9a252e72623ffcb0286a7ac892b8b514bc4391a21f5f2c0",
-          "textNormalizedSha256": "4f89e5fb959c32c1f9a252e72623ffcb0286a7ac892b8b514bc4391a21f5f2c0",
-          "identitySha256": "4f89e5fb959c32c1f9a252e72623ffcb0286a7ac892b8b514bc4391a21f5f2c0"
+          "exactSha256": "4517548e37bc54b8c0b54f30ba3455075a7814e537fee1ba51740ca015478789",
+          "textNormalizedSha256": "4517548e37bc54b8c0b54f30ba3455075a7814e537fee1ba51740ca015478789",
+          "identitySha256": "4517548e37bc54b8c0b54f30ba3455075a7814e537fee1ba51740ca015478789"
         }
       ]
     },
@@ -30,6 +30,22 @@
           "exactSha256": "f0fb4f3573ed9f693b9458017b931fe8f0a3bc0d37499662d60d792570bada43",
           "textNormalizedSha256": "f0fb4f3573ed9f693b9458017b931fe8f0a3bc0d37499662d60d792570bada43",
           "identitySha256": "f0fb4f3573ed9f693b9458017b931fe8f0a3bc0d37499662d60d792570bada43"
+        }
+      ]
+    },
+    {
+      "name": "dolphin-delegar",
+      "sourcePath": "skills/dolphin-delegar",
+      "packageDigest": "18e6b9af6e516451969aded2252d445d70e0cd8e466c2dc1d7648691676300dc",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "size": 3275,
+          "executable": false,
+          "classification": "text",
+          "exactSha256": "f9504be8972d4c83ba8b900016608b396b5b1fefe954361eb886af41c441e4d2",
+          "textNormalizedSha256": "f9504be8972d4c83ba8b900016608b396b5b1fefe954361eb886af41c441e4d2",
+          "identitySha256": "f9504be8972d4c83ba8b900016608b396b5b1fefe954361eb886af41c441e4d2"
         }
       ]
     },
@@ -130,6 +146,22 @@
       ]
     },
     {
+      "name": "dolphin-vps",
+      "sourcePath": "skills/dolphin-vps",
+      "packageDigest": "4c6495fa61e6ae791769efe41fc9b61662bdc9697d228fab20bc030b6ddf5de5",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "size": 2220,
+          "executable": false,
+          "classification": "text",
+          "exactSha256": "8cfd4efa18a60c0b408d37672f7ca1c32fc0d5e18783f4478f080f06b824ded4",
+          "textNormalizedSha256": "8cfd4efa18a60c0b408d37672f7ca1c32fc0d5e18783f4478f080f06b824ded4",
+          "identitySha256": "8cfd4efa18a60c0b408d37672f7ca1c32fc0d5e18783f4478f080f06b824ded4"
+        }
+      ]
+    },
+    {
       "name": "jira-tickets",
       "sourcePath": "skills/jira-tickets",
       "packageDigest": "cefc029c1739d4977116b6f36ef7c8ed9987db7b43b66677bdd44ffc1c903b21",
@@ -164,16 +196,16 @@
     {
       "name": "orchestration",
       "sourcePath": "skills/orchestration",
-      "packageDigest": "107beb036539b49cd5b153d7ceca1c1849c2b9222418f23b405ca0e6fd38c00f",
+      "packageDigest": "13899eb555d449b57d1f9f6cec02404b508240d68f4f57f0d75462822226871a",
       "files": [
         {
           "path": "SKILL.md",
-          "size": 3559,
+          "size": 3733,
           "executable": false,
           "classification": "text",
-          "exactSha256": "91b0d8a8aecf09c7153873a5a2365ed35f62b4b2969aae45d04d3b11ba8b8478",
-          "textNormalizedSha256": "91b0d8a8aecf09c7153873a5a2365ed35f62b4b2969aae45d04d3b11ba8b8478",
-          "identitySha256": "91b0d8a8aecf09c7153873a5a2365ed35f62b4b2969aae45d04d3b11ba8b8478"
+          "exactSha256": "89fb4a342292d42e220c5373c3e14481afa961094c3aff010fa2d6b6eb47896a",
+          "textNormalizedSha256": "89fb4a342292d42e220c5373c3e14481afa961094c3aff010fa2d6b6eb47896a",
+          "identitySha256": "89fb4a342292d42e220c5373c3e14481afa961094c3aff010fa2d6b6eb47896a"
         }
       ]
     }

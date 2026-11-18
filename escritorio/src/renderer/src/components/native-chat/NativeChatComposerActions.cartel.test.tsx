@@ -1,12 +1,11 @@
 // @vitest-environment happy-dom
 import { cleanup, render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const voice = vi.hoisted(() => ({
   dictationState: 'idle',
-  settings: { voice: { enabled: true, sttModel: 'configured' }, autoDelegation: false },
+  settings: { voice: { enabled: true, sttModel: 'configured' } },
   updateSettingsOrThrow: vi.fn(() => Promise.resolve())
 }))
 vi.mock('../../store', () => ({
@@ -74,33 +73,14 @@ describe('el compositor sin «Delegar»', () => {
   })
 })
 
-// Nico lo quiso en el compositor (antes vivía en la barra de arriba del chat), y es lo único que
-// quedó de Dolphin ahí después de sacar «Delegar».
-describe('Orquestación inteligente en el compositor', () => {
-  const NOMBRE = /Intelligent Orchestration/
-
-  it('aparece en el chat de un agente de terminal, apagado', () => {
-    render(<NativeChatComposerActions {...BASE} agent="claude" />)
-    const interruptor = screen.getByRole('button', { name: NOMBRE })
-    expect(interruptor.closest('[data-composer-control]')).not.toBeNull()
-    expect(interruptor.getAttribute('aria-pressed')).toBe('false')
-  })
-
-  it('también aparece en el chat de otro agente de terminal', () => {
-    render(<NativeChatComposerActions {...BASE} agent="codex" />)
-    expect(screen.getByRole('button', { name: NOMBRE })).toBeTruthy()
-  })
-
-  it('no aparece si el chat no es de un agente de terminal, ni sin agente', () => {
-    const { rerender } = render(<NativeChatComposerActions {...BASE} agent="not-a-tui-agent" />)
-    expect(screen.queryByRole('button', { name: NOMBRE })).toBeNull()
-    rerender(<NativeChatComposerActions {...BASE} />)
-    expect(screen.queryByRole('button', { name: NOMBRE })).toBeNull()
-  })
-
-  it('tocarlo guarda el ajuste global invertido', async () => {
-    render(<NativeChatComposerActions {...BASE} agent="claude" />)
-    await userEvent.click(screen.getByRole('button', { name: NOMBRE }))
-    expect(voice.updateSettingsOrThrow).toHaveBeenCalledWith({ autoDelegation: true })
+// Nico sacó también «Orquestación» el 17/11/2026: repartir el trabajo se pide en el chat
+// («delegá las tareas») y la skill dolphin-delegar abre cada compañero como pestaña de Dolphin.
+describe('el compositor sin «Orquestación»', () => {
+  it('no ofrece el interruptor en ningún chat', () => {
+    const { rerender } = render(<NativeChatComposerActions {...BASE} agent="claude" />)
+    expect(screen.queryByRole('button', { name: /Intelligent Orchestration/ })).toBeNull()
+    expect(screen.queryByText('Orchestration')).toBeNull()
+    rerender(<NativeChatComposerActions {...BASE} agent="codex" />)
+    expect(screen.queryByRole('button', { name: /Intelligent Orchestration/ })).toBeNull()
   })
 })

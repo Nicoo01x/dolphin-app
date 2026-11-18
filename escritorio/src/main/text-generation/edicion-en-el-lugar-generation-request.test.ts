@@ -41,14 +41,30 @@ describe('generarEdicionEnElLugar', () => {
     expect(operacion).toBe('edicion-en-el-lugar')
   })
 
-  it('devuelve el código pelado cuando el modelo contesta con cerca y charla', async () => {
-    const { resultado } = await correr('Listo:\n```ts\nreturn a + b\n```\n¿Lo aplico?')
-    expect(resultado).toMatchObject({ success: true, codigo: 'return a + b' })
+  it('devuelve el reemplazo pelado cuando el modelo lo marca y charla alrededor', async () => {
+    const { resultado } = await correr('Listo:\n```reemplazo\nreturn a + b\n```\n¿Lo aplico?')
+    expect(resultado).toMatchObject({ success: true, tipo: 'edicion', codigo: 'return a + b' })
   })
 
-  it('una respuesta sin cerca es el código tal cual', async () => {
-    const { resultado } = await correr('return a + b')
-    expect(resultado).toMatchObject({ success: true, codigo: 'return a + b' })
+  it('un único bloque con el nombre del lenguaje, sin charla, también es un reemplazo', async () => {
+    const { resultado } = await correr('```ts\nreturn a + b\n```')
+    expect(resultado).toMatchObject({ success: true, tipo: 'edicion', codigo: 'return a + b' })
+  })
+
+  // El bug: «¿para qué sirve esta línea?» volvía como reemplazo, y Aceptar escribía la explicación
+  // adentro del archivo.
+  it('una pregunta vuelve como respuesta para leer, no como reemplazo', async () => {
+    // Empieza con una lista a propósito: la limpieza de los mensajes de commit le saca la viñeta a
+    // la primera línea, y acá eso rompería el markdown de la respuesta.
+    const texto = '- `esquema` = `"Bearer"`\n- `token` = el del login'
+    const { resultado } = await correr(texto)
+    expect(resultado).toMatchObject({ success: true, tipo: 'respuesta', texto })
+    expect(resultado).not.toHaveProperty('codigo')
+  })
+
+  it('dice qué agente contestó, para que el editor muestre su marca', async () => {
+    const { resultado } = await correr('```reemplazo\nx\n```')
+    expect(resultado).toMatchObject({ success: true, agentId: 'custom' })
   })
 
   // Si esto pasara por bueno, aceptar la sugerencia borraría lo que la persona tenía seleccionado.

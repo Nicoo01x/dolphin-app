@@ -2,6 +2,7 @@
 
 import '@testing-library/jest-dom/vitest'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import * as DialogPrimitive from 'radix-ui/dialog'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AccionesDelAviso, Aviso, Importancia } from './cola-de-avisos'
 
@@ -20,9 +21,9 @@ vi.mock('gsap/Draggable', () => ({
   }
 }))
 vi.mock('gsap/InertiaPlugin', () => ({ InertiaPlugin: { getVelocity: () => 0 } }))
+const app = vi.hoisted(() => ({ activeModal: 'none' }))
 vi.mock('@/store', () => ({
-  useAppStore: (elegir: (estado: { activeModal: string }) => unknown) =>
-    elegir({ activeModal: 'none' })
+  useAppStore: (elegir: (estado: { activeModal: string }) => unknown) => elegir(app)
 }))
 
 const { ColaDeAvisos } = await import('./ColaDeAvisos')
@@ -48,6 +49,7 @@ function avisoDePrueba(
 
 beforeEach(() => {
   arrastres.length = 0
+  app.activeModal = 'none'
   vaciarColaDeAvisos()
   // Con «reducir movimiento» la ventana se va sin viaje, así que el cierre es inmediato.
   vi.stubGlobal(
@@ -137,5 +139,60 @@ describe('la cola de avisos en pantalla', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     rerender(<ColaDeAvisos />)
     expect(screen.getByRole('dialog', { name: 'Aviso chat' })).toBeInTheDocument()
+  })
+
+  it('lo urgente sale aunque esté la bienvenida o haya otro modal; lo común, no', () => {
+    app.activeModal = 'quick-open'
+    const espias = { aceptar: vi.fn(), descartado: vi.fn() }
+    encolarAviso(avisoDePrueba('chat', 'uso', espias))
+    encolarAviso(avisoDePrueba('memoria-baja', 'urgente', espias))
+    render(<ColaDeAvisos enPausa />)
+    expect(screen.getAllByRole('dialog')).toHaveLength(1)
+    expect(screen.getByRole('dialog', { name: 'Aviso memoria-baja' })).toBeInTheDocument()
+  })
+
+  it('encima de otro aviso: Escape cierra sólo el urgente y el foco vuelve al de abajo', () => {
+    const espias = { aceptar: vi.fn(), descartado: vi.fn() }
+    encolarAviso(avisoDePrueba('chat', 'uso', espias))
+    render(<ColaDeAvisos />)
+    const abajo = screen.getByRole('dialog', { name: 'Aviso chat' })
+    expect(abajo).toHaveFocus()
+    act(() => encolarAviso(avisoDePrueba('memoria-baja', 'urgente', espias)))
+    expect(screen.getByRole('dialog', { name: 'Aviso memoria-baja' })).toHaveFocus()
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(espias.descartado).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole('dialog', { name: 'Aviso memoria-baja' })).not.toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'Aviso chat' })).toHaveFocus()
+  })
+
+  it('encima de un modal de la app: entra a su pila, y Escape lo cierra sólo a él', () => {
+    app.activeModal = 'quick-open'
+    const espias = { aceptar: vi.fn(), descartado: vi.fn() }
+    const cerroElModal = vi.fn()
+    render(
+      <>
+        <DialogPrimitive.Root open onOpenChange={cerroElModal}>
+          <DialogPrimitive.Portal>
+            <DialogPrimitive.Content aria-describedby={undefined}>
+              <DialogPrimitive.Title>Abrir rápido</DialogPrimitive.Title>
+              <input aria-label="Buscar" autoFocus />
+            </DialogPrimitive.Content>
+          </DialogPrimitive.Portal>
+        </DialogPrimitive.Root>
+        <ColaDeAvisos />
+      </>
+    )
+    const buscar = screen.getByRole('textbox', { name: 'Buscar' })
+    expect(buscar).toHaveFocus()
+    act(() => encolarAviso(avisoDePrueba('memoria-baja', 'urgente', espias)))
+    expect(screen.getByRole('dialog', { name: 'Aviso memoria-baja' })).toHaveFocus()
+    // Es un modal de Radix más, el de arriba: el de abajo queda tapado para el lector de pantalla
+    // (y, en un navegador, sin atrapar el foco ni cerrarse al tocar el aviso).
+    expect(screen.queryByRole('dialog', { name: 'Abrir rápido' })).not.toBeInTheDocument()
+    fireEvent.keyDown(document.activeElement ?? document, { key: 'Escape' })
+    expect(espias.descartado).toHaveBeenCalledTimes(1)
+    expect(cerroElModal).not.toHaveBeenCalled()
+    expect(screen.getByRole('dialog', { name: 'Abrir rápido' })).toBeInTheDocument()
+    expect(buscar).toHaveFocus()
   })
 })

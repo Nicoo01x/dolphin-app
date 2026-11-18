@@ -32,14 +32,27 @@ const CERCA = /^([`~]{3,})[^\n`]*$/
  * markdown, que en este repo es la mitad) se cortaba al medio.
  */
 export function codigoDeLaRespuesta(respuesta: string): string {
+  const bloques = bloquesCercados(respuesta).map((bloque) => bloque.codigo)
+  if (bloques.length === 0) {
+    return respuesta.trim()
+  }
+  const lineasDe = (bloque: string): number => bloque.split('\n').length
+  return bloques.reduce((mayor, bloque) => (lineasDe(bloque) >= lineasDe(mayor) ? bloque : mayor))
+}
+
+/** Un bloque cercado: lo que dice su cerca de apertura, su contenido y las líneas que ocupa. */
+type BloqueCercado = { info: string; codigo: string; desde: number; hasta: number }
+
+function bloquesCercados(respuesta: string): BloqueCercado[] {
   const lineas = respuesta.split('\n')
-  const bloques: string[] = []
-  let abierta: { marca: string; desde: number } | null = null
+  const bloques: BloqueCercado[] = []
+  let abierta: { marca: string; info: string; desde: number } | null = null
   for (const [indice, linea] of lineas.entries()) {
     const corte = CERCA.exec(linea.trim())
     if (!abierta) {
       if (corte) {
-        abierta = { marca: corte[1]!, desde: indice + 1 }
+        const marca = corte[1]!
+        abierta = { marca, info: linea.trim().slice(marca.length).trim(), desde: indice }
       }
       continue
     }
@@ -51,13 +64,60 @@ export function codigoDeLaRespuesta(respuesta: string): string {
       cierre.length >= abierta.marca.length &&
       cierre === cierre[0]!.repeat(cierre.length)
     ) {
-      bloques.push(lineas.slice(abierta.desde, indice).join('\n'))
+      bloques.push({
+        info: abierta.info,
+        codigo: lineas.slice(abierta.desde + 1, indice).join('\n'),
+        desde: abierta.desde,
+        hasta: indice
+      })
       abierta = null
     }
   }
-  if (bloques.length === 0) {
-    return respuesta.trim()
+  return bloques
+}
+
+/**
+ * La etiqueta de la cerca con la que el modelo marca un reemplazo (```` ```reemplazo ````).
+ *
+ * Cmd+K recibe dos clases de pedido: «hacé esto async» y «¿para qué sirve esta línea?». El editor
+ * tiene que saber cuál volvió sin leer lo que dice la prosa, porque aceptar una respuesta como si
+ * fuera código escribe esa respuesta adentro del archivo. Por eso el pedido le dice al modelo que
+ * un cambio va en un bloque con esta etiqueta y una respuesta, sin él.
+ */
+export const ETIQUETA_DEL_REEMPLAZO = 'reemplazo'
+
+/** Lo que volvió de un Cmd+K: un cambio para aceptar, o una respuesta para leer. */
+export type RespuestaDeEdicion =
+  | { tipo: 'edicion'; codigo: string }
+  | { tipo: 'respuesta'; texto: string }
+
+/**
+ * Qué trajo la respuesta: un reemplazo o una respuesta.
+ *
+ * - Un bloque con la etiqueta del reemplazo es un cambio; si hay varios, vale el último.
+ * - Una respuesta que es entera un único bloque cercado, sin nada de prosa alrededor, también es un
+ *   cambio: es el modelo que contestó bien pero con el nombre del lenguaje en vez de la etiqueta.
+ * - Cualquier otra cosa es una respuesta, aunque traiga ejemplos de código: se lee, no se aplica.
+ *
+ * Equivocarse para este lado es barato —la persona lee algo que podría haber aceptado y lo pide de
+ * nuevo—; para el otro, escribe prosa en su archivo.
+ */
+export function leerRespuestaDeEdicion(respuesta: string): RespuestaDeEdicion {
+  const bloques = bloquesCercados(respuesta)
+  const marcados = bloques.filter(
+    (bloque) => bloque.info.split(/\s+/)[0]?.toLowerCase() === ETIQUETA_DEL_REEMPLAZO
+  )
+  const marcado = marcados.at(-1)
+  if (marcado) {
+    return { tipo: 'edicion', codigo: marcado.codigo }
   }
-  const lineasDe = (bloque: string): number => bloque.split('\n').length
-  return bloques.reduce((mayor, bloque) => (lineasDe(bloque) >= lineasDe(mayor) ? bloque : mayor))
+  const lineas = respuesta.split('\n')
+  const unico = bloques.length === 1 ? bloques[0]! : null
+  const fuera = unico
+    ? [...lineas.slice(0, unico.desde), ...lineas.slice(unico.hasta + 1)].join('\n').trim()
+    : null
+  if (unico && fuera === '') {
+    return { tipo: 'edicion', codigo: unico.codigo }
+  }
+  return { tipo: 'respuesta', texto: respuesta.trim() }
 }

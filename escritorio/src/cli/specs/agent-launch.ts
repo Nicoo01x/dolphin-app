@@ -63,5 +63,17 @@ export const AGENT_LAUNCH_COMMAND_SPECS: CommandSpec[] = [
       'dolphin agent delegate --agent chatgpt --prompt "Write the migration" --json',
       'cat brief.md | dolphin agent delegate --agent gemini --prompt-file - --wait --json'
     ]
+  },
+  {
+    path: ['agent', 'list'],
+    summary: 'List the agents Dolphin can start in this workspace',
+    usage: 'dolphin agent list [--json]',
+    allowedFlags: [...GLOBAL_FLAGS],
+    notes: [
+      'Lists the agent CLIs found on the host of the workspace that contains the current directory (its WSL distro or SSH host included), the same list the new-agent menu shows. Outside a workspace it lists this host.',
+      'Each entry is the id `--agent` takes in `agent launch`, `agent delegate` and `orchestration worker-start`, with its name and the aliases it accepts.',
+      'Found means installed, not signed in: an agent that needs a login says so in its own tab.'
+    ],
+    examples: ['dolphin agent list', 'dolphin agent list --json']
   }
 ]

@@ -59,7 +59,8 @@ import {
 } from '../catalog/runtime-visible-catalog'
 import { isWorkspaceNotificationMuted } from '../../push/notifications/workspace-notification-mute'
 import { WorkerAutoReleaseActivity } from '../../orchestration/terminal-authority/release/worker-auto-release-activity'
-import { nativeChatIdleStopMs } from '../../../../shared/native-chat/native-chat-idle-stop'
+// Dolphin: la espera de un chat quieto se acorta con poca RAM (modo-activo.ts).
+import { esperaDeChatQuieto } from '../../../memoria-baja/modo-activo'
 import { prWatchWorkspaceSources } from '../../agent-session/pr-watch-workspace-sources'
 import { startPRWatchRuntime } from '../../agent-session/pr-watch-runtime'
 const DEFAULT_WORKTREE_PS_LIMIT = 200
@@ -268,7 +269,7 @@ export abstract class DolphinRuntimeWithGetWorktreePs extends RuntimeChatWorkerE
       ),
       claudeCliFlags: claudeCliFlagSupport,
       usageLimitAutoContinue: this.usageLimitAutoContinueHostDeps(),
-      idleSweep: { idleMs: () => nativeChatIdleStopMs(this.requireStore().getSettings()) },
+      idleSweep: { idleMs: () => esperaDeChatQuieto(this.requireStore().getSettings()) },
       nativeChatVisuals: {
         isEnabled: () => this.requireStore().getSettings().nativeChatInlineVisuals !== false
       },

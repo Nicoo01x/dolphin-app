@@ -24,6 +24,20 @@ export async function readDolphindArtifactIdentity(directory: string): Promise<s
   return `${DOLPHIND_VERSION}+${hash.digest('hex').slice(0, 12)}`
 }
 
+/**
+ * The page's assets, or none when the slot ships no page.
+ * Why: a build without the mobile app ships a server without the page, which
+ * `dolphindArtifactFilenames` already treats as a supported degradation; reading the manifest
+ * unconditionally made that server refuse to start ("artifacts are incomplete or altered").
+ */
+async function readMobileWebAssetFilenames(directory: string): Promise<string[]> {
+  const manifest = join(directory, DOLPHIND_MOBILE_WEB_MANIFEST)
+  if (!existsSync(manifest)) {
+    return []
+  }
+  return dolphindMobileWebAssetFilenames(await readFile(manifest, 'utf8'))
+}
+
 /** The installed files the artifact identity covers, in the build's order. */
 export async function listDolphindArtifactFilenames(directory: string): Promise<string[]> {
   const target = z
@@ -39,10 +53,7 @@ export async function listDolphindArtifactFilenames(directory: string): Promise<
     target.split('-')[1] ?? '',
     target.endsWith('-musl') ? 'musl' : 'glibc'
   )
-  const filenames = dolphindArtifactFilenames(
-    target,
-    dolphindMobileWebAssetFilenames(await readFile(join(directory, DOLPHIND_MOBILE_WEB_MANIFEST), 'utf8'))
-  )
+  const filenames = dolphindArtifactFilenames(target, await readMobileWebAssetFilenames(directory))
   if (existsSync(join(directory, browser))) {
     filenames.push(browser)
   }

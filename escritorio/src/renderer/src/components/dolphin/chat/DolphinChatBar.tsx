@@ -143,9 +143,9 @@ export function DolphinChatBar({
           cifras que se miran una vez y después ocupan la barra entera en un panel angosto.
           Lo que queda se toca, no se lee. */}
       <div className="ml-auto flex min-w-0 items-center gap-2">
-        {/* Why acá no está «Orquestación inteligente»: hasta el 10/11/2026 iba junto al ojo. Nico
-            lo quiso en el compositor, al lado de «Delegar» (NativeChatComposerActions): es una
-            elección de cuánto reparte Dolphin, y se toca donde se escribe el pedido. */}
+        {/* Why acá no está «Orquestación inteligente»: hasta el 10/11/2026 iba junto al ojo, después
+            pasó al compositor y el 17/11/2026 Nico lo sacó del todo. Repartir se pide en el chat
+            («delegá las tareas», skill dolphin-delegar); el ajuste sigue en Ajustes › Experimental. */}
         <Button
           type="button"
           variant="ghost"

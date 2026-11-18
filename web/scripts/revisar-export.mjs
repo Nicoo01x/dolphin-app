@@ -73,9 +73,21 @@ const DE_DIRECCION = [
 const publicado = Boolean(process.env.DOLPHIN_SITIO);
 const malas = [];
 let conCanonical = 0;
+let bloquesJsonLd = 0;
+const jsonLdRoto = [];
 
 for (const archivo of paginas(RAIZ)) {
   const html = readFileSync(archivo, "utf8");
+  // Los datos estructurados (JSON-LD) se leen sin perdón: uno roto es como no tenerlo, y no avisa.
+  for (const [, bloque] of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+    bloquesJsonLd += 1;
+    try {
+      const datos = JSON.parse(bloque);
+      if (!datos["@context"]) throw new Error("sin @context");
+    } catch (error) {
+      jsonLdRoto.push(`${archivo.slice(RAIZ.length)} · ${error.message}`);
+    }
+  }
   for (const patron of DE_DIRECCION) {
     for (const etiqueta of html.match(patron) ?? []) {
       conCanonical += 1;
@@ -83,6 +95,13 @@ for (const archivo of paginas(RAIZ)) {
     }
   }
 }
+
+if (jsonLdRoto.length > 0) {
+  console.error(`\n  ${jsonLdRoto.length} bloques de JSON-LD no se pueden leer:\n`);
+  for (const m of jsonLdRoto.slice(0, 10)) console.error(`  ${m}`);
+  process.exit(1);
+}
+console.log(`  ${bloquesJsonLd} bloques de JSON-LD, todos legibles.`);
 
 if (malas.length > 0) {
   console.error(`\n  ${malas.length} ${malas.length === 1 ? "etiqueta se va" : "etiquetas se van"} con la dirección de local adentro:\n`);

@@ -89,8 +89,11 @@
   --paisaje-tinta-velo: 250 250 250;
 }
 
-/* «Paneles opacos»: el vidrio tapa entero y la pintura queda sólo en el chat vacío. */
-:root[data-dolphin-paisaje='opaco'] {
+/* «Paneles opacos»: el vidrio tapa entero y la pintura queda sólo en el chat vacío. Con el tema
+   claro también: la regla de las tintas en claro lleva `:not(.dark)` y por especificidad le ganaba
+   a esta, así que en claro los paneles opacos seguían dejando ver la pintura. */
+:root[data-dolphin-paisaje='opaco'],
+:root[data-dolphin-paisaje='opaco']:not(.dark) {
   --paisaje-alfa: 1;
 }
 
@@ -98,14 +101,29 @@
    Las superficies que van sobre la pintura: la franja de arriba de la barra lateral, la barra
    lateral y el panel derecho (`data-dolphin-panel`), la barra de estado y la columna del medio
    (pestañas, chat, editor y terminal). Si en la columna hay un chat vacío, el vidrio baja a cada
-   grupo que no lo tiene y a las tiras de pestañas: el chat vacío es pintura directa.
+   grupo que no lo tiene y a las tiras de pestañas: el chat vacío es pintura directa. Las páginas
+   que no son un espacio de trabajo (Ajustes, Tareas, Skills…: `marca-de-pagina.ts`) son otro panel
+   y llevan arriba la barra de título entera (`.titlebar`), que también es vidrio.
 
    `background-attachment: fixed` y el mismo encuadre que la capa del cuadro: la pintura
-   esmerilada de cada panel calza con la de atrás, como si fuera un solo vidrio. */
+   esmerilada de cada panel calza con la de atrás, como si fuera un solo vidrio. Por eso mismo el
+   vidrio sirve para lo que se queda pegado al hacer scroll y tiene que tapar lo que pasa por
+   debajo (las celdas fijas de una tabla, el encabezado de una sección, la barra del editor de
+   markdown): pintado otra vez encima, no se distingue del de atrás y tapa entero, porque la
+   pintura esmerilada es opaca. Y para el degradé que corta un texto largo, que se funde hacia el
+   vidrio con una máscara (`paisaje-paginas.css`). */
 :root[data-dolphin-paisaje]
   :is(
+    .titlebar,
     .titlebar-left,
     [data-dolphin-panel],
+    :is(.workspace-sidebar-seam, [data-dolphin-pagina])
+      :is(
+        .sticky.bg-background,
+        .rich-markdown-editor-toolbar,
+        .from-background.to-transparent.bg-gradient-to-t
+      ),
+    [data-dolphin-pagina] [data-task-list-scroll] .sticky,
     [data-dolphin-status-bar],
     .workspace-sidebar-seam:not(:has([data-dolphin-chat-vacio])),
     .workspace-sidebar-seam:has([data-dolphin-chat-vacio]) > .bg-tab-bar,
@@ -130,14 +148,25 @@
 /* Adentro del vidrio, los fondos propios de la base pasan a transparente: así las filas, las
    pestañas y los encabezados que la base pinta con su token no apilan velo sobre velo (se verían
    franjas), y el vidrio lo pone una sola vez el contenedor. Las juntas pasan a la tinta del texto
-   al 8 %, como en la referencia: separan sin trazar una línea dura. */
+   al 8 %, como en la referencia: separan sin trazar una línea dura.
+
+   `--editor-surface` es el lienzo de lo que se abre en un grupo y no es Monaco (el markdown
+   enriquecido, el CSV, las imágenes, los checks): sin esto, el archivo que el agente abre al
+   costado del chat salía en el negro opaco del lienzo, en medio del vidrio. */
 :root[data-dolphin-paisaje]
-  :is(.titlebar-left, [data-dolphin-panel], [data-dolphin-status-bar], .workspace-sidebar-seam) {
+  :is(
+    .titlebar,
+    .titlebar-left,
+    [data-dolphin-panel],
+    [data-dolphin-status-bar],
+    .workspace-sidebar-seam
+  ) {
   --worktree-sidebar: transparent;
   --sidebar: transparent;
   --tab-bar: transparent;
   --chat-pane: transparent;
   --code-editor-background: transparent;
+  --editor-surface: transparent;
   --border: var(--paisaje-junta);
   --sidebar-border: var(--paisaje-junta);
   --muted-foreground: var(--paisaje-atenuado);
@@ -145,6 +174,14 @@
 
 :root[data-dolphin-paisaje] .workspace-sidebar-seam :is(.editor-header, [data-tab-group-body-id]) {
   background-color: transparent;
+}
+
+/* Un encabezado pegado que se marca al pasar el mouse (el de cada archivo en el diff de todos los
+   cambios): su vidrio le gana al `hover:bg-accent`, así que el realce va encima. */
+:root[data-dolphin-paisaje]
+  :is(.workspace-sidebar-seam, [data-dolphin-pagina])
+  .sticky.bg-background.hover\:bg-accent:hover {
+  box-shadow: inset 0 0 0 100vmax var(--paisaje-realce);
 }
 
 /* La pestaña activa: vidrio un poco más claro, con radio, sin borde. */

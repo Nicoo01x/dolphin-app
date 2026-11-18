@@ -13,6 +13,7 @@ import { connectionManager } from './ssh-ipc-context'
 import { getPublicSshState } from './ssh-renderer-broadcast'
 import { disconnectSshHostForUser } from './ssh-host-user-disconnect'
 import { errorMessage } from '../../../shared/error-message'
+import { registerSshDraftConnectionTestHandler } from './ssh-draft-connection-test'
 import {
   clearSshCredentialDeclined,
   isSshCredentialDeclined
@@ -47,6 +48,8 @@ export function registerSshConnectionHandlers(): void {
     }
     return !connectionManager!.hasCachedCredential(target)
   })
+
+  registerSshDraftConnectionTestHandler()
 
   ipcMain.handle('ssh:testConnection', async (_event, args: { targetId: string }) => {
     const target = getSshTargetRegistryStore()!.getTarget(args.targetId)

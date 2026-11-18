@@ -39,6 +39,12 @@ function escalaPara(distancia: number): number {
   return ESCALA.at(-1)![1]
 }
 
+/**
+ * Las ventanas abiertas con este arrastre, la de más arriba al final. Puede haber dos a la vez —el
+ * aviso urgente de poca RAM sale encima de otro— y Escape cierra sólo la de arriba.
+ */
+const abiertas: object[] = []
+
 export type ArrastreParaDescartar = {
   fondoRef: React.RefObject<HTMLDivElement | null>
   ventanaRef: React.RefObject<HTMLDivElement | null>
@@ -211,16 +217,21 @@ export function useArrastreParaDescartar(
     )
     ventana.focus({ preventScroll: true })
 
+    const esta = {}
+    abiertas.push(esta)
     const alTeclear = (evento: KeyboardEvent): void => {
-      if (evento.key === 'Escape') {
+      if (evento.key === 'Escape' && abiertas.at(-1) === esta) {
         evento.stopPropagation()
         descartar()
       }
     }
-    document.addEventListener('keydown', alTeclear, true)
+    // En la captura de `window`, antes que todo lo del `document`: si hay un modal de la app
+    // abajo, su Escape no llega a enterarse y queda abierto.
+    window.addEventListener('keydown', alTeclear, true)
     return () => {
       arrastre?.kill()
-      document.removeEventListener('keydown', alTeclear, true)
+      abiertas.splice(abiertas.indexOf(esta), 1)
+      window.removeEventListener('keydown', alTeclear, true)
       gsap.killTweensOf([ventana, fondo])
     }
   }, [descartar])

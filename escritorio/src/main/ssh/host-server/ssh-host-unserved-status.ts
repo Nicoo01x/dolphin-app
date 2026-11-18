@@ -30,15 +30,28 @@ export function unservedServerStatus(
 const HELD_MOVE_MESSAGE =
   'Dolphin paused moving this host’s projects to its Dolphin server because it couldn’t confirm the server’s copy. Nothing is lost: the host keeps its projects and stays locked until the move finishes. Connect again to resume. If the server can’t come back, stop or forget it in Settings > Dolphin on your SSH hosts.'
 
-// Host-fixable reasons carry their own remedy; others fall back to the unsupported-version line.
+// Each known reason names its remedy; an unknown one says to update and where the cause is.
 const UNAVAILABLE_MESSAGES: Record<string, string> = {
   runtime_noexec:
     'This host doesn’t allow running programs from ~/.dolphin-remote, so Dolphin can’t start its server there. This usually means the home folder is mounted with noexec. Ask the host’s administrator to allow running programs there, then connect again.',
   windows_build_unsupported:
     'This host runs a version of Windows older than Windows 10 and Windows Server 2016, so it can’t run Dolphin’s server. Use a host with a newer version of Windows, or a Linux or macOS host.',
   windows_no_extractor:
-    'This Windows host has neither tar.exe nor PowerShell’s Expand-Archive, so Dolphin can’t unpack its server there. Install Windows PowerShell 5.1 on the host, then connect again.'
+    'This Windows host has neither tar.exe nor PowerShell’s Expand-Archive, so Dolphin can’t unpack its server there. Install Windows PowerShell 5.1 on the host, then connect again.',
+  libc_unidentified:
+    'Dolphin couldn’t tell which system C library this host uses (glibc or musl), so it can’t pick a server build for it. Check that `ldd --version` runs on the host, then connect again.',
+  runtime_self_test:
+    'The Node.js runtime Dolphin installed on this host failed its self-test. Check that the host has free disk space and allows running programs from ~/.dolphin-remote, then connect again.',
+  security_software:
+    'Security software on this host changed the files of Dolphin’s server runtime. Allow ~/.dolphin-remote in that software, then connect again.',
+  native_preflight:
+    'This host is missing system libraries Dolphin’s server needs. The server runs on Linux with glibc 2.28 or newer (Ubuntu 20.04 or later, Debian 10 or later) and on macOS. Update the host’s system, then connect again.',
+  ssh_tunnel_unavailable:
+    'This host’s SSH server doesn’t allow port forwarding, and Dolphin couldn’t reach its server through the SSH session either. Set AllowTcpForwarding yes in the host’s /etc/ssh/sshd_config, restart sshd, then connect again.'
 }
+
+const UNAVAILABLE_UNKNOWN_MESSAGE =
+  'Dolphin can’t run its server on this host. Update Dolphin on this computer, then connect again; the cause is in this host’s Details, in Settings > SSH Hosts.'
 
 /**
  * Esta copia salió sin el servidor para el sistema del host.
@@ -51,7 +64,7 @@ const UNAVAILABLE_MESSAGES: Record<string, string> = {
  * permite a alguien entender por qué su host no anda y qué falta para que ande.
  */
 const SIN_SERVIDOR_PARA_EL_HOST =
-  'This copy of Dolphin ships without the server for this host’s system, so it has nothing to install there. That server is compiled on a machine of the host’s own system and travels inside the installer, so a build that never carried it cannot reach this host. Use a Dolphin build that includes it.'
+  'This copy of Dolphin ships without the server for this host’s system, so it has nothing to install there. That server is compiled on a machine of the host’s own system and travels inside the installer, so a build that never carried it cannot reach this host. Update Dolphin on this computer to a version that includes it, then connect again.'
 
 const CONTACT_LOST_MESSAGE =
   'Dolphin lost contact with this host while setting up its server. Nothing on the host was stopped. Connect again to continue.'
@@ -88,8 +101,7 @@ export function unservedHostServerMessage(decision: UnservedDecision): string {
         return SIN_SERVIDOR_PARA_EL_HOST
       }
       return (
-        (decision.detail && UNAVAILABLE_MESSAGES[decision.detail]) ||
-        'This SSH host isn’t supported by this version of Dolphin. To keep using it, install an older version of Dolphin.'
+        (decision.detail && UNAVAILABLE_MESSAGES[decision.detail]) || UNAVAILABLE_UNKNOWN_MESSAGE
       )
     case 'relay_terminals_live':
     case 'relay_terminals_unverifiable':

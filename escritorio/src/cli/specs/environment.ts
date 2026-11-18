@@ -24,6 +24,7 @@ export const ENVIRONMENT_COMMAND_SPECS: CommandSpec[] = [
       'Commands that take --host also accept any name this list prints, such as --host "this machine" or --host <ssh-target-name> (except `dolphin host rm`, which takes only the ssh:<target-id> form). A name two hosts share is refused with the exact flag for each.',
       'SSH rows include the detected remote platform after that target has connected (linux, darwin, or win32); disconnected or older targets report platform unknown.',
       'SSH rows also include whether the target is currently connected and its lifecycle status when known.',
+      'An SSH row whose last connect failed carries `lastFailure` (a reason code and the next step) until it connects; `dolphin host doctor <id>` diagnoses it.',
       'Paired-server rows come from the pairing store and report platform unknown; ask one server directly with `dolphin host name --environment <name>`.',
       "SSH targets are read from this machine's own Dolphin runtime, so this lists that machine's targets and not another server's. Run `dolphin host list` on the other machine to see the targets registered there.",
       '--environment and --pairing-code are rejected rather than ignored: paired servers come from this machine\u2019s pairing store, so a routed answer would describe two machines at once.'

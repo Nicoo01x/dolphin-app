@@ -34,7 +34,11 @@ export type EditorApi = {
       sourceControlAi?: unknown
       agentCmdOverrides?: Record<string, string>
     }) => Promise<
-      { success: true; codigo: string; agentLabel?: string } | { success: false; error: string }
+      | ({ success: true; agentLabel?: string; agentId?: string } & (
+          | { tipo: 'edicion'; codigo: string }
+          | { tipo: 'respuesta'; texto: string }
+        ))
+      | { success: false; error: string }
     >
   }
 }

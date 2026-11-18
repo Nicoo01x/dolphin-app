@@ -81,7 +81,9 @@ export async function runOpenCodeTextTask(input: {
           stop: killSourceControlAgentProcess,
           shouldExecute: input.shouldExecute
         })
-    const cleaned = cleanGeneratedCommitMessage(rawOutput)
+    const cleaned = cleanGeneratedCommitMessage(rawOutput, {
+      conservarMarkdown: input.operation === 'edicion-en-el-lugar'
+    })
     if (!cleaned) {
       throw new OpenCodeTextTaskError('session')
     }

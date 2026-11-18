@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { useTranslate } from '@/i18n/use-translate'
 import type { EditingTarget } from '../../../ssh-host-form/ssh-target-draft'
 import { SshHostFields } from './AddRemoteHostFields'
+import { SshHostTestFailure } from './SshHostTestFailure'
 
 export function AddRemoteHostSshFormPanel({
   form,
@@ -13,7 +14,10 @@ export function AddRemoteHostSshFormPanel({
   onSubmit,
   onCancel,
   onFillFromConfig,
-  serverLabel
+  serverLabel,
+  testFailure,
+  onSaveAnyway,
+  onAgentLaunched
 }: {
   form: EditingTarget
   disabled: boolean
@@ -26,6 +30,11 @@ export function AddRemoteHostSshFormPanel({
   onFillFromConfig?: () => void
   /** Set when the host is saved on a paired server rather than on this client. */
   serverLabel?: string
+  /** Why the connection test before saving failed; the form stays open with it. */
+  testFailure?: string | null
+  onSaveAnyway?: () => void
+  /** The dialog closes once an agent took the failed host over. */
+  onAgentLaunched?: () => void
 }): React.JSX.Element {
   const t = useTranslate()
   return (
@@ -63,6 +72,16 @@ export function AddRemoteHostSshFormPanel({
         onSubmit={onSubmit}
         offerProxyConnectionReuse={!serverLabel}
       />
+
+      {testFailure && onSaveAnyway ? (
+        <SshHostTestFailure
+          message={testFailure}
+          hostLabel={form.label.trim() || form.host.trim()}
+          disabled={disabled}
+          onSaveAnyway={onSaveAnyway}
+          onAgentLaunched={onAgentLaunched}
+        />
+      ) : null}
 
       <DialogFooter className="sm:justify-between">
         {onFillFromConfig ? (

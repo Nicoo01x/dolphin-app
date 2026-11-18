@@ -7,6 +7,8 @@ export type SshTargetSummary = {
   remotePlatform?: 'linux' | 'darwin' | 'win32'
   connected?: boolean
   connectionStatus?: string
+  /** Why the last connect failed, from runtimes that report it. */
+  lastFailure?: { reason: string; nextStep: string }
 }
 export type EnvironmentSummary = { id: string; name: string }
 

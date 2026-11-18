@@ -1,0 +1,210 @@
+/*
+ * El cuadrito de Cmd+K (edicion-en-el-lugar-cuadrito.ts + CuerpoDelCuadrito.tsx).
+ *
+ * Es un flotante más de Dolphin y se fabrica como ellos (piel-dolphin.css): la superficie de los
+ * popovers, radio 14, anillo casi invisible y la sombra de tres capas. Adentro todo va anidado: el
+ * cuadrito tiene 6 de aire, así que lo de adentro lleva radio 8 (14 − 6). Sin líneas: el campo es un
+ * tono más hondo que la superficie y el código otro tono más; la jerarquía la hace el tono.
+ *
+ * Sin color propio. El color lo ponen el resaltado del código, el rojo y el verde del diff y la
+ * marca del agente, que son los mismos del chat.
+ *
+ * Vive adentro de Monaco, que fija su propia letra monoespaciada, su tamaño y `user-select: none`
+ * para todo lo que tiene adentro: acá se vuelve a la letra de la app y se deja seleccionar la
+ * respuesta, que es texto para leer y copiar.
+ */
+.dolphin-cmdk {
+  display: flex;
+  width: min(600px, 80vw);
+  flex-direction: column;
+  gap: 4px;
+  border-radius: var(--dolphin-radio-flotante, 14px);
+  background: var(--floating-surface, var(--popover));
+  padding: 6px;
+  color: var(--popover-foreground);
+  box-shadow:
+    0 0 0 1px var(--border),
+    var(--dolphin-sombra-flotante, 0 8px 24px rgb(0 0 0 / 0.28));
+  font-family: var(--app-font-family, inherit);
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: normal;
+  animation: dolphin-cmdk-entra var(--dolphin-dur-hover, 100ms) var(--dolphin-ease-salida, ease-out);
+}
+
+@keyframes dolphin-cmdk-entra {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dolphin-cmdk {
+    animation: none;
+  }
+}
+
+.dolphin-cmdk-entrada {
+  height: 32px;
+  width: 100%;
+  border: 0;
+  border-radius: var(--dolphin-radio-fila, 8px);
+  background: var(--muted);
+  padding: 0 10px;
+  color: inherit;
+  font: inherit;
+  outline: none;
+  transition: box-shadow var(--dolphin-dur-foco, 150ms);
+}
+
+.dolphin-cmdk-entrada::placeholder {
+  color: var(--muted-foreground);
+}
+
+.dolphin-cmdk-entrada:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--dolphin-borde-foco, var(--ring));
+}
+
+.dolphin-cmdk-entrada:disabled {
+  opacity: 0.6;
+}
+
+.dolphin-cmdk-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dolphin-cmdk-cuerpo:empty {
+  display: none;
+}
+
+/* Quién contesta y qué se le pidió: la marca del agente, su nombre y el pedido atenuado. */
+.dolphin-cmdk-quien {
+  display: flex;
+  min-height: 28px;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  padding: 0 6px;
+  font-size: 12px;
+}
+
+.dolphin-cmdk-nombre {
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.dolphin-cmdk-pedido {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted-foreground);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* La respuesta: prosa con su ancho, sin scroll horizontal, y un alto tope con su propio scroll. */
+.dolphin-cmdk-lectura {
+  max-height: min(320px, 45vh);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 8px 4px;
+  color: var(--chat-foreground, inherit);
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+  overflow-wrap: anywhere;
+}
+
+.dolphin-cmdk-lectura:focus-visible {
+  border-radius: var(--dolphin-radio-fila, 8px);
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+.dolphin-cmdk-lectura > .native-chat-markdown > :first-child {
+  margin-top: 0;
+}
+
+.dolphin-cmdk-lectura > .native-chat-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+/* El diff lleva su superficie de código; acá la lectura no agrega aire a los costados. */
+.dolphin-cmdk-lectura-diff {
+  padding: 0;
+  cursor: auto;
+}
+
+.dolphin-cmdk-diff,
+.dolphin-cmdk-bloque {
+  background: var(--chat-code-surface);
+}
+
+.dolphin-cmdk-bloque {
+  margin: 8px 0;
+  overflow: hidden;
+  border-radius: var(--dolphin-radio-fila, 8px);
+}
+
+.dolphin-cmdk-bloque-cabeza {
+  display: flex;
+  height: 28px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px 0 12px;
+  color: var(--chat-foreground-faint);
+  font-size: 12px;
+}
+
+.dolphin-cmdk-bloque-codigo {
+  margin: 0;
+  overflow-x: auto;
+  padding: 0 12px 10px;
+  color: var(--chat-code-foreground);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12.5px;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.dolphin-cmdk-falla {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 6px;
+  color: var(--destructive);
+}
+
+.dolphin-cmdk-falla > svg {
+  margin-top: 3px;
+}
+
+.dolphin-cmdk-barra {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding-left: 6px;
+}
+
+.dolphin-cmdk-pista {
+  margin-right: auto;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dolphin-cmdk-tecla {
+  margin-left: 2px;
+  font: inherit;
+  font-size: 11px;
+  opacity: 0.6;
+}

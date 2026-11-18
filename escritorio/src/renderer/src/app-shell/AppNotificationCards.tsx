@@ -6,6 +6,7 @@ import { NotificationCardStack } from '../components/NotificationCardStack'
 import { StarNagCard } from '../components/StarNagCard'
 import { AvisoDeLaInterfazDeChat } from '../components/dolphin/avisos/AvisoDeLaInterfazDeChat'
 import { ColaDeAvisos } from '../components/dolphin/avisos/ColaDeAvisos'
+import { VigiaDeMemoriaBaja } from '../components/dolphin/memoria-baja/VigiaDeMemoriaBaja'
 import { OverlayBoundary } from './app-root-surface-boundaries'
 
 const UpdateCard = lazy(() =>
@@ -19,8 +20,8 @@ const UnexpectedSignoutCard = lazy(() =>
 
 /**
  * The bottom-right notification stack and every card that shares it, plus Dolphin's centered
- * notice queue: the Chat UI launch card, outdated skills and the terminal preferences go there,
- * one at a time, instead of piling up in this corner.
+ * notice queue: the Chat UI launch card, outdated skills, the terminal preferences and the
+ * low-RAM warning go there, one at a time, instead of piling up in this corner.
  */
 export function AppNotificationCards({
   activeView,
@@ -44,6 +45,7 @@ export function AppNotificationCards({
           onCerrar={onChatUiHereCornerCardClose}
         />
         <ColaDeAvisos enPausa={noticesPaused} />
+        <VigiaDeMemoriaBaja />
       </OverlayBoundary>
       <NotificationCardStack>
         {shouldMountUpdateCard ? (

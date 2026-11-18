@@ -76,6 +76,11 @@ export const sshApi = {
     return { ...result, ...(state ? { state } : { state: undefined }) }
   },
 
+  testDraftConnection: (args: {
+    target: SshTargetCreateInput
+  }): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('ssh:testDraftConnection', args),
+
   onStateChanged: (
     callback: (data: { targetId: string; state: SshConnectionState }) => void
   ): (() => void) => {

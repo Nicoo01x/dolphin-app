@@ -138,13 +138,23 @@ function unavailableLine(
   if (fixable) {
     return { tone: 'destructive', text: fixable }
   }
+  // Why not «install an older version»: no older build carries a server this one lacks.
+  if (reason === 'unsupported_host' || reason === 'artifacts_unavailable') {
+    return {
+      tone: 'destructive',
+      text: t(
+        'auto.components.settings.sshHostServer.missingServerBuild',
+        'This copy of Dolphin doesn’t include the server for this host’s system, so there’s nothing to install there. Update Dolphin on this computer to a version that includes it, then connect again.'
+      )
+    }
+  }
   const cause = reason ? unavailableCause(reason, t) : null
   if (cause) {
     return {
       tone: 'destructive',
       text: t(
-        'auto.components.settings.sshHostServer.unsupported',
-        'This host isn’t supported by this version of Dolphin ({{reason}}). To keep using it, install an older version of Dolphin.',
+        'auto.components.settings.sshHostServer.cannotRunServer',
+        'Dolphin can’t run its server on this host: {{reason}}. Fix that on the host, then connect again.',
         { reason: cause }
       )
     }
@@ -152,8 +162,8 @@ function unavailableLine(
   return {
     tone: 'destructive',
     text: t(
-      'auto.components.settings.sshHostServer.unsupportedUnknown',
-      'This host isn’t supported by this version of Dolphin. To keep using it, install an older version of Dolphin.'
+      'auto.components.settings.sshHostServer.cannotRunServerUnknown',
+      'Dolphin can’t run its server on this host. Update Dolphin on this computer, then connect again; Details shows the cause.'
     ),
     ...(reason ? { detail: reason } : {})
   }
@@ -161,16 +171,6 @@ function unavailableLine(
 
 function unavailableCause(reason: string, t: Translate = translate): string | null {
   switch (reason) {
-    case 'unsupported_host':
-      return t(
-        'auto.components.settings.sshHostServer.cause.unsupportedHost',
-        'Dolphin has no server build for this system'
-      )
-    case 'artifacts_unavailable':
-      return t(
-        'auto.components.settings.sshHostServer.cause.artifactsUnavailable',
-        'this Dolphin build doesn’t include the server'
-      )
     case 'libc_unidentified':
       return t(
         'auto.components.settings.sshHostServer.cause.libcUnidentified',
@@ -200,8 +200,8 @@ function tunnelUnavailableLine(t: Translate = translate): SshHostServerStatusLin
   return {
     tone: 'destructive',
     text: t(
-      'auto.components.settings.sshHostServer.tunnelUnsupported',
-      'This host isn’t supported by this version of Dolphin: its SSH server doesn’t allow port forwarding, and Dolphin couldn’t reach its server through the SSH session either. To keep using it, install an older version of Dolphin.'
+      'auto.components.settings.sshHostServer.tunnelForwardingBlocked',
+      'This host’s SSH server doesn’t allow port forwarding, and Dolphin couldn’t reach its server through the SSH session either. Set AllowTcpForwarding yes in the host’s /etc/ssh/sshd_config, restart sshd, then connect again.'
     )
   }
 }

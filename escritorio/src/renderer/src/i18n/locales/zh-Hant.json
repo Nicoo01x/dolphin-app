@@ -12521,8 +12521,6 @@
           "hostNewer": "正在執行的 Dolphin 伺服器版本比此應用程式新，會保留該版本。",
           "failureDetails": "詳情",
           "cause": {
-            "unsupportedHost": "Dolphin 沒有適用於此系統的伺服器建置版本",
-            "artifactsUnavailable": "此 Dolphin 建置版本不包含該伺服器",
             "libcUnidentified": "Dolphin 無法辨識主機的系統函式庫",
             "runtimeSelfTest": "伺服器的執行環境未通過自我測試",
             "securitySoftware": "安全軟體更改了伺服器的執行環境",
@@ -12531,9 +12529,6 @@
           "updateDeferredLater": "正在執行 Dolphin 伺服器，將於之後連線時更新。",
           "updateFailedPrevious": "正在執行先前版本的 Dolphin 伺服器；更新失敗。",
           "refusedBlocked": "尚未在此主機上設定 Dolphin：主機上的某些因素阻止了遷移。",
-          "unsupported": "此版本的 Dolphin 不支援此主機（{{reason}}）。如需繼續使用，請安裝舊版本的 Dolphin。",
-          "unsupportedUnknown": "此版本的 Dolphin 不支援此主機。如需繼續使用，請安裝舊版本的 Dolphin。",
-          "tunnelUnsupported": "此版本的 Dolphin 不支援此主機：其 SSH 伺服器不允許連接埠轉送，Dolphin 也無法透過 SSH 工作階段連線到其伺服器。如需繼續使用，請安裝舊版本的 Dolphin。",
           "setupRetry": "Dolphin 無法在此主機上啟動其伺服器。請重新連線。",
           "moveHeld": "Dolphin 無法確認伺服器上的副本，因此已暫停將此主機的專案遷移至其 Dolphin 伺服器。資料沒有遺失：專案仍保留在主機上，主機會保持鎖定，直到遷移完成。請重新連線以繼續。若伺服器無法恢復連線，請在「設定 > SSH 主機上的 Dolphin」中停止或忘記該伺服器。",
           "olderTerminalsBridged": "尚未在此主機上設定 Dolphin：由舊版 Dolphin 啟動的終端機仍在此主機的專案中執行，且仍可在這裡正常使用。請關閉這些終端機，或在主機上結束它們，再重新連線。",

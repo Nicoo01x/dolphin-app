@@ -6,7 +6,8 @@ Dentro de Dolphin, delegar a otro motor (Codex, que también es ChatGPT, GPT u O
 Claude) es `DOLPHIN agent delegate --agent <motor> --prompt "<tarea>" --wait`, o
 `DOLPHIN agent launch --agent <motor> --surface chat` + `DOLPHIN chat wait/read`. Nunca el plugin
 `codex:rescue` ni otro comando que corra ese agente fuera de Dolphin: la persona tiene que ver los
-dos chats.
+dos chats. Para «delegá las tareas», «usá subagentes» o «en paralelo» (varias tareas, cada una en
+su pestaña), seguí `DOLPHIN skills get dolphin-delegar`.
 
 <!-- shared: resolver -->
 

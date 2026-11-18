@@ -36,6 +36,45 @@ function idDelTurno(estado: EstadoDeLaCola, ahora: number): string | null {
 }
 
 describe('la cola de avisos', () => {
+  it('lo urgente (queda poca RAM) pasa adelante de todo, aunque llegue último', () => {
+    const estado = encolar(colaDeUnaInstalacionNueva(), aviso('memoria-baja', 'urgente'))
+    expect(idDelTurno(estado, 0)).toBe('memoria-baja')
+  })
+
+  it('lo urgente no espera a la bienvenida ni a otro modal; lo demás, sí', () => {
+    const comun = colaDeUnaInstalacionNueva()
+    expect(turnoDeLaCola(comun, 0, true)).toEqual({ tipo: 'nada' })
+    const conUrgente = encolar(comun, aviso('memoria-baja', 'urgente'))
+    expect(turnoDeLaCola(conUrgente, 0, true)).toMatchObject({
+      tipo: 'mostrar',
+      aviso: { id: 'memoria-baja' }
+    })
+  })
+
+  it('lo urgente sale encima del aviso que está a la vista, sin sacarlo', () => {
+    let estado = mostrar(colaDeUnaInstalacionNueva(), 'skills')
+    estado = encolar(estado, aviso('memoria-baja', 'urgente'))
+    // Ni el respiro lo frena: recién se cerró uno y sale igual.
+    estado = { ...estado, ultimoCierre: 0 }
+    expect(idDelTurno(estado, 1)).toBe('memoria-baja')
+    estado = mostrar(estado, 'memoria-baja')
+    expect(estado).toMatchObject({ visible: 'skills', urgente: 'memoria-baja' })
+    // Mientras está arriba no entra nada más, y al cerrarlo lo de abajo sigue como estaba.
+    expect(turnoDeLaCola(estado, 10_000)).toEqual({ tipo: 'nada' })
+    estado = quitar(estado, 'memoria-baja', 2_000)
+    expect(estado).toMatchObject({ visible: 'skills', urgente: null })
+  })
+
+  it('con lo urgente solo en pantalla, el siguiente espera a que se cierre y a su respiro', () => {
+    let estado = encolar(colaDeUnaInstalacionNueva(), aviso('memoria-baja', 'urgente'))
+    estado = mostrar(estado, 'memoria-baja')
+    expect(mostrar(estado, 'interfaz-de-chat')).toBe(estado)
+    expect(turnoDeLaCola(estado, 0)).toEqual({ tipo: 'nada' })
+    estado = quitar(estado, 'memoria-baja', 1_000)
+    expect(turnoDeLaCola(estado, 1_000)).toEqual({ tipo: 'esperar', ms: RESPIRO_ENTRE_AVISOS_MS })
+    expect(idDelTurno(estado, 1_000 + RESPIRO_ENTRE_AVISOS_MS)).toBe('interfaz-de-chat')
+  })
+
   it('ordena por importancia: uso, después acción, después preferencias por llegada', () => {
     expect(ordenarAvisos(colaDeUnaInstalacionNueva().avisos).map((a) => a.id)).toEqual([
       'interfaz-de-chat',

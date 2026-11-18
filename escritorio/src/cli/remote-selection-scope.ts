@@ -8,6 +8,8 @@ export function ignoresRemoteSelection(commandPath: readonly string[]): boolean 
     commandPath.join(' ') === 'host list' ||
     // Removes ids that `host list` printed from this runtime; an ambient selection must not retarget it.
     commandPath.join(' ') === 'host rm' ||
+    // Adding, connecting and diagnosing act on the same SSH registry `host list` reads.
+    ['host add', 'host connect', 'host doctor'].includes(commandPath.join(' ')) ||
     commandPath[0] === 'serve' ||
     (commandPath[0] === 'agent' && commandPath[1] !== 'launch') ||
     commandPath[0] === 'vm' ||
