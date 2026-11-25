@@ -919,7 +919,13 @@ export const PAGINAS: readonly PaginaDeDoc[] = [
           ["Git", "las ramas, los commits y los issues del repo, con quién trabajó en cada cosa: la misma [vista Git de la consola](/docs/consola#git)"],
           ["Automatizaciones", "el trabajo del agente, programado"],
           ["Orquestación", "los trabajos que un agente repartió entre varios: quién espera a quién, qué terminó y qué falló"],
+          ["Delfines", "tus bots: si corren, cuándo les toca, lo que gastaron contra su tope y lo último que dijeron; [«Correr en tu servidor»](/docs/servidor#bots) los lleva a tu VPS"],
         ],
+      },
+      {
+        t: "p",
+        texto:
+          "Para repartir trabajo no hace falta una vista: pedile a Claude «delegá las tareas» y lo reparte en agentes de Dolphin que ves trabajar en la app. Ctrl+K en el editor edita o contesta sobre lo que seleccionaste, con el cambio como diff antes de aplicarlo. Y si a la compu le falta RAM, avisa antes de colgarse: [tu servidor](/docs/servidor#poca-ram).",
       },
       { t: "p", texto: "Cada una, con su captura, en la [página de la app de escritorio](/escritorio)." },
       { t: "h2", texto: "X-ray", id: "xray" },
@@ -940,6 +946,88 @@ export const PAGINAS: readonly PaginaDeDoc[] = [
         t: "p",
         texto:
           "Lo más simple es el instalador de tu sistema, que baja de la última versión en GitHub: `dolphin-windows-setup.exe` (Windows), `dolphin-macos-arm64.dmg` (macOS con Apple Silicon; `dolphin-macos-x64.dmg` para Intel) o `dolphin-linux.AppImage` (Linux). Todavía no están firmados: en Windows, SmartScreen pide «Más información → Ejecutar de todas formas»; en macOS, clic derecho → Abrir. Desde el código, la app busca el núcleo de Dolphin en la carpeta de arriba, o donde diga `DOLPHIN_APP_DIR`.",
+      },
+    ],
+  },
+  {
+    slug: "servidor",
+    titulo: "Tu servidor",
+    resumen: "Conectar un VPS a la app en un paso, qué hacer si no conecta, y llevar ahí a tus bots y el trabajo pesado.",
+    grupo: "Dónde se usa",
+    fuentes: [
+      "escritorio/src/cli/specs/host-setup.ts",
+      "escritorio/src/cli/handlers/host-setup.ts",
+      "escritorio/skills/dolphin-delegar/SKILL.md",
+      "escritorio/src/renderer/src/components/dolphin/delfines/LlevarAlServidor.tsx",
+      "escritorio/src/main/memoria-baja/vigia-de-memoria-baja.ts",
+    ],
+    bloques: [
+      {
+        t: "p",
+        texto:
+          "Cualquier máquina Linux a la que llegues por SSH sirve: un VPS, una compu vieja en tu casa. La app le instala su servidor la primera vez que se conecta; los instaladores ya lo traen, así que el servidor no baja nada más.",
+      },
+      { t: "h2", texto: "Conectarlo", id: "conectar" },
+      {
+        t: "ruta",
+        pasos: [
+          {
+            titulo: "Desde la app",
+            texto:
+              "«Conectar una máquina», donde elegís dónde corre un espacio de trabajo. Ponés la dirección, el usuario y tu llave SSH. Antes de guardarlo lo prueba: si no conecta, no queda guardado a medias.",
+          },
+          {
+            titulo: "O desde la terminal",
+            texto: "Lo mismo, para hacerlo de una o para que lo haga un agente.",
+            codigo: "dolphin host add --address 203.0.113.10 --user root --label mi-vps --install-server\ndolphin host connect mi-vps",
+          },
+        ],
+      },
+      {
+        t: "nota",
+        texto:
+          "Ninguno de los dos comandos recibe una contraseña: usá una llave (`--identity-file`) o ssh-agent. Si el servidor pide contraseña, la app te la pregunta al conectar.",
+      },
+      { t: "h2", texto: "Si no conecta", id: "si-no-conecta" },
+      {
+        t: "p",
+        texto:
+          "La app dice por qué y ofrece «Arreglarlo con un agente». Desde la terminal, `dolphin host doctor` da el mismo diagnóstico: si conecta, si el servidor de Dolphin corre allá, el motivo con un código fijo y el paso que sigue.",
+      },
+      { t: "codigo", titulo: "terminal", codigo: "dolphin host doctor mi-vps\ndolphin host doctor mi-vps --json" },
+      {
+        t: "tabla",
+        columnas: ["Motivo", "Qué suele ser"],
+        filas: [
+          ["`auth`", "ninguna llave entra: instalá la tuya con `ssh-copy-id usuario@servidor` (escribís la contraseña una vez) o revisá el usuario"],
+          ["`passphrase`", "la llave tiene clave: cargala en ssh-agent con `ssh-add`"],
+          ["`timeout`, `refused`", "el puerto no está abierto: el firewall del proveedor y `ufw status` en el servidor tienen que dejarlo pasar, y sshd tiene que estar corriendo"],
+          ["`host-key`", "la huella del servidor cambió (lo reinstalaste): sacá la vieja con `ssh-keygen -R <dirección>`"],
+          ["`server:…`", "conectó, pero el servidor de Dolphin no arrancó allá: poco disco, la carpeta de usuario montada sin permiso de ejecutar o una red que no deja bajar Node; lo que sigue de los dos puntos dice cuál"],
+        ],
+      },
+      {
+        t: "p",
+        texto:
+          "`doctor` sale con error mientras algo falle, así que un agente puede corregir y volver a probar hasta que conecte. Es lo que pasa si abrís un Claude en Dolphin y le decís «necesito tener esto trabajando en mi VPS»: trae la guía (`dolphin skills get dolphin-vps`) y lo que sólo podés hacer vos —iniciar una sesión, dar un permiso— te lo deja escrito con el comando para copiar.",
+      },
+      { t: "h2", texto: "Tus bots, en el servidor", id: "bots" },
+      {
+        t: "p",
+        texto:
+          "En Delfines, «Correr en tu servidor» lleva un bot a tu VPS como un servicio de usuario de systemd: sigue andando con tu compu apagada. Antes de tocar nada revisa que haya Linux con systemd, Node 22.12 o más nuevo, Claude Code con la sesión iniciada allá y que los servicios sigan corriendo sin una sesión abierta. Si falta algo, lo dice y no instala nada.",
+      },
+      { t: "h2", texto: "Cuando a tu compu le falta RAM", id: "poca-ram" },
+      {
+        t: "p",
+        texto:
+          "Con un servidor conectado, el aviso de poca memoria ofrece abrir un espacio igual allá y dormir el de tu compu: lo que no subiste a git se queda donde estaba. Sin servidor, ofrece dormirlo. Se maneja en Ajustes → General → Memoria.",
+      },
+      { t: "h2", texto: "Repartir trabajo", id: "delegar" },
+      {
+        t: "p",
+        texto:
+          "Pedile a Claude «delegá las tareas», «pasale esto a Codex» o «hacelo en paralelo»: reparte el trabajo en agentes de Dolphin —en tu compu o en el servidor—, cada uno en su espacio y su rama. Lo enseña la skill `dolphin-delegar`, que viene instalada.",
       },
     ],
   },

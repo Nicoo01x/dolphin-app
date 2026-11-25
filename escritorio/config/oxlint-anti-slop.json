@@ -21,6 +21,7 @@
     "**/dist",
     "**/out",
     "src/shared/rpc-contract/rpc-params-catalog.generated.ts",
+    "src/renderer/src/lib/file-icons/material-file-icon-table.generated.ts",
     "tests/e2e/.cross-version-checkouts"
   ],
   "rules": {

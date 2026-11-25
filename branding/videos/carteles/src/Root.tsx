@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { Composition, Sequence } from 'remotion'
 import { Delegacion } from './Delegacion'
+import { DURACION_DEL_SPOT, Lanzamiento } from './Lanzamiento'
+import { DURACION_DEL_ESCRITORIO, Escritorio } from './Escritorio'
 import { Permisos } from './Permisos'
 import { Porton } from './Porton'
 
@@ -46,6 +48,24 @@ export function RemotionRoot(): ReactNode {
         fps={30}
         width={1000}
         height={780}
+      />
+      {/* El spot de lanzamiento para Twitter: capturas reales, 1080p, con música de Higgsfield. */}
+      <Composition
+        id="lanzamiento"
+        component={Lanzamiento}
+        durationInFrames={DURACION_DEL_SPOT}
+        fps={30}
+        width={1920}
+        height={1080}
+      />
+      {/* El spot de la app de escritorio: sólo componentes de la app, con datos de demo. */}
+      <Composition
+        id="escritorio"
+        component={Escritorio}
+        durationInFrames={DURACION_DEL_ESCRITORIO}
+        fps={30}
+        width={1920}
+        height={1080}
       />
       {/* Los permisos: la misma tarea de los dos modos, a la par. */}
       <Composition

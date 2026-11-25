@@ -22,6 +22,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       label:
         binName === 'dolphin' ? 'Windows CLI launcher' : 'Windows administrator restart launcher',
       fingerprintInputs: [
+        // The launcher embeds the packaged binary's name; a rename must rebuild it.
+        join(crateRoot, 'src', 'app_executable.rs'),
+        join(repoRoot, 'config', 'windows-executable-name.txt'),
         join(crateRoot, 'src', 'administrator_status.rs'),
         join(crateRoot, 'src', 'administrator_restart.rs'),
         join(crateRoot, 'src', 'administrator_launcher.rs'),

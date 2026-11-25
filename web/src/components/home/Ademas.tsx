@@ -1,9 +1,7 @@
-import type { ReactNode } from "react";
-import { CAPTURAS, type Captura } from "./capturas";
-import { PAISAJES, type Paisaje } from "./Lamina";
-import { Marco } from "./Marco";
-import { VIDEOS, type Video } from "./videos";
-import { VideoReal } from "./VideoReal";
+import { CAPTURAS } from "./capturas";
+import { type Celda, Grilla } from "./Grilla";
+import { PAISAJES } from "./Lamina";
+import { VIDEOS } from "./videos";
 
 /**
  * «Y además»: la grilla de tres columnas, cada celda un recorte real de la app sobre un pedazo
@@ -18,16 +16,6 @@ import { VideoReal } from "./VideoReal";
  * De dónde sale cada clip: `public/videos/app-12-11/LEEME.md`; cada captura:
  * `public/capturas/app-12-11/LEEME.md`.
  */
-interface Celda {
-  readonly titulo: string;
-  readonly linea: ReactNode;
-  readonly pieza: { readonly video: Video } | { readonly captura: Captura };
-  readonly paisaje: Paisaje;
-  readonly foco: string;
-  /** Ocupa dos columnas en escritorio. */
-  readonly ancha?: boolean;
-}
-
 const CELDAS: readonly Celda[] = [
   {
     titulo: "El chat, con la terminal al lado",
@@ -68,43 +56,7 @@ export function Ademas() {
         <h2 id="ademas-titulo" className="titulo-seccion text-center">
           Y además
         </h2>
-        <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {CELDAS.map((celda) => (
-            <li
-              key={celda.titulo}
-              className={`overflow-hidden rounded-[24px] bg-lienzo-2 ${celda.ancha ? "sm:col-span-2" : ""}`}
-            >
-              {/* La pieza va a su tamaño o al ancho de la celda; una captura más alta que la caja
-                  arranca arriba y se corta abajo, como un recorte de la ventana. */}
-              <div
-                className={`relative flex flex-col items-center overflow-hidden px-5 py-6 sm:px-7 [justify-content:safe_center] ${
-                  celda.ancha && "video" in celda.pieza ? "h-[300px] sm:h-[420px]" : "h-[300px]"
-                }`}
-              >
-                <img
-                  src={celda.paisaje.src}
-                  width={celda.paisaje.ancho}
-                  height={celda.paisaje.alto}
-                  alt=""
-                  aria-hidden
-                  loading="lazy"
-                  decoding="async"
-                  className="absolute inset-0 size-full object-cover"
-                  style={{ objectPosition: celda.foco }}
-                />
-                {"video" in celda.pieza ? (
-                  <VideoReal video={celda.pieza.video} modo="clip" ancho={celda.ancha ? 600 : 400} className="relative w-full flex-none" />
-                ) : (
-                  <Marco captura={celda.pieza.captura} className="relative flex-none" />
-                )}
-              </div>
-              <div className="px-5 pt-4 pb-5">
-                <h3 className="text-[16px] leading-[1.3] font-medium tracking-[-0.012em] text-espuma">{celda.titulo}</h3>
-                <p className="mt-1.5 text-[14px] leading-[1.5] text-tenue">{celda.linea}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <Grilla celdas={CELDAS} />
       </div>
     </section>
   );

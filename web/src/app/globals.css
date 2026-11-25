@@ -323,3 +323,22 @@ html.lenis body {
 .lenis.lenis-smooth {
   scroll-behavior: auto !important;
 }
+
+/* El pulso que recorre los caminos de la carta (`home/Rumbo.tsx`). Arranca corrido un largo de
+   pulso (escondido antes del inicio) y termina pasado el final, así entra y sale sin aparecer de golpe. */
+@keyframes rumbo {
+  from {
+    stroke-dashoffset: 44;
+  }
+  to {
+    stroke-dashoffset: var(--rumbo-viaje);
+  }
+}
+.rumbo-pulso {
+  animation-fill-mode: backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rumbo-pulso {
+    display: none;
+  }
+}

@@ -23006,6 +23006,33 @@
           "pr": "Pull request",
           "issue": "Issue"
         }
+      },
+      "diagnosticoHost": {
+        "tailscale": {
+          "label": "Tailscale is off",
+          "summary": "Tailscale is off on this computer",
+          "explanation": "This server is only reachable over Tailscale, and this computer has no tailnet address. Open Tailscale and sign in; Dolphin reconnects on its own."
+        },
+        "mudo": {
+          "label": "Not answering",
+          "summary": "The server is not answering",
+          "explanation": "Nothing answers at the saved address. The machine may be off, or the program that served it no longer runs on that port."
+        },
+        "otroPrograma": {
+          "label": "Not Dolphin",
+          "summary": "This server is not Dolphin",
+          "explanation": "It answers{{version}}, but it is another program, so some features will be missing. To use Dolphin there, open the repo as an SSH workspace: Dolphin installs its own server."
+        },
+        "emparejamiento": {
+          "label": "Pairing expired",
+          "summary": "This pairing is no longer valid",
+          "explanation": "The server answered but refused this device (it was removed or its key changed). Pair again with a new code."
+        },
+        "incompatible": {
+          "label": "Incompatible",
+          "summary": "The versions cannot talk",
+          "explanation": "The server answered with a protocol this version of Dolphin does not understand. Update the server or the app."
+        }
       }
     }
   },

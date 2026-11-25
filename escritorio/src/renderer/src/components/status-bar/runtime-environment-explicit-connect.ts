@@ -5,6 +5,7 @@ import { refreshRuntimeProjectWorktreesAndLineage } from '@/hooks/runtime-projec
 import { translate } from '@/i18n/i18n'
 import { unwrapRuntimeRpcResult } from '@/runtime/rpc/calls/runtime-rpc-result'
 import { useAppStore } from '../../store'
+import { runtimeHostDiagnosisCopy } from './runtime-host-diagnosis-copy'
 
 export async function connectRuntimeEnvironmentAndRecordStatus(
   environmentId: string,
@@ -64,14 +65,24 @@ export async function connectRuntimeHostAndReloadProjects(
     fetchWorktrees: store.fetchWorktrees,
     fetchLineage: store.fetchWorktreeLineage
   })
+  // El diagnóstico del último sondeo dice por qué (Tailscale apagado, otro programa…); sin él,
+  // queda el aviso genérico de siempre.
+  const diagnosis = runtimeHostDiagnosisCopy(
+    useAppStore.getState().runtimeStatusByEnvironmentId.get(environmentId)?.snapshot?.diagnosis
+  )
   if (!reachable) {
     toast.error(
       failureMessage ??
+        diagnosis?.summary ??
         translate(
           'auto.components.status.bar.SshStatusSegment.runtime_connect_unavailable',
           'Remote host is not reachable'
-        )
+        ),
+      !failureMessage && diagnosis ? { description: diagnosis.explanation } : undefined
     )
+  } else if (diagnosis?.warning) {
+    // Conectó, pero a algo que no es Dolphin: se avisa una vez, al tocar Conectar.
+    toast.warning(diagnosis.summary, { description: diagnosis.explanation })
   }
   return reachable
 }

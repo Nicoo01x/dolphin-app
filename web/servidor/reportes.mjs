@@ -9,15 +9,23 @@
 
 import { createHash, randomUUID } from "node:crypto";
 
-/** Más que esto no lo manda la app: el texto se corta en 64 KB y el bundle tiene su propio tope. */
-export const TOPE_CUERPO = 25 * 1024 * 1024;
+/**
+ * El tope de un pedido. La app manda a lo sumo 4 imágenes que suman 4 MB
+ * (escritorio/src/shared/feedback-image-limits.ts), el texto cortado en 64 KB y el bundle de
+ * diagnóstico; si el bundle no entra, la app reintenta sin él al recibir el 413. Más alto era
+ * peligroso: el multipart se parte en memoria y tres pedidos de 25 MB a la vez pasaban el tope de
+ * memoria del servicio (revisión de seguridad del 18/11).
+ */
+export const TOPE_CUERPO = 8 * 1024 * 1024;
 const TOPE_TEXTO = 70_000;
 const TOPE_CAMPO = 300;
+const MAXIMO_IMAGENES = 4;
 const PLATAFORMAS = new Set(["win32", "darwin", "linux", "freebsd", "openbsd", "sunos", "aix"]);
 
 export class ReporteInvalido extends Error {}
 
-const corto = (v) => (typeof v === "string" ? v.slice(0, TOPE_CAMPO).trim() || null : null);
+/** Una línea, sin saltos: un salto en `version` permitía inventar líneas en el log del servicio. */
+const corto = (v) => (typeof v === "string" ? v.replace(/[\r\n\t]+/g, " ").slice(0, TOPE_CAMPO).trim() || null : null);
 
 /** Lee el cuerpo ya recibido (Buffer) según su tipo y devuelve los campos y los adjuntos. */
 export async function leerReporte(cuerpo, tipoContenido) {
@@ -54,9 +62,10 @@ export async function leerReporte(cuerpo, tipoContenido) {
     );
     const bundle = formulario.get("diagnosticBundleFile");
     const diagnostico = bundle && typeof bundle !== "string" ? Buffer.from(await bundle.arrayBuffer()) : null;
+    const archivos = formulario.getAll("feedbackImage").filter((img) => typeof img !== "string");
+    if (archivos.length > MAXIMO_IMAGENES) throw new ReporteInvalido(`más de ${MAXIMO_IMAGENES} imágenes`);
     const imagenes = [];
-    for (const img of formulario.getAll("feedbackImage")) {
-      if (typeof img === "string") continue;
+    for (const img of archivos) {
       imagenes.push({ tipo: img.type || "application/octet-stream", datos: Buffer.from(await img.arrayBuffer()) });
     }
     return normalizar(datos, diagnostico, imagenes);
@@ -92,8 +101,8 @@ export function camposDelCrash(texto) {
     const m = texto.match(new RegExp(`^${nombre}: (.*)$`, "m"));
     return m ? m[1].trim() : null;
   };
-  const proceso = linea("Process");
-  const motivo = linea("Reason");
+  const proceso = linea("Process")?.slice(0, 80) ?? null;
+  const motivo = linea("Reason")?.slice(0, 120) ?? null;
   const salida = linea("Exit code");
   const chequeo = linea("Check failure");
   // El offset dentro del módulo cambia con cada build: agrupar por él partiría el mismo crash en mil.

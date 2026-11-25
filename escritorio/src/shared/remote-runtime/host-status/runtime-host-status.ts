@@ -1,6 +1,7 @@
 import type { RemoteRuntimeSharedConnectionDiagnostics } from '../control/remote-runtime-shared-control-types'
 import type { RuntimeRpcFailure, RuntimeRpcResponse } from '../../runtime-rpc-envelope'
 import type { RuntimeStatus } from '../../runtime-session-contracts'
+import type { RuntimeHostDiagnosis } from './runtime-host-diagnosis'
 
 export const RUNTIME_HOST_STATUS_CHANNEL = 'runtimeEnvironments:statusChanged'
 
@@ -20,6 +21,8 @@ export type RuntimeHostStatusSnapshot = {
   verification: 'checking' | 'verified' | 'unavailable' | 'blocked'
   /** Set only while a refused status probe holds `verification` at blocked. */
   blockedReason?: RuntimeHostBlockedReason
+  /** Por qué no anda (o con quién habla) en palabras: Tailscale apagado, servidor mudo, otro programa… */
+  diagnosis?: RuntimeHostDiagnosis
   transport: 'unknown' | 'connecting' | 'ready' | 'disconnected'
   remoteControl?: RemoteRuntimeSharedConnectionDiagnostics | null
   retired?: true

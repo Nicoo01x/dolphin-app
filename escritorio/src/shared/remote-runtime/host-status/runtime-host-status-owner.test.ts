@@ -157,3 +157,70 @@ it('re-verifies a persistent host when its transport returns, without another ex
   expect(owner.read().verification).toBe('verified')
   expect(request).toHaveBeenCalledTimes(2)
 })
+
+it('carries the diagnosis in the snapshot, and a failure with nothing to say keeps the last one', async () => {
+  const request = vi
+    .fn<(signal: AbortSignal) => Promise<RuntimeHostStatusResponse>>()
+    .mockResolvedValueOnce(runtimeHostStatusFailure('remote_runtime_unavailable', 'refused'))
+    .mockResolvedValueOnce(runtimeHostStatusFailure('runtime_rpc_queue_overloaded', 'x'))
+    .mockResolvedValueOnce(success())
+  const owner = new RuntimeHostStatusOwner({
+    environmentId: 'env-diag',
+    pairingRevision: 1,
+    request,
+    publish: vi.fn(),
+    verified: () => false,
+    diagnose: (response) =>
+      response.ok
+        ? { reason: 'connected' }
+        : response.error.code === 'remote_runtime_unavailable'
+          ? { reason: 'tailscale-off' }
+          : null
+  })
+  owners.push(owner)
+  await owner.refresh()
+  expect(owner.read().diagnosis).toEqual({ reason: 'tailscale-off' })
+  await owner.refresh()
+  expect(owner.read().diagnosis).toEqual({ reason: 'tailscale-off' })
+  await owner.refresh()
+  expect(owner.read()).toMatchObject({
+    verification: 'verified',
+    diagnosis: { reason: 'connected' }
+  })
+})
+
+it('publishes no diagnosis without a diagnose option', async () => {
+  const { owner } = createOwner()
+  await owner.refresh()
+  expect(owner.read().diagnosis).toBeUndefined()
+})
+
+it('drops the diagnosis on a manual disconnect and when retired', async () => {
+  const request = vi
+    .fn<(signal: AbortSignal) => Promise<RuntimeHostStatusResponse>>()
+    .mockResolvedValueOnce(runtimeHostStatusFailure('remote_runtime_unavailable', 'refused'))
+    .mockResolvedValueOnce(runtimeHostStatusFailure('runtime_manually_disconnected', 'x'))
+  const owner = new RuntimeHostStatusOwner({
+    environmentId: 'env-diag-2',
+    pairingRevision: 1,
+    request,
+    publish: vi.fn(),
+    verified: () => false,
+    diagnose: (response) =>
+      !response.ok && response.error.code === 'remote_runtime_unavailable'
+        ? { reason: 'tailscale-off' }
+        : null
+  })
+  owners.push(owner)
+  await owner.refresh()
+  expect(owner.read().diagnosis).toEqual({ reason: 'tailscale-off' })
+  await owner.refresh()
+  expect(owner.read().diagnosis).toBeUndefined()
+
+  request.mockResolvedValueOnce(runtimeHostStatusFailure('remote_runtime_unavailable', 'refused'))
+  await owner.refresh()
+  expect(owner.read().diagnosis).toEqual({ reason: 'tailscale-off' })
+  owner.dispose()
+  expect(owner.read()).toMatchObject({ retired: true })
+  expect(owner.read().diagnosis).toBeUndefined()
+})

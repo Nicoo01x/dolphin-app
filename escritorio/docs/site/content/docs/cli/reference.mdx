@@ -448,8 +448,11 @@ Remote runtime environments:
 ```bash
 dolphin environment add --name work-laptop --pairing-code "dolphin://pair?code=..." --json
 dolphin environment list --json
+dolphin environment check --environment <selector> --json
 dolphin environment rm --environment <selector> --json
 ```
+
+`environment check` dials the server and names the reason it does not work: Tailscale off on this computer, a server that does not answer, a server that answers but is not Dolphin, an expired pairing, or incompatible versions. It exits 0 only when a Dolphin server answers.
 
 Agent status hooks:
 

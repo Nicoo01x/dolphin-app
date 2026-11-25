@@ -59,6 +59,16 @@ const yaPedido = new Map<string, Detalle>()
 
 const ESPERA_ANTES_DE_LA_TARJETA_MS = 320
 
+/**
+ * Si lo que se nombra ya es un link (el `#402` que el chat convierte en enlace a GitHub), el link
+ * trae su propia tarjeta (TarjetaGithub) con los datos de verdad. La de acá no se abre: si no, se
+ * apilan dos, y la de atrás dice «No lo encontré» —busca en el repo activo y como issue— mientras
+ * la de adelante muestra el PR (Nico, 19/11/2026).
+ */
+function yaEsUnLink(marco: HTMLElement | null): boolean {
+  return Boolean(marco?.querySelector('a[href]') ?? marco?.closest('a[href]'))
+}
+
 export function ReferenciaViva({
   clase,
   id,
@@ -75,6 +85,7 @@ export function ReferenciaViva({
   const [abierta, setAbierta] = useState(false)
   const [detalle, setDetalle] = useState<Detalle | null>(null)
   const reloj = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const marco = useRef<HTMLSpanElement>(null)
   const Icono = ICONO[clase]
   const llave = `${repoPath ?? ''}|${clase}|${id}`
 
@@ -124,6 +135,9 @@ export function ReferenciaViva({
     if (reloj.current) {
       clearTimeout(reloj.current)
     }
+    if (yaEsUnLink(marco.current)) {
+      return
+    }
     reloj.current = setTimeout(() => {
       setAbierta(true)
       void pedirDetalle()
@@ -138,6 +152,10 @@ export function ReferenciaViva({
   }, [])
 
   const abrir = useCallback(async (): Promise<void> => {
+    // El link ya abre lo suyo; abrir también desde acá sería abrir dos veces.
+    if (yaEsUnLink(marco.current)) {
+      return
+    }
     // Puede que todavía no se haya pedido el detalle: tocar una referencia sin haber pasado por
     // encima es lo normal con el teclado, y ahí la URL hay que ir a buscarla ahora.
     const guardado = yaPedido.get(llave)
@@ -157,6 +175,7 @@ export function ReferenciaViva({
 
   return (
     <span
+      ref={marco}
       className="dolphin-ref-marco"
       onMouseEnter={entrar}
       onMouseLeave={salir}

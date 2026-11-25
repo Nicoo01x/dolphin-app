@@ -22,14 +22,17 @@ import { abrirBase } from "./base.mjs";
 import { crearApp } from "./app.mjs";
 import { crearFuenteDeDescargas } from "./descargas.mjs";
 import { crearAvisador } from "./alertas.mjs";
+import { LARGO_MINIMO_DEL_SECRETO } from "./sesion.mjs";
 
 const env = process.env;
 const puerto = Number(env.DOLPHIN_API_PUERTO || 18800);
 const datos = env.DOLPHIN_API_DATOS || join(process.cwd(), ".datos-api");
 mkdirSync(datos, { recursive: true });
 
-if (!env.DOLPHIN_ADMIN_CLAVE || !env.DOLPHIN_ADMIN_SECRETO) {
-  console.warn("[api] sin DOLPHIN_ADMIN_CLAVE o DOLPHIN_ADMIN_SECRETO: el panel no deja entrar a nadie");
+// Un secreto corto se saca por fuerza bruta con una sola cookie en la mano: así, el panel no abre.
+const secretoValido = (env.DOLPHIN_ADMIN_SECRETO ?? "").length >= LARGO_MINIMO_DEL_SECRETO;
+if (!env.DOLPHIN_ADMIN_CLAVE || !secretoValido) {
+  console.warn(`[api] sin DOLPHIN_ADMIN_CLAVE o con DOLPHIN_ADMIN_SECRETO de menos de ${LARGO_MINIMO_DEL_SECRETO} caracteres: el panel no deja entrar a nadie`);
 }
 
 const base = abrirBase(join(datos, "panel.db"));
@@ -38,14 +41,28 @@ const manejar = crearApp({
   base,
   datos,
   claveAdmin: env.DOLPHIN_ADMIN_CLAVE,
-  secreto: env.DOLPHIN_ADMIN_SECRETO,
+  secreto: secretoValido ? env.DOLPHIN_ADMIN_SECRETO : undefined,
   descargas: crearFuenteDeDescargas(),
   avisador,
   cookieSegura: env.DOLPHIN_API_INSEGURO !== "1",
   estatico: env.DOLPHIN_API_ESTATICO || null,
 });
 
+// Los adjuntos de más de 90 días se borran al arrancar y una vez por día.
+const limpiar = () => {
+  try {
+    const n = manejar.limpiarAdjuntosViejos();
+    if (n > 0) console.log(`[api] borrados los adjuntos de ${n} reportes viejos`);
+  } catch (error) {
+    console.error(`[api] no se pudieron limpiar los adjuntos viejos: ${error.message}`);
+  }
+};
+limpiar();
+setInterval(limpiar, 24 * 60 * 60 * 1000).unref();
+
 const servidor = createServer(manejar);
+// Una subida lenta no puede tener un hueco abierto para siempre.
+servidor.headersTimeout = 20_000;
 servidor.requestTimeout = 120_000;
 servidor.listen(puerto, "127.0.0.1", () => {
   console.log(`[api] escuchando en 127.0.0.1:${puerto} · datos en ${datos} · Telegram ${avisador.prendido ? "prendido" : "apagado"}`);

@@ -66,8 +66,18 @@ export function remoteRuntimeAuthReplyError(
       'Remote Dolphin runtime returned an invalid E2EE auth frame.'
     )
   }
+  // Un dispositivo quitado del servidor es un emparejamiento que ya no vale, no un protocolo raro; y
+  // `registry_unavailable` es el registro del host ocupado un momento: se reintenta, no se bloquea.
+  if (reply.errorCode === 'registry_unavailable') {
+    return new RemoteRuntimeClientError(
+      'remote_runtime_busy',
+      'Remote Dolphin runtime could not read its device registry; retrying.'
+    )
+  }
   return new RemoteRuntimeClientError(
-    reply.errorCode === 'unauthorized' ? 'unauthorized' : 'invalid_runtime_response',
+    reply.errorCode === 'unauthorized' || reply.errorCode === 'device_revoked'
+      ? 'unauthorized'
+      : 'invalid_runtime_response',
     'Remote Dolphin runtime rejected the pairing token.'
   )
 }

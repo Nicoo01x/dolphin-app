@@ -18,7 +18,12 @@ export function normalizarVisita({ ruta, referente, agente, sitio = "odolphin.te
   // ChatGPT y otros asistentes no mandan Referer pero sí `utm_source`: sin esto figuran como «directo».
   const utm = ruta.match(/[?&]utm_source=([^&#]+)/)?.[1];
   const origen = origenDe(referente, sitio);
-  const porUtm = utm ? decodeURIComponent(utm).toLowerCase().replace(/[^a-z0-9.\-_]/g, "").slice(0, 80) : "";
+  let porUtm = "";
+  try {
+    porUtm = utm ? decodeURIComponent(utm).toLowerCase().replace(/[^a-z0-9.\-_]/g, "").slice(0, 80) : "";
+  } catch {
+    // Un `%` suelto no es un origen: se cuenta como directo y no como un error del servidor.
+  }
   return { ruta: limpia, origen: origen === "directo" && porUtm ? porUtm : origen };
 }
 
@@ -29,7 +34,8 @@ export function origenDe(referente, sitio = "odolphin.tech") {
     const host = new URL(referente).hostname.replace(/^www\./, "").toLowerCase();
     if (!host) return "directo";
     if (host === sitio) return "interno";
-    return host.slice(0, 80);
+    // Sólo cosas con forma de dominio: cualquiera puede mandar el `ref` que quiera.
+    return /^[a-z0-9.-]{1,80}\.[a-z]{2,}$/.test(host) ? host : "otro";
   } catch {
     return "directo";
   }

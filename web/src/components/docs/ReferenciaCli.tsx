@@ -71,7 +71,7 @@ export function ReferenciaCli() {
             </p>
           ))}
           <p className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-[14px] text-tinta/60">
-            <a href={`${REPO}/blob/master/${c.archivo}`} className="font-codigo hover:text-espuma">
+            <a href={`${REPO}/blob/main/${c.archivo}`} className="font-codigo hover:text-espuma">
               {c.archivo}
             </a>
             {c.doc && (

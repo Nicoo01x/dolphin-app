@@ -16,6 +16,7 @@ const VISTAS = [
   { id: "memoria", nombre: "Memoria", texto: "Lo que le corregiste una vez y no repite: lo que ya sabe, lo que está en observación y lo que espera tu ok." },
   { id: "bots", nombre: "Bots", texto: "Tus bots con su charla, su alma, su memoria, sus habilidades y sus rutinas." },
   { id: "git", nombre: "Git", texto: "Las ramas, los commits y los issues del repo, con quién trabajó en cada cosa y cuánto le falta a cada rama." },
+  { id: "delfines", nombre: "Delfines", texto: "Tus bots de un vistazo: si corren, cuándo les toca, lo que gastaron contra su tope y lo último que dijeron. Con «Correr en tu servidor» siguen con la compu apagada." },
   { id: "orquestacion", nombre: "Orquestación", texto: "Los trabajos que un agente repartió entre varios: quién espera a quién, qué terminó, qué falló y con qué motor." },
 ] as const;
 

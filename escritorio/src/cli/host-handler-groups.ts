@@ -17,6 +17,11 @@ export const HOST_HANDLER_GROUPS: readonly HandlerGroup[] = [
     load: async () => (await import('./handlers/environment.js')).ENVIRONMENT_HANDLERS
   },
   {
+    name: 'environment-check',
+    keys: ['environment check'],
+    load: async () => (await import('./handlers/environment-check.js')).ENVIRONMENT_CHECK_HANDLERS
+  },
+  {
     name: 'host-setup',
     keys: ['host add', 'host connect', 'host doctor'],
     load: async () => (await import('./handlers/host-setup.js')).HOST_SETUP_HANDLERS

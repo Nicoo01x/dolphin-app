@@ -40,6 +40,10 @@ CREATE TABLE IF NOT EXISTS visitas (
   n INTEGER NOT NULL,
   PRIMARY KEY (dia, ruta, origen)
 );
+CREATE TABLE IF NOT EXISTS ajustes (
+  clave TEXT PRIMARY KEY,
+  valor TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS clics_descarga (
   dia TEXT NOT NULL,
   sistema TEXT NOT NULL,
@@ -150,6 +154,29 @@ function crearConsultas(db) {
 
     reabrirFirma(firma) {
       db.prepare("UPDATE firmas SET resuelto_en = NULL WHERE firma = ?").run(firma);
+    },
+
+    /** La época de la sesión del panel: «Salir» la sube y todas las cookies anteriores dejan de valer. */
+    epocaDeSesion() {
+      const fila = db.prepare("SELECT valor FROM ajustes WHERE clave = 'epoca_sesion'").get();
+      return fila ? Number(fila.valor) : 0;
+    },
+    subirEpocaDeSesion() {
+      db.prepare(`INSERT INTO ajustes (clave, valor) VALUES ('epoca_sesion', '1')
+        ON CONFLICT (clave) DO UPDATE SET valor = CAST(valor AS INTEGER) + 1`).run();
+    },
+
+    /** Lo que ocuparon los adjuntos guardados desde una fecha (el tope diario de disco). */
+    bytesDeAdjuntosDesde(desde) {
+      return db.prepare("SELECT COALESCE(SUM(diagnostico_bytes), 0) AS n FROM reportes WHERE recibido >= ?").get(desde).n;
+    },
+    /** Los reportes con adjuntos más viejos que la fecha: sus archivos se borran, el texto queda. */
+    reportesConAdjuntosAntesDe(antes) {
+      return db.prepare("SELECT id FROM reportes WHERE recibido < ? AND (diagnostico_bytes > 0 OR imagenes > 0)").all(antes).map((r) => r.id);
+    },
+    olvidarAdjuntos(ids) {
+      const una = db.prepare("UPDATE reportes SET diagnostico_bytes = 0, imagenes = 0 WHERE id = ?");
+      for (const id of ids) una.run(id);
     },
 
     sumarVisita: (dia, ruta, origen) => sumarVisita.run(dia, ruta, origen),

@@ -4913,15 +4913,15 @@
             "contact_note": "Es posible que el host todavía esté ejecutándose; sólo la conexión Dolphin no está disponible.",
             "last_connected": "Última conexión {{value0}}",
             "reconnect_attempt": "Intento {{value0}}",
-            "access_revoked": "Access revoked",
+            "access_revoked": "Acceso revocado",
             "access_revoked_summary": "Este servidor revocó el acceso a esta computadora",
             "access_revoked_explanation": "Vuelva a emparejar con un nuevo enlace de emparejamiento del servidor para volver a conectarse.",
             "managed_access_revoked_explanation": "Dolphin no pudo volver a emparejarse con él por SSH. Conéctate para intentarlo de nuevo.",
             "connect_access_revoked_explanation": "Conéctate para intentarlo de nuevo.",
-            "update_required": "Update required",
+            "update_required": "Requiere actualización",
             "update_required_summary": "Las versiones de Dolphin no son compatibles",
             "update_required_explanation": "Actualice Dolphin en esta computadora o en el servidor, luego conéctese nuevamente.",
-            "repair": "Re-pair…",
+            "repair": "Volver a emparejar…",
             "open_settings": "Abrir ajustes…",
             "server_replaced": "Servidor diferente",
             "server_replaced_summary": "Este host ahora ejecuta un servidor Dolphin distinto al que estaba vinculado este equipo",
@@ -22063,6 +22063,33 @@
           "resumen": "{{kind}} #{{number}} de {{repo}}, {{state}}: {{title}}.",
           "pr": "Pull request",
           "issue": "Issue"
+        }
+      },
+      "diagnosticoHost": {
+        "tailscale": {
+          "label": "Tailscale apagado",
+          "summary": "Tailscale está apagado en esta máquina",
+          "explanation": "A este servidor sólo se llega por Tailscale y esta máquina no tiene dirección de la tailnet. Abrí Tailscale e iniciá sesión; Dolphin se reconecta solo."
+        },
+        "mudo": {
+          "label": "No contesta",
+          "summary": "El servidor no contesta",
+          "explanation": "Nada responde en la dirección guardada. La máquina puede estar apagada, o el programa que lo atendía ya no corre en ese puerto."
+        },
+        "otroPrograma": {
+          "label": "No es Dolphin",
+          "summary": "Ese servidor no es Dolphin",
+          "explanation": "Contesta{{version}}, pero es otro programa, así que van a faltar funciones. Para usar Dolphin ahí, abrí el repo como espacio de trabajo SSH: Dolphin instala su propio servidor."
+        },
+        "emparejamiento": {
+          "label": "Emparejamiento vencido",
+          "summary": "Este emparejamiento ya no vale",
+          "explanation": "El servidor contestó pero rechazó este dispositivo (lo quitaron o cambió su clave). Volvé a emparejar con un código nuevo."
+        },
+        "incompatible": {
+          "label": "Incompatible",
+          "summary": "Las versiones no se entienden",
+          "explanation": "El servidor contestó con un protocolo que esta versión de Dolphin no entiende. Actualizá el servidor o la app."
         }
       }
     }

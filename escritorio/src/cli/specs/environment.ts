@@ -70,6 +70,20 @@ export const ENVIRONMENT_COMMAND_SPECS: CommandSpec[] = [
     allowedFlags: [...LOCAL_COMMAND_FLAGS, 'environment']
   },
   {
+    path: ['environment', 'check'],
+    summary: 'Connect to a saved Dolphin server and say why it does not work',
+    usage: 'dolphin environment check --environment <selector> [--json]',
+    allowedFlags: [...GLOBAL_FLAGS],
+    notes: [
+      'Unlike `environment show`, this dials the server. It tells apart: Tailscale off on this computer, a server that does not answer, a server that answers but is not Dolphin, an expired pairing, and incompatible versions.',
+      'Exits 0 only when the server answers and is Dolphin; every other verdict exits 1, so scripts can branch on it.'
+    ],
+    examples: [
+      'dolphin environment check --environment VPS-OpenClaw',
+      'dolphin environment check --environment VPS-OpenClaw --json'
+    ]
+  },
+  {
     path: ['environment', 'rm'],
     destructive: true,
     summary: 'Remove one saved Dolphin runtime environment',

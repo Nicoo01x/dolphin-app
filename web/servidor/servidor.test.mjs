@@ -184,8 +184,28 @@ test("las visitas se cuentan sin bots, sin el panel y con el origen de utm_sourc
   assert.equal(d.github.total.instaladores.windows, 3);
 });
 
-test("un reporte de más de 25 MB se corta con 413", async () => {
-  const grande = Buffer.alloc(26 * 1024 * 1024, 97);
+test("un reporte de más de 8 MB se corta con 413 sin leerlo", async () => {
+  const grande = Buffer.alloc(9 * 1024 * 1024, 97);
   const r = await fetch(`${url}/api/reportes`, { method: "POST", headers: { "content-type": "application/json" }, body: grande });
   assert.equal(r.status, 413);
+});
+
+test("más de 4 imágenes en un comentario se rechazan", async () => {
+  const form = new FormData();
+  form.append("feedback", "muchas imágenes");
+  form.append("submissionType", "feedback");
+  for (let i = 0; i < 5; i++) form.append("feedbackImage", new Blob([new Uint8Array([1])], { type: "image/png" }), `${i}.png`);
+  assert.equal((await fetch(`${url}/api/reportes`, { method: "POST", body: form })).status, 400);
+});
+
+test("Salir invalida también las copias de la cookie", async () => {
+  const cookie = await entrar();
+  assert.equal((await fetch(`${url}/api/admin/resumen`, { headers: { cookie } })).status, 200);
+  // Sin sesión, /salir no puede echar a nadie.
+  await post("/api/admin/salir", {});
+  assert.equal((await fetch(`${url}/api/admin/resumen`, { headers: { cookie } })).status, 200);
+  await post("/api/admin/salir", {}, { cookie });
+  assert.equal((await fetch(`${url}/api/admin/resumen`, { headers: { cookie } })).status, 401);
+  const nueva = await entrar();
+  assert.equal((await fetch(`${url}/api/admin/resumen`, { headers: { cookie: nueva } })).status, 200);
 });

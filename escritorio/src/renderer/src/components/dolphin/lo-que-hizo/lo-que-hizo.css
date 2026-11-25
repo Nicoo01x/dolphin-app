@@ -76,13 +76,15 @@
    del diálogo. No lleva la pintura esmerilada fija de los paneles: la ventana se mueve con
    `transform` (nace del botón, se arrastra) y ahí `background-attachment: fixed` no calza.
 
-   El código va un tono más opaco: la misma tinta otra vez encima, así el diff se lee sobre casi
-   nada de lo de atrás. Con «Paneles opacos» la marca es `opaco` y queda la ventana de siempre. */
+   Nico, 19/11/2026: «demasiado transparente, no se lee nada». Con la opacidad de los paneles
+   (0,58) el chat de atrás se leía a través y competía con los pasos. La ventana flota encima de
+   texto, no de un fondo quieto como los paneles: va casi opaca, con apenas el tono del paisaje.
+   El código, opaco del todo. Con «Paneles opacos» la marca es `opaco` y queda la de siempre. */
 :root[data-dolphin-paisaje='vidrio'] .lo-que-hizo-ventana {
   --muted-foreground: var(--paisaje-atenuado);
-  background: rgb(var(--paisaje-tinta-vidrio) / var(--paisaje-alfa));
+  background: rgb(var(--paisaje-tinta-vidrio) / 0.96);
 }
 
 :root[data-dolphin-paisaje='vidrio'] .lo-que-hizo-codigo {
-  background: rgb(var(--paisaje-tinta-vidrio) / var(--paisaje-alfa));
+  background: rgb(var(--paisaje-tinta-vidrio));
 }

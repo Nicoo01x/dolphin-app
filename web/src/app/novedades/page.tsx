@@ -59,12 +59,28 @@ export default function Novedades() {
               </a>
             ))}
           </div>
-          <div className="flex gap-2 border-t border-espuma/10 pt-2 md:gap-3">
-            {enOrden.map((d) => (
-              <span key={d.fecha} className="min-w-0 flex-1 text-center font-codigo text-[10px] tabular-nums text-tinta/55 md:text-[11px]">
-                {Number(d.fecha.slice(8))}/{Number(d.fecha.slice(5, 7))}
-              </span>
-            ))}
+          {/* Con un mes de días no entra un rótulo por barra: uno cada siete en el celular y uno cada
+              dos en la compu, centrados bajo su barra; el primero y el último, pegados al borde. */}
+          <div className="relative h-6 border-t border-espuma/10">
+            {enOrden.map((d, i) => {
+              const faltan = enOrden.length - 1 - i;
+              const ultimo = faltan === 0;
+              // Uno que cae pegado al último se saltea: los dos rótulos se pisarían.
+              const enCelular = ultimo || (i % 7 === 0 && faltan >= 4);
+              const enCompu = ultimo || (i % 2 === 0 && faltan >= 2);
+              if (!enCelular && !enCompu) return null;
+              const lugar =
+                i === 0 ? { left: 0 } : ultimo ? { right: 0 } : { left: `${((i + 0.5) / enOrden.length) * 100}%`, transform: "translateX(-50%)" };
+              return (
+                <span
+                  key={d.fecha}
+                  style={lugar}
+                  className={`absolute top-2 font-codigo text-[10px] whitespace-nowrap tabular-nums text-tinta/55 md:text-[11px] ${enCelular ? "" : "hidden"} ${enCompu ? "md:block" : "md:hidden"}`}
+                >
+                  {Number(d.fecha.slice(8))}/{Number(d.fecha.slice(5, 7))}
+                </span>
+              );
+            })}
           </div>
           <figcaption className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-tinta/55">
             <span className="flex items-center gap-2">

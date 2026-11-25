@@ -22,8 +22,12 @@
         StrCpy ${OUT} "unknown"
       ${elseIf} $R5 != $INSTDIR
       ${andIf} $R5 != "$INSTDIR\"
-      ${andIf} ${FileExists} "$R5\${APP_EXECUTABLE_FILENAME}"
-        StrCpy ${OUT} "other"
+        ; An install from before the DolphinCode rename still holds Dolphin.exe, and still runs the
+        ; shared hooks: it counts as another install too.
+        ${if} ${FileExists} "$R5\${APP_EXECUTABLE_FILENAME}"
+        ${orIf} ${FileExists} "$R5\Dolphin.exe"
+          StrCpy ${OUT} "other"
+        ${endIf}
       ${endIf}
     ${elseIf} $R7 != ${DOLPHIN_ERROR_FILE_NOT_FOUND}
       StrCpy ${OUT} "unknown"

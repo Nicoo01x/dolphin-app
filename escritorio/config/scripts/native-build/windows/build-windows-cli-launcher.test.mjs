@@ -7,6 +7,7 @@ import {
   rmSync,
   writeFileSync
 } from 'node:fs'
+import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
@@ -161,6 +162,47 @@ describe('Windows CLI launcher', () => {
       expect(invoke().code).toBe(0)
     } finally {
       removeFixtureTree(root)
+    }
+  })
+
+  itWindows('runs the binary electron-builder names, and still an old Dolphin.exe', () => {
+    const { readWindowsExecutableName } = createRequire(import.meta.url)(
+      '../../../windows-executable-name.cjs'
+    )
+    const { launcherEmbedsName } = createRequire(import.meta.url)(
+      '../../desktop-distribution/runtime-verification/verify-packaged-windows-cli-launcher.cjs'
+    )
+    const currentName = `${readWindowsExecutableName()}.exe`
+    // What afterPack checks on the real package must hold for the launcher this build produced.
+    expect(launcherEmbedsName(readFileSync(sharedLauncherPath), readWindowsExecutableName())).toBe(
+      true
+    )
+    for (const appBinary of [currentName, 'Dolphin.exe']) {
+      const appRoot = mkdtempSync(join(tmpdir(), 'dolphin cli launcher name '))
+      try {
+        const resourcesPath = join(appRoot, 'resources')
+        const launcherPath = join(resourcesPath, 'bin', 'dolphin.exe')
+        const cliPath = join(resourcesPath, 'app.asar.unpacked', 'out', 'cli', 'index.js')
+        mkdirSync(dirname(cliPath), { recursive: true })
+        copyFileSync(process.execPath, join(appRoot, appBinary))
+        writeFileSync(cliPath, 'process.stdout.write(JSON.stringify(process.argv.slice(2)))\n')
+        copySharedLauncher(launcherPath)
+        const result = spawnSync(launcherPath, ['--version'], { encoding: 'utf8' })
+        expect(result.status, `${appBinary}: ${result.stderr}`).toBe(0)
+        expect(JSON.parse(result.stdout)).toEqual(['--version'])
+      } finally {
+        removeFixtureTree(appRoot)
+      }
+    }
+    const emptyRoot = mkdtempSync(join(tmpdir(), 'dolphin cli launcher missing '))
+    try {
+      const launcherPath = join(emptyRoot, 'resources', 'bin', 'dolphin.exe')
+      copySharedLauncher(launcherPath)
+      const result = spawnSync(launcherPath, ['--version'], { encoding: 'utf8' })
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain(`Unable to locate ${currentName} (or Dolphin.exe)`)
+    } finally {
+      removeFixtureTree(emptyRoot)
     }
   })
 

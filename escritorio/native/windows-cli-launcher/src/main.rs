@@ -20,6 +20,8 @@ use std::process::{exit, Command};
 
 const SERVER_CONFIG_FILENAME: &str = "dolphin-launcher.cfg";
 
+mod app_executable;
+
 #[cfg(windows)]
 mod administrator_status;
 
@@ -40,24 +42,26 @@ fn main() {
 
     let Some(resources_directory) = launcher.parent().and_then(Path::parent) else {
         fail(&format!(
-            "Unable to locate Dolphin.exe next to \"{}\"",
+            "Unable to locate {} next to \"{}\"",
+            app_executable::describe_candidates(),
             launcher.display()
         ))
     };
     let Some(app_directory) = resources_directory.parent() else {
         fail(&format!(
-            "Unable to locate Dolphin.exe next to \"{}\"",
+            "Unable to locate {} next to \"{}\"",
+            app_executable::describe_candidates(),
             resources_directory.display()
         ))
     };
 
-    let electron_path = app_directory.join("Dolphin.exe");
-    if !electron_path.is_file() {
+    let Some(electron_path) = app_executable::locate(app_directory) else {
         fail(&format!(
-            "Unable to locate Dolphin.exe next to \"{}\"",
+            "Unable to locate {} next to \"{}\"",
+            app_executable::describe_candidates(),
             resources_directory.display()
-        ));
-    }
+        ))
+    };
 
     let cli_path: PathBuf = resources_directory
         .join("app.asar.unpacked")

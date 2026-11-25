@@ -108,4 +108,24 @@ describe('la pastilla de una referencia del chat', () => {
       { timeout: 2_000 }
     )
   })
+
+  it('si adentro ya hay un link, no abre su tarjeta: la del link es la que vale', async () => {
+    // El `#402` que el chat hizo link a GitHub trae su propia tarjeta con el PR. Si esta también
+    // se abría, quedaban dos apiladas y la de atrás decía «No lo encontré» (Nico, 19/11/2026).
+    vi.useFakeTimers()
+    render(
+      <ReferenciaViva clase="issue" id="402" texto="#402">
+        <a href="https://github.com/o/goin/pull/402">#402</a>
+      </ReferenciaViva>
+    )
+    fireEvent.mouseEnter(screen.getByRole('button').parentElement!)
+    await act(async () => {
+      vi.advanceTimersByTime(400)
+    })
+    vi.useRealTimers()
+    expect(screen.queryByRole('tooltip')).toBeNull()
+    expect(workItem).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button'))
+    expect(openUrl).not.toHaveBeenCalled()
+  })
 })

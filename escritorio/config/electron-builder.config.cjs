@@ -42,6 +42,13 @@ const {
   verifyPackagedWindowsAgentHook
 } = require('./scripts/desktop-distribution/runtime-verification/verify-packaged-windows-agent-hook.cjs')
 const {
+  verifyPackagedWindowsCliLauncher
+} = require('./scripts/desktop-distribution/runtime-verification/verify-packaged-windows-cli-launcher.cjs')
+const { readWindowsExecutableName } = require('./windows-executable-name.cjs')
+
+// Una sola fuente para el nombre del binario de Windows: la lee también el launcher del CLI.
+const windowsExecutableName = readWindowsExecutableName()
+const {
   ensureBundledWaylandClipboard,
   finalizePackagedWaylandClipboard
 } = require('./wayland-clipboard-resources.cjs')
@@ -568,6 +575,7 @@ module.exports = {
     if (context.electronPlatformName === 'win32') {
       verifyPackagedWindowsNodePty(resourcesDir, context.arch, { canExecuteTargetArch })
       verifyPackagedWindowsAgentHook(resourcesDir, context.arch)
+      verifyPackagedWindowsCliLauncher(context.appOutDir, windowsExecutableName)
     }
     verifySkillsCliRuntime(join(resourcesDir, 'app.asar.unpacked', 'out'), resourcesDir, {
       executeCommands: canExecuteTargetArch
@@ -643,7 +651,9 @@ module.exports = {
   },
   win: {
     // Sin espacio: es el nombre del binario, y es lo que mira la detección de juegos de Discord.
-    executableName: 'DolphinCode',
+    // Sale de config/windows-executable-name.txt, el mismo archivo que compila el launcher del CLI
+    // (native/windows-cli-launcher/src/app_executable.rs): cambiarlo acá sólo es cambiarlo allá.
+    executableName: windowsExecutableName,
     // Why: Windows installers are signed after electron-builder packaging by
     // SignPath, so the packager cannot infer the updater publisherName.
     //

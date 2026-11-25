@@ -2,6 +2,12 @@ import { createElement, type CSSProperties } from 'react'
 import { Folder, FolderOpen } from 'lucide-react'
 import { getFileTypeBadge } from '@/lib/file-type-badge'
 import {
+  ATRIBUTO_LOGO,
+  ATRIBUTO_LOGO_CLARO,
+  instalarLogosDeArchivo,
+  logoDeArchivo
+} from '@/lib/file-icons/material-file-icons'
+import {
   getFileTypeIcon,
   getPluginFileTypeIconIndex,
   getPluginFolderIconIndex
@@ -27,8 +33,9 @@ function PluginIcon({ index, className, style }: IconProps & { index: number }):
 /**
  * The icon for a file path; one component so icon sources can change in one place.
  *
- * Un archivo con extensión se dibuja como su lenguaje: la extensión sobre el color de la marca,
- * como en cualquier editor. Los glifos grises de antes decían «esto es un archivo» y nada más, y
+ * Desde el 25/11/2026 un archivo se dibuja con el LOGO real de su lenguaje (Material Icon Theme,
+ * `lib/file-icons/material-file-icons.ts`). Lo de abajo es lo que queda para lo que ese set no
+ * conoce: la extensión sobre el color de la marca, como en cualquier editor. Los glifos grises de antes decían «esto es un archivo» y nada más, y
  * en una lista de veinte un `.ts` y un `.png` se veían casi igual. El color hace el trabajo a la
  * distancia y la extensión resuelve el empate de cerca.
  *
@@ -52,6 +59,20 @@ export function FileTypeIcon({
   // para un archivo que el tema no nombra.
   if (index !== null) {
     return <PluginIcon index={index} className={className} style={style} />
+  }
+  // El logo real del lenguaje (Material Icon Theme). La ficha con letras queda para lo que ese
+  // set no conoce, y el glifo de Lucide para lo que no tiene ni nombre conocido ni extensión.
+  const logo = logoDeArchivo(filePath)
+  if (logo) {
+    instalarLogosDeArchivo()
+    return (
+      <span
+        aria-hidden="true"
+        {...{ [ATRIBUTO_LOGO]: logo.oscuro, [ATRIBUTO_LOGO_CLARO]: logo.claro }}
+        className={className}
+        style={style}
+      />
+    )
   }
   const badge = getFileTypeBadge(filePath)
   if (!badge) {

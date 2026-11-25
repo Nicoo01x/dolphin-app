@@ -1,9 +1,11 @@
 import { Escena } from "@/components/Escena";
 import { Preguntas } from "@/components/Preguntas";
 import { Ademas } from "@/components/home/Ademas";
+import { Carta } from "@/components/home/Carta";
 import { Ciclo } from "@/components/home/Ciclo";
 import { ElEditor } from "@/components/home/ElEditor";
 import { Cierre } from "@/components/home/Cierre";
+import { Nuevo } from "@/components/home/Nuevo";
 import { PortadaReal } from "@/components/home/PortadaReal";
 import { TraeTuAgente } from "@/components/home/TraeTuAgente";
 
@@ -28,6 +30,13 @@ import { TraeTuAgente } from "@/components/home/TraeTuAgente";
  * PR), y la home ya no tiene capturas de la app de terminal. Cómo se grabó:
  * `public/videos/app-12-11/LEEME.md`.
  *
+ * Desde el 18/11/2026, después del editor va «Nuevo en la 1.7» (`home/Nuevo.tsx`): Delfines, correr
+ * en tu servidor y el aviso de poca RAM, con capturas de fixtures de la app.
+ *
+ * Desde el 24/11/2026, entre la portada y el ciclo va la carta de dónde encaja Dolphin
+ * (`home/Carta.tsx`), y el ciclo se recorre scrolleando en vez de con pestañas: las dos cosas vienen
+ * de mirar aycode.ai con Nico.
+ *
  * Salieron de la home (siguen en el repo): `PortadaConVistas`, `Escenas` y `TodoLoDemas`, las
  * tarjetas dibujadas de la primera pasada. Las escenas de `dolphin noche` y de la memoria se cayeron
  * porque no hay captura real de ellas sin correr un motor.
@@ -36,8 +45,10 @@ export default function Inicio() {
   return (
     <Escena>
       <PortadaReal />
+      <Carta />
       <Ciclo />
       <ElEditor />
+      <Nuevo />
       <TraeTuAgente />
       <Ademas />
       <Preguntas />

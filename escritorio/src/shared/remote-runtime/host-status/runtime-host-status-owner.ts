@@ -5,6 +5,7 @@ import {
   type RuntimeHostStatusResponse,
   type RuntimeHostStatusSnapshot
 } from './runtime-host-status'
+import type { RuntimeHostDiagnosis } from './runtime-host-diagnosis'
 
 const RETRY_DELAYS_MS = [3_000, 6_000, 12_000, 30_000, 60_000]
 const REQUEST_TIMEOUT_MS = 15_000
@@ -22,6 +23,8 @@ type StatusOwnerOptions = {
   request: (signal: AbortSignal) => Promise<RuntimeHostStatusResponse>
   verified: (response: Extract<RuntimeHostStatusResponse, { ok: true }>, active: boolean) => boolean
   publish: (snapshot: RuntimeHostStatusSnapshot) => void
+  /** Pone en palabras cada resultado; sin él, el snapshot no lleva diagnóstico. */
+  diagnose?: (response: RuntimeHostStatusResponse) => RuntimeHostDiagnosis | null
 }
 
 /** One verification and one retry slot, shared by all readers of this connection. */
@@ -216,16 +219,29 @@ export class RuntimeHostStatusOwner {
 
   private complete(response: RuntimeHostStatusResponse): void {
     this.response = response
+    const diagnosis = this.options.diagnose?.(response) ?? undefined
     if (response.ok) {
       this.attempt = 0
-      this.update({ status: response.result, checkedAt: Date.now(), verification: 'verified' })
+      this.update({
+        status: response.result,
+        checkedAt: Date.now(),
+        verification: 'verified',
+        diagnosis
+      })
       this.persistent = this.options.verified(response, this.active)
     } else {
       const blockedReason = runtimeHostStatusBlockedReason(response)
       this.update({
         checkedAt: Date.now(),
         verification: blockedReason ? 'blocked' : 'unavailable',
-        ...(blockedReason ? { blockedReason } : {})
+        ...(blockedReason ? { blockedReason } : {}),
+        // Un fallo sin nada que decir conserva el último diagnóstico: no borra «Tailscale apagado».
+        // Pero desconectar a mano no es un fallo del host: ahí no queda nada que explicar.
+        ...(diagnosis
+          ? { diagnosis }
+          : response.error.code === 'runtime_manually_disconnected'
+            ? { diagnosis: undefined }
+            : {})
       })
       this.scheduleRetry()
     }
@@ -270,12 +286,14 @@ export class RuntimeHostStatusOwner {
   }
 
   private update(patch: Partial<RuntimeHostStatusSnapshot>): void {
-    const { blockedReason, ...next } = { ...this.snapshot, ...patch }
+    const { blockedReason, diagnosis, ...next } = { ...this.snapshot, ...patch }
     // Why: a retired owner is a disconnect, not a refusal, so it never carries a reason.
     const keepReason = blockedReason && next.verification === 'blocked' && !next.retired
     this.snapshot = {
       ...next,
       ...(keepReason ? { blockedReason } : {}),
+      // Un owner retirado es una desconexión: no arrastra el porqué de antes.
+      ...(diagnosis && !next.retired ? { diagnosis } : {}),
       sequence: ++publicationSequence
     }
     this.options.publish(this.snapshot)

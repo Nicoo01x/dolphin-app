@@ -35,6 +35,10 @@ const SOLO_ACA = [
   ["X-ray", "Ctrl + Alt + X prende una capa sobre todas las pantallas: señalás un control de cualquier app y el agente recibe qué es y un recorte. Por ahora, solo en Windows."],
   ["Dictado", "El micrófono baja un modelo de voz que corre en tu compu."],
   ["El modo live", "En el navegador integrado tocás un elemento de tu app, decís qué cambiarle y Dolphin siembra la rama, la pasa por el portón y la mergeás desde ahí."],
+  ["Delegar desde el chat", "Le decís a Claude «delegá las tareas» o «pasale esto a Codex» y reparte el trabajo en agentes que ves trabajar en la app, cada uno en su rama."],
+  ["Tu servidor", "«Conectar una máquina» prueba tu VPS antes de guardarlo y, si algo falla, un agente lo arregla. Tus bots y el trabajo pesado pueden seguir allá con la compu apagada."],
+  ["Ctrl+K en el editor", "Seleccionás, decís qué cambiar o qué querés saber, y vuelve con formato o con el cambio como diff antes de aplicarlo."],
+  ["Poca RAM", "Antes de que la compu se cuelgue avisa qué espacio pesa más y ofrece dormirlo o seguirlo en tu servidor."],
 ] as const;
 
 function Titulo({ id, children }: { id: string; children: React.ReactNode }) {

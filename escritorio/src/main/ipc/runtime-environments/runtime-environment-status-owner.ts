@@ -29,6 +29,7 @@ import { runtimeEnvironmentChangedFailure } from './runtime-environment-revision
 import { resolveManagedRuntimeEnvironment } from './runtime-environment-managed-tunnel'
 import { isRecipeVmEnvironmentAsleep } from '../../ephemeral-vm/recipe-vm-asleep'
 import { noteRuntimeEnvironmentStatusContact } from './runtime-environment-contact-loss'
+import { diagnoseRuntimeEnvironmentResponse } from './runtime-environment-diagnosis'
 import {
   RUNTIME_ENVIRONMENT_ASLEEP_ERROR_CODE,
   RUNTIME_ENVIRONMENT_ASLEEP_MESSAGE
@@ -175,6 +176,7 @@ export function createRuntimeEnvironmentStatusOwner(
       }
       return capable && active
     },
+    diagnose: (response) => diagnoseRuntimeEnvironmentResponse(response, connection.endpoint),
     publish: (snapshot) => {
       getRuntimeDesktopSurface().sendToRenderers?.(RUNTIME_HOST_STATUS_CHANNEL, snapshot)
       for (const listener of statusListeners) {

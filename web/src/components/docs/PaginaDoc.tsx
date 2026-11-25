@@ -31,7 +31,7 @@ export function PaginaDoc({ pagina }: { pagina: PaginaDeDoc }) {
             {f.includes("*") ? (
               <span className="font-codigo">{f}</span>
             ) : (
-              <a href={`${REPO}/blob/master/${f}`} className="font-codigo hover:text-espuma">
+              <a href={`${REPO}/blob/main/${f}`} className="font-codigo [overflow-wrap:anywhere] hover:text-espuma">
                 {f}
               </a>
             )}

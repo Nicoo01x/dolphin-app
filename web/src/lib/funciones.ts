@@ -219,6 +219,15 @@ export const FUNCIONES: readonly GrupoDeFunciones[] = [
         comando: 'dolphin --demo · npm run demo',
         archivo: 'src/agentes/mentira.ts',
       },
+      {
+        id: 'ctrl-k',
+        nombre: 'Ctrl+K: editar con IA adentro del archivo',
+        queHace:
+          'Seleccionás un pedazo en el editor, apretás Ctrl+K y decís qué cambiarle o qué querés saber. Las preguntas vuelven con formato y los cambios se muestran como diff antes de aplicarlos.',
+        donde: ['escritorio'],
+        comando: 'Ctrl+K (Cmd+K en macOS)',
+        archivo: 'escritorio/src/renderer/src/components/editor/CuerpoDelCuadrito.tsx',
+      },
     ],
   },
 
@@ -1009,6 +1018,35 @@ export const FUNCIONES: readonly GrupoDeFunciones[] = [
         archivo: 'src/nucleo/turno-remoto.ts',
       },
       {
+        id: 'conectar-una-maquina',
+        nombre: 'Tu servidor, en un paso',
+        queHace:
+          '«Conectar una máquina» prueba el servidor antes de guardarlo y le instala lo de Dolphin. Si algo falla dice por qué, y «Arreglarlo con un agente» abre un Claude que lo diagnostica y lo deja andando.',
+        porQueImporta:
+          'Un error de SSH no dice qué hacer. `dolphin host doctor` devuelve el motivo como un código fijo y el paso que sigue, y sale con error mientras algo falte: un agente puede corregir y volver a probar hasta que conecte.',
+        donde: ['escritorio'],
+        comando: 'dolphin host add --address <ip> --user <usuario> --install-server · dolphin host doctor <nombre>',
+        archivo: 'escritorio/src/cli/specs/host-setup.ts',
+      },
+      {
+        id: 'delegar-desde-el-chat',
+        nombre: 'Delegar desde el chat',
+        queHace:
+          'Le decís a Claude «delegá las tareas», «pasale esto a Codex» o «hacelo en paralelo» y reparte el trabajo en agentes de Dolphin, cada uno en su espacio y su rama, que ves trabajar en la app.',
+        porQueImporta: 'Antes había que prender un interruptor en el compositor; ahora lo sabe el agente, por la skill `dolphin-delegar` que viene instalada.',
+        donde: ['escritorio'],
+        archivo: 'escritorio/skills/dolphin-delegar/SKILL.md',
+      },
+      {
+        id: 'memoria-baja',
+        nombre: 'Avisa antes de quedarse sin RAM',
+        queHace:
+          'Cuando a la compu le queda poca memoria, dice qué espacio de trabajo pesa más y ofrece dormirlo o seguirlo en tu servidor. Mientras tanto, los chats quietos se duermen antes.',
+        porQueImporta: 'Con varios agentes y sus servidores de desarrollo abiertos, la compu se colgaba sin aviso y se perdía lo que estaba en el aire.',
+        donde: ['escritorio'],
+        archivo: 'escritorio/src/main/memoria-baja/vigia-de-memoria-baja.ts',
+      },
+      {
         id: 'atajos',
         nombre: 'Atajos: lo determinista no gasta cupo',
         queHace:
@@ -1038,12 +1076,28 @@ export const FUNCIONES: readonly GrupoDeFunciones[] = [
         archivo: 'src/bots/almacen.ts',
       },
       {
+        id: 'delfines',
+        nombre: 'Delfines: tus bots en la app',
+        queHace:
+          'Una página con cada bot: si está corriendo, cuándo le toca, cuánto gastó este mes contra su tope y qué dijo la última vez. Los creás desde plantilla y les hablás desde ahí.',
+        donde: ['escritorio'],
+        archivo: 'escritorio/src/renderer/src/components/dolphin/delfines/DelfinesPage.tsx',
+      },
+      {
+        id: 'bot-en-tu-servidor',
+        nombre: 'Un bot que sigue con la compu apagada',
+        queHace:
+          '«Correr en tu servidor» lleva el bot a tu VPS como un servicio. Antes de tocar nada revisa Linux con systemd, Node, la sesión de Claude Code y que siga corriendo sin una sesión abierta; si falta algo, lo dice.',
+        donde: ['escritorio', 'bots'],
+        archivo: 'escritorio/src/renderer/src/components/dolphin/delfines/LlevarAlServidor.tsx',
+      },
+      {
         id: 'bots-plantillas',
         nombre: 'Bots listos para crear',
         queHace:
           'Cuatro plantillas con su alma y sus rutinas puestas: el Vigía (mira tus repos), el Parte (resume el día), el Investigador y el Escritor.',
         porQueImporta: 'Hablan con quien los usa y no con un nombre fijo: Dolphin es de cualquiera.',
-        donde: ['bots', 'terminal', 'consola'],
+        donde: ['bots', 'terminal', 'consola', 'escritorio'],
         comando: 'dolphin bots nuevo <nombre> --plantilla vigia|parte|investigador|escritor',
         archivo: 'src/bots/plantillas.ts',
       },

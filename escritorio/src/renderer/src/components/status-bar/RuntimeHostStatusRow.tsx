@@ -20,6 +20,8 @@ import type {
   RuntimeHostBlockedCopy,
   RuntimeHostBlockedRecovery
 } from './remote-host-connection-status'
+import type { RuntimeHostDiagnosis } from '../../../../shared/remote-runtime/host-status/runtime-host-diagnosis'
+import { runtimeHostDiagnosisCopy } from './runtime-host-diagnosis-copy'
 
 function runtimeStatusLabel(state: RuntimeHostConnectionState, t: Translate = translate): string {
   switch (state) {
@@ -150,6 +152,7 @@ export function RuntimeHostStatusRow({
   detail,
   diagnostics,
   blocked,
+  diagnosis,
   onConnect,
   onDisconnect,
   onRecover
@@ -163,6 +166,8 @@ export function RuntimeHostStatusRow({
   onConnect?: () => Promise<void>
   onDisconnect?: () => Promise<void>
   onRecover?: () => void
+  /** Por qué no anda, en palabras; va por delante del estado del transporte. */
+  diagnosis?: RuntimeHostDiagnosis | null
 }): React.JSX.Element {
   const t = useTranslate()
   const intlLocale = useIntlLocale()
@@ -181,7 +186,10 @@ export function RuntimeHostStatusRow({
       : runtimeActionLabel(state, t)
   const transportAction = isConnectedRuntimeHostState(state) ? onDisconnect : onConnect
   const action = repairs ? onRecover : transportAction
-  const hasSubmenu = Boolean(detail || blocked)
+  const diagnosisCopy = runtimeHostDiagnosisCopy(diagnosis, t)
+  // Un bloqueo con su propia salida (re-emparejar) manda; el resto lo explica el diagnóstico.
+  const explained = blocked?.recovery ? null : diagnosisCopy
+  const hasSubmenu = Boolean(detail || blocked || explained)
 
   const handleAction = useCallback(async () => {
     if (repairs) {
@@ -225,10 +233,19 @@ export function RuntimeHostStatusRow({
   const diagnosticLabel = [lastConnectedLabel, reconnectAttemptLabel].filter(Boolean).join(' · ')
   const rawDetail =
     blocked?.detail ?? diagnostics?.lastError ?? diagnostics?.lastClose?.reason ?? detail
-  const failureSummary = blocked?.summary ?? runtimeFailureSummary(state, t)
-  const failureExplanation = blocked ? blocked.explanation : runtimeFailureExplanation(state, t)
-  const dotColor = blocked ? 'bg-destructive' : runtimeDotColor(state)
-  const statusTone = blocked ? 'text-destructive' : runtimeStatusTone(state)
+  const failureSummary = explained?.summary ?? blocked?.summary ?? runtimeFailureSummary(state, t)
+  const failureExplanation =
+    explained?.explanation ?? (blocked ? blocked.explanation : runtimeFailureExplanation(state, t))
+  const dotColor = explained?.warning
+    ? 'bg-yellow-500'
+    : blocked
+      ? 'bg-destructive'
+      : runtimeDotColor(state)
+  const statusTone = explained?.warning
+    ? 'text-yellow-500'
+    : blocked
+      ? 'text-destructive'
+      : runtimeStatusTone(state)
   const showSpinner = !blocked && (state === 'checking' || state === 'reconnecting')
 
   const rowDetails = (
@@ -243,7 +260,9 @@ export function RuntimeHostStatusRow({
           <span aria-hidden="true">·</span>
           <span className={`inline-flex min-w-0 items-center gap-1 ${statusTone}`}>
             {showSpinner ? <Loader2 className="size-2.5 shrink-0 animate-spin" /> : null}
-            <span className="truncate">{blocked?.label ?? runtimeStatusLabel(state, t)}</span>
+            <span className="truncate">
+              {explained?.label ?? blocked?.label ?? runtimeStatusLabel(state, t)}
+            </span>
           </span>
         </div>
       </div>

@@ -83,4 +83,28 @@ export const CAPTURAS = {
   ),
   issue: fixture("issue", 800, 404, "La tarjeta del issue 198, con sus etiquetas, el hito y el PR que lo va a cerrar."),
   ola: fixture("ola", 920, 600, "La ola del inicio, dibujada en puntos."),
+  delfines: fixture(
+    "delfines",
+    2296,
+    1518,
+    "La página Delfines: cuatro bots con su estado, cuándo les toca, lo que gastaron este mes contra su tope, lo último que dijeron y los botones Hablarle y Correr en tu servidor.",
+  ),
+  llevarAlServidor: fixture(
+    "llevar-al-servidor",
+    951,
+    907,
+    "La ventana Correr Vigía en tu servidor: cinco chequeos en verde (Linux con systemd, Node, Claude Code con sesión, servicios de usuario, sigue corriendo sin sesión), la carpeta donde trabaja y el botón Correrlo en vps-ana.",
+  ),
+  ctrlK: fixture(
+    "ctrl-k",
+    1192,
+    490,
+    "El cuadrito de Ctrl+K en el editor: el pedido «validá que el token no venga vacío» y el cambio como diff, una línea que sale y tres que entran, con Descartar y Aceptar.",
+  ),
+  pocaRam: fixture(
+    "poca-ram",
+    1085,
+    848,
+    "El aviso Te queda poca RAM: 1,1 GB libres de 16, el espacio que más usa y los botones Dormirlo acá y Correr en vps-ana.",
+  ),
 } as const satisfies Record<string, Captura>;
