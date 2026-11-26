@@ -22948,6 +22948,8 @@
         }
       },
       "tarjetaGithub": {
+        "abrirEnDolphin": "Open in Dolphin",
+        "enElNavegador": "{{atajo}}+click: browser",
         "estado": {
           "abierto": "Open",
           "borrador": "Draft",
@@ -26189,5 +26191,50 @@
     "ventana": {
       "cerrar": "Close"
     }
+  },
+  "winformsPreview": {
+    "tabLabel": "{{name}} (form)",
+    "openForm": "Preview Form",
+    "openControl": "Preview Control",
+    "reload": "Reopen the form",
+    "noBuild": "No build",
+    "buildsFound": "Builds found, newest first",
+    "pickAssembly": "Choose assembly…",
+    "addToChat": "Add to chat",
+    "copyReference": "Copy reference",
+    "copied": "Reference copied",
+    "closed": "The form closed",
+    "details": "Technical details",
+    "retry": "Try again",
+    "dialog": "The form opened «{{title}}»: {{text}}",
+    "stale": "This build is from {{build}} and {{file}} changed on {{changed}}: the preview may not include your latest changes.",
+    "phase": {
+      "searching": "Looking for the build…",
+      "host": "Preparing the viewer (first time only)…",
+      "assembly": "Loading {{name}}…",
+      "creating": "Creating the form…",
+      "showing": "Showing the form…",
+      "slow": "Still creating it ({{seconds}} s). If the constructor waits for a connection it can take a while."
+    },
+    "error": {
+      "noBuild": "There is no build of this form",
+      "noProject": "Could not find the project",
+      "notDotNet": "That file is not a .NET assembly",
+      "architecture": "Incompatible architecture",
+      "dependency": "The build is missing a dependency",
+      "classMissing": "The build does not have this class",
+      "notAForm": "Not a form",
+      "noConstructor": "The form needs parameters to be created",
+      "constructor": "The form failed while being created",
+      "windowsOnly": "Windows only",
+      "generic": "Could not open the form"
+    },
+    "hint": {
+      "constructor": "This usually happens when the constructor opens a database connection or reads settings the app loads at startup.",
+      "classMissing": "The build is older than the form, or the form lives in another assembly. Build the project or choose another assembly.",
+      "dependency": "The folder of the build must contain every DLL the app uses. Choose a build from a folder where the app runs."
+    },
+    "discarded": "Builds tried before this one",
+    "closeDialog": "Close that window in the form"
   }
 }

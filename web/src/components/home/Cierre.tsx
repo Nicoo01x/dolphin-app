@@ -1,5 +1,6 @@
 import { REPO } from "@/lib/contenido";
 import { RELEASES } from "@/lib/descargas";
+import { PedidoDeEstrella } from "../Estrella";
 import { Instalar } from "../Instalar";
 import { Descargar } from "./Descargar";
 
@@ -42,6 +43,9 @@ export function Cierre() {
             <code className="font-codigo text-[0.92em] text-espuma">dolphin --demo</code> lo muestra entero con un agente de mentira.
           </p>
           <Instalar />
+        </div>
+        <div className="min-w-0 lg:col-span-2">
+          <PedidoDeEstrella />
         </div>
       </div>
     </section>

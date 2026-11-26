@@ -34,6 +34,27 @@ describe('VistaDeTarjeta', () => {
     expect(screen.getByText('Updated', { exact: false })).toBeTruthy()
   })
 
+  it('del repo del chat, dice que el clic lo abre en Dolphin y el navegador queda a un atajo', () => {
+    const { rerender } = render(
+      <VistaDeTarjeta
+        link={linkDePr}
+        estado={{ status: 'ready', value: prAbierto }}
+        reintentar={nada}
+        enDolphin
+      />
+    )
+    expect(screen.getByText('Open in Dolphin')).toBeTruthy()
+    expect(screen.getByText(/\+click: browser$/)).toBeTruthy()
+    rerender(
+      <VistaDeTarjeta
+        link={linkDePr}
+        estado={{ status: 'ready', value: prAbierto }}
+        reintentar={nada}
+      />
+    )
+    expect(screen.queryByText('Open in Dolphin')).toBeNull()
+  })
+
   it('un borrador con conflictos lo avisa con el nombre de la base', () => {
     render(
       <VistaDeTarjeta

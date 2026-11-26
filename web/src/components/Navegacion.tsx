@@ -3,8 +3,8 @@
 import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
 import { LogoPastilla } from "./Logo";
-import { REPO } from "@/lib/contenido";
 import { SECCIONES } from "@/lib/navegacion";
+import { EstrellaEnLaBarra } from "./Estrella";
 
 /** ¿Este enlace es la página donde estás? Las anclas de la home no cuentan como página. */
 function esActual(href: string, ruta: string): boolean {
@@ -53,13 +53,11 @@ export function Navegacion() {
               </a>
             );
           })}
-          <a href={REPO} className="py-2 transition-colors hover:text-espuma max-md:hidden">
-            GitHub
-          </a>
         </div>
+        <EstrellaEnLaBarra />
         <a
           href={enInicio ? "#instalar" : "/descargar"}
-          className="boton-pill ml-4 h-[32px] flex-none px-3.5 text-[13px] max-[400px]:ml-2"
+          className="boton-pill ml-1 h-[32px] flex-none px-3.5 text-[13px] max-md:ml-4 max-[400px]:ml-2"
         >
           Descargar
         </a>

@@ -35,6 +35,8 @@ function editorTabViewOf(file: OpenFile): EditorTabView | null {
       return { mode: 'git-graph' }
     case 'check-details':
       return { mode: 'check-details', ...pickStoredFields(file, ['checkRunDetails']) }
+    case 'winforms-preview':
+      return { mode: 'winforms-preview', ...pickStoredFields(file, ['winformsPreviewClass']) }
   }
 }
 

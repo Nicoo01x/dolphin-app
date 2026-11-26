@@ -107,6 +107,20 @@ export function ponerTemaInicial(): void {
     if (nuevo === "claro" || nuevo === "oscuro") ponerTema(nuevo);
   };
   (window as unknown as { dolphinNuevaTarea?: (texto: string) => void }).dolphinNuevaTarea = dolphinNuevaTarea;
+  // Con la pintura de fondo de la app, la consola es transparente y sus superficies son velos
+  // sobre el vidrio, como cualquier otra página (Nico, 26/11/2026: «no tiene ni el fondo»).
+  if (embebida) ponerVidrio(parametros.get("vidrio") === "1");
+  (window as unknown as { dolphinVidrio?: (si: boolean) => void }).dolphinVidrio = (si) => {
+    if (embebida) ponerVidrio(si === true);
+  };
+}
+
+function ponerVidrio(si: boolean): void {
+  if (si) {
+    document.documentElement.dataset.vidrio = "";
+  } else {
+    delete document.documentElement.dataset.vidrio;
+  }
 }
 
 /**

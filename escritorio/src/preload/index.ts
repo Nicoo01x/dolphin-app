@@ -14,6 +14,7 @@ import { pwshApi } from './api/pwsh-bridge'
 import { discordApi } from './api/discord-bridge'
 import { memoriaBajaApi } from './api/memoria-baja-bridge'
 import { delfinesApi } from './api/delfines-bridge'
+import { winFormsApi } from './api/winforms-bridge'
 import { checkpointsApi } from './api/checkpoints-bridge'
 import { gitBashApi } from './api/git-bash-bridge'
 import { pluginsApi } from './api/plugins-bridge'
@@ -123,6 +124,7 @@ const api = {
   discord: discordApi,
   memoriaBaja: memoriaBajaApi,
   delfines: delfinesApi,
+  winforms: winFormsApi,
   checkpoints: checkpointsApi,
   gitBash: gitBashApi,
   plugins: pluginsApi,

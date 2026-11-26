@@ -3,6 +3,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { resolveGitHubPeekLink } from './NativeChatGitHubLinkPeek'
 // Dolphin: la tarjeta de issues y PR es la de Dolphin (components/dolphin/tarjeta-github).
 import { TarjetaGithub } from '@/components/dolphin/tarjeta-github/TarjetaGithub'
+import { abrirEnDolphin, esClicSimple } from '@/components/dolphin/tarjeta-github/abrir-en-dolphin'
 import { NativeChatWebPeekBody } from './NativeChatWebLinkPeek'
 import { NativeChatLinkPeekContext } from './native-chat-link-peek-context'
 import { previewableWebUrl } from './native-chat-web-link-preview'
@@ -16,6 +17,11 @@ export function NativeChatLinkPeek({
   children: ReactNode
 }): ReactNode {
   const { githubRepo, webPreviews } = useContext(NativeChatLinkPeekContext)
+  // Dolphin: un issue o PR del repo del chat se abre en Tareas; Ctrl/Cmd+clic, en el navegador.
+  const abrirAca = useMemo(() => {
+    const github = href ? resolveGitHubPeekLink(githubRepo, href) : null
+    return githubRepo && github?.ownRepo ? () => abrirEnDolphin(githubRepo.repo, github.link) : null
+  }, [githubRepo, href])
   const body = useMemo(() => {
     const webUrl = webPreviews ? previewableWebUrl(href) : null
     const webBody = webUrl ? (
@@ -34,6 +40,7 @@ export function NativeChatLinkPeek({
           repo={githubRepo.repo}
           link={github.link}
           otherRepoFallback={github.ownRepo ? undefined : webBody}
+          enDolphin={github.ownRepo}
         />
       )
     }
@@ -42,10 +49,22 @@ export function NativeChatLinkPeek({
   if (!body) {
     return children
   }
-  return <LinkPeekCard body={body}>{children}</LinkPeekCard>
+  return (
+    <LinkPeekCard body={body} abrirAca={abrirAca}>
+      {children}
+    </LinkPeekCard>
+  )
 }
 
-function LinkPeekCard({ body, children }: { body: ReactNode; children: ReactNode }): ReactNode {
+function LinkPeekCard({
+  body,
+  abrirAca,
+  children
+}: {
+  body: ReactNode
+  abrirAca?: (() => void) | null
+  children: ReactNode
+}): ReactNode {
   const [open, setOpen] = useState(false)
   const pendingOpen = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const cancelPendingOpen = () => clearTimeout(pendingOpen.current)
@@ -97,7 +116,15 @@ function LinkPeekCard({ body, children }: { body: ReactNode; children: ReactNode
       >
         {/* A click opens the link (or its action popover); the peek must not sit on top of it. */}
         <span
-          onClickCapture={dismiss}
+          onClickCapture={(event) => {
+            dismiss()
+            // El clic en la tarjeta llega acá como un clic en el link (VistaDeTarjeta).
+            if (abrirAca && esClicSimple(event)) {
+              event.preventDefault()
+              event.stopPropagation()
+              abrirAca()
+            }
+          }}
           onAuxClickCapture={(event) => {
             if (event.button === 1) {
               dismiss()

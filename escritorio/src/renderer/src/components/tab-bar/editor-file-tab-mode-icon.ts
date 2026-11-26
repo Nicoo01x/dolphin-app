@@ -1,4 +1,5 @@
 import {
+  AppWindow,
   Eye,
   GitCompareArrows,
   GitGraph,
@@ -23,7 +24,9 @@ export function getEditorFileTabModeIcon(
           ? GitCompareArrows
           : file.mode === 'markdown-preview'
             ? Eye
-            : file.language === 'simulator'
-              ? Smartphone
-              : null
+            : file.mode === 'winforms-preview'
+              ? AppWindow
+              : file.language === 'simulator'
+                ? Smartphone
+                : null
 }

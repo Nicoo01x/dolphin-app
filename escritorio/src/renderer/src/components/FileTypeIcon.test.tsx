@@ -28,7 +28,7 @@ it('knows the languages of a C# and C++ shop', () => {
   expect(logoDeArchivo('src\\motor.cpp')?.oscuro).toBe('cpp')
   expect(logoDeArchivo('motor.h')?.oscuro).toBe('h')
   expect(logoDeArchivo('ERP.csproj')?.oscuro).toBe('visualstudio')
-  expect(logoDeArchivo('Nexobyte.ERP.sln')?.oscuro).toBe('visualstudio')
+  expect(logoDeArchivo('Contoso.ERP.sln')?.oscuro).toBe('visualstudio')
   expect(logoDeArchivo('Vista.xaml')?.oscuro).toBe('xaml')
 })
 

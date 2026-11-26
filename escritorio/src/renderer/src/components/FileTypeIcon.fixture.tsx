@@ -2,7 +2,7 @@ import { defineFixture } from '../component-fixtures/component-fixture'
 import { FileTypeIcon } from './FileTypeIcon'
 
 const ARCHIVOS = [
-  'Nexobyte.ERP.sln',
+  'Contoso.ERP.sln',
   'ERP.csproj',
   'Forms/frmSplash.cs',
   'Vista.xaml',

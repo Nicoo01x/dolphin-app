@@ -519,3 +519,37 @@ html[data-embebida] .font-sans {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
+
+/* ── Sobre el vidrio de la app ────────────────────────────────────────────────────────────────
+   Embebida en el escritorio con la pintura de fondo (`?vidrio=1`, ver lib/embebida.ts): la consola
+   no pinta fondo y deja ver el vidrio de la página, como Ajustes o Tareas. Las superficies pasan a
+   ser velos de la tinta del texto —los mismos números que el realce del vidrio de la app
+   (`paisaje.css`)—, así las columnas y las fichas se separan sin tapar la pintura. Los flotantes
+   siguen opacos: van encima de lo que sea. */
+:root[data-vidrio] {
+  --background: transparent;
+  /* La columna es la tinta del vidrio de la app (#171717) a medias: oscura como la barra lateral,
+     no un velo lechoso; lo que se apoya encima sí es la tinta del texto. */
+  --card: rgb(18 18 18 / 0.42);
+  --secondary: rgb(235 235 235 / 0.08);
+  --muted: rgb(235 235 235 / 0.08);
+  --accent: rgb(235 235 235 / 0.13);
+  --border: rgb(235 235 235 / 0.08);
+}
+:root[data-vidrio][data-tema="claro"] {
+  --card: rgb(255 255 255 / 0.38);
+  --secondary: rgb(255 255 255 / 0.62);
+  --muted: rgb(255 255 255 / 0.62);
+  --accent: rgb(255 255 255 / 0.8);
+  --border: rgb(10 10 10 / 0.08);
+}
+html[data-vidrio],
+html[data-vidrio] body {
+  background: transparent;
+}
+:root[data-vidrio][data-tema="claro"] .ficha {
+  background: rgb(255 255 255 / 0.72);
+}
+:root[data-vidrio][data-tema="claro"] .ficha:hover {
+  background: rgb(255 255 255 / 0.88);
+}

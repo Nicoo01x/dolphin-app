@@ -55,6 +55,12 @@ export function getEditorDisplayLabel(
     return file.checkRunDetails?.check.name ?? getBaseLabel(file, variant)
   }
 
+  if (file.mode === 'winforms-preview') {
+    return t('winformsPreview.tabLabel', '{{name}} (form)', {
+      name: getBaseLabel(file, variant).replace(/\.cs$/i, '')
+    })
+  }
+
   if (file.mode === 'markdown-preview') {
     return t('auto.components.editor.editorLabels.preview', '{{name}} (preview)', {
       name: getBaseLabel(file, variant)

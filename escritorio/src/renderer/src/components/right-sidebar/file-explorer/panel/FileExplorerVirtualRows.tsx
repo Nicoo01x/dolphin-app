@@ -14,6 +14,8 @@ import type { FileExplorerRowProjection } from '../tree/file-explorer-row-projec
 import type { RuntimeFileOperationArgs } from '@/runtime/files/runtime-file-client-types'
 import { getFileExplorerOperationExecutionHostId } from '../navigation/file-explorer-operation-owner'
 import type { WorkspaceFileDragSource } from '@/lib/files/drop/workspace-file-drag'
+import { esCandidatoEnCarpeta } from '@/lib/winforms/winforms-explorer-kind'
+import { winFormsPreviewAvailable } from '@/lib/winforms/winforms-preview-open'
 
 type FileExplorerVirtualRowsProps = {
   virtualizer: Virtualizer<HTMLDivElement, Element>
@@ -154,6 +156,8 @@ export function FileExplorerVirtualRows(props: FileExplorerVirtualRowsProps): Re
   } = props
 
   const visibleSelectionCount = rowProjection.countVisiblePaths(selectedPaths)
+  // Dolphin: la vista previa de WinForms corre el build en esta máquina, así que sólo archivos locales.
+  const winFormsActive = winFormsPreviewAvailable()
   // Resolve only at dragstart; row virtualization renders on every scroll frame.
   const resolveSourceOwner = (paths: readonly string[]) =>
     resolveDragSourceOwner(rowProjection, dirCache, paths)
@@ -241,6 +245,12 @@ export function FileExplorerVirtualRows(props: FileExplorerVirtualRowsProps): Re
               runtimeDownloadContext={runtimeDownloadContext}
               supportsFolderDownload={supportsFolderDownload}
               canOpenInDolphinBrowser={canOpenInDolphinBrowser(n.path)}
+              isWinFormsCandidate={
+                winFormsActive &&
+                !n.isDirectory &&
+                (n.operationOwner?.kind ?? 'local') === 'local' &&
+                esCandidatoEnCarpeta(n.name, dirCache?.[dirname(n.path)]?.children)
+              }
               canCollapseFolderSubtree={canCollapseFolderSubtree}
               targetDir={n.isDirectory ? n.path : dirname(n.path)}
               targetDepth={n.isDirectory ? n.depth + 1 : n.depth}

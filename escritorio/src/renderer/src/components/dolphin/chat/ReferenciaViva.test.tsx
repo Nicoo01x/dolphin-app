@@ -12,7 +12,12 @@ import { ReferenciaViva } from './ReferenciaViva'
  * un test no hay preload.
  */
 vi.mock('@/store/repos/use-repository-catalog', () => ({
-  useActiveRepo: () => ({ path: 'D:/repo' })
+  useActiveRepo: () => ({ id: 'repo-1', path: 'D:/repo' })
+}))
+
+const abrirWorkItemEnDolphin = vi.fn()
+vi.mock('../tarjeta-github/abrir-en-dolphin', () => ({
+  abrirWorkItemEnDolphin: (...args: unknown[]) => abrirWorkItemEnDolphin(...args)
 }))
 
 const workItem = vi.fn()
@@ -21,6 +26,7 @@ const openUrl = vi.fn()
 beforeEach(() => {
   workItem.mockReset()
   openUrl.mockReset()
+  abrirWorkItemEnDolphin.mockReset()
   workItem.mockResolvedValue({
     title: 'La cola de Telegram falla con dos drenados a la vez',
     state: 'open',
@@ -70,7 +76,7 @@ describe('la pastilla de una referencia del chat', () => {
     )
   })
 
-  it('al tocarla abre el issue, aunque nunca se haya pasado por encima', async () => {
+  it('al tocarla abre el issue en Tareas, aunque nunca se haya pasado por encima', async () => {
     render(
       <ReferenciaViva clase="issue" id="412" texto="#412">
         #412
@@ -79,7 +85,19 @@ describe('la pastilla de una referencia del chat', () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button'))
     })
-    expect(openUrl).toHaveBeenCalledWith('https://github.com/o/r/issues/412')
+    // En Dolphin, no en el navegador (Nico, 26/11/2026).
+    expect(openUrl).not.toHaveBeenCalled()
+    expect(abrirWorkItemEnDolphin).toHaveBeenCalledWith(
+      'repo-1',
+      expect.objectContaining({
+        type: 'issue',
+        number: 412,
+        title: 'La cola de Telegram falla con dos drenados a la vez',
+        url: 'https://github.com/o/r/issues/412',
+        labels: ['Bug'],
+        repoId: 'repo-1'
+      })
+    )
   })
 
   it('una rama no se puede abrir, así que no es un botón', () => {
@@ -127,5 +145,6 @@ describe('la pastilla de una referencia del chat', () => {
     expect(workItem).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole('button'))
     expect(openUrl).not.toHaveBeenCalled()
+    expect(abrirWorkItemEnDolphin).not.toHaveBeenCalled()
   })
 })

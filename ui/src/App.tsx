@@ -334,8 +334,8 @@ export default function App() {
         refrescar();
         return;
       }
-      // P abre el Master Prompt sobre lo que estés mirando.
-      if (ev.key === "p" || ev.key === "P") {
+      // P abre el Master Prompt sobre lo que estés mirando. Adentro de la app no: ya tiene el suyo.
+      if (!embebida && (ev.key === "p" || ev.key === "P")) {
         ev.preventDefault();
         setPrompt({ quienAbrio: objetivo instanceof HTMLElement && objetivo !== document.body ? objetivo : null });
         return;
@@ -409,7 +409,8 @@ export default function App() {
           alRefrescar={refrescar}
           vista={vista}
           alCambiarVista={setVista}
-          alAbrirPrompt={(boton) => setPrompt({ quienAbrio: boton })}
+          // Adentro de la app el prompt ya está en otro lado: la barra no lo repite (Nico, 26/11/2026).
+          alAbrirPrompt={embebida ? undefined : (boton) => setPrompt({ quienAbrio: boton })}
           nadando={Boolean(vivo)}
           abiertos={abiertos}
           desconectado={!enLinea}

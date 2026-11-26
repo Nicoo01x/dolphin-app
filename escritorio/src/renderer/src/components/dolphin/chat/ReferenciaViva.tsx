@@ -5,6 +5,15 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useActiveRepo } from '@/store/repos/use-repository-catalog'
 import type { ClaseDeReferencia } from './referencias'
 import { workItemLabelChipStyle } from '../../../../../shared/github/work-item-labels'
+import type { GitHubWorkItem } from '../../../../../shared/github/work-item-types'
+import { abrirWorkItemEnDolphin } from '../tarjeta-github/abrir-en-dolphin'
+
+const ESTADOS: readonly GitHubWorkItem['state'][] = ['open', 'closed', 'merged', 'draft']
+
+/** El estado tal como vino de GitHub; uno que no se conoce cuenta como abierto. */
+function estadoDeWorkItem(estado: string | undefined): GitHubWorkItem['state'] {
+  return ESTADOS.find((conocido) => conocido === estado) ?? 'open'
+}
 
 /**
  * Lo que el agente nombró, hecho una pastilla que se toca.
@@ -159,17 +168,34 @@ export function ReferenciaViva({
     // Puede que todavía no se haya pedido el detalle: tocar una referencia sin haber pasado por
     // encima es lo normal con el teclado, y ahí la URL hay que ir a buscarla ahora.
     const guardado = yaPedido.get(llave)
-    const yaTengo = detalle?.que === 'hay' ? detalle : guardado?.que === 'hay' ? guardado : null
-    if (yaTengo?.url) {
-      void window.api.shell.openUrl(yaTengo.url)
+    let hallado = detalle?.que === 'hay' ? detalle : guardado?.que === 'hay' ? guardado : null
+    if (!hallado?.url) {
+      await pedirDetalle()
+      const recien = yaPedido.get(llave)
+      hallado = recien?.que === 'hay' ? recien : null
+    }
+    if (!hallado?.url || (clase !== 'issue' && clase !== 'pr')) {
       return
     }
-    await pedirDetalle()
-    const recien = yaPedido.get(llave)
-    if (recien?.que === 'hay' && recien.url) {
-      void window.api.shell.openUrl(recien.url)
+    // Se abre en Tareas, adentro de Dolphin (Nico, 26/11/2026); sin repo, en el navegador.
+    if (!repo) {
+      void window.api.shell.openUrl(hallado.url)
+      return
     }
-  }, [detalle, llave, pedirDetalle])
+    abrirWorkItemEnDolphin(repo.id, {
+      id: hallado.url,
+      type: clase,
+      number: Number(id),
+      title: hallado.titulo,
+      state: estadoDeWorkItem(hallado.estado),
+      url: hallado.url,
+      labels: [...(hallado.etiquetas ?? [])],
+      ...(hallado.colores ? { labelColors: hallado.colores } : {}),
+      updatedAt: new Date().toISOString(),
+      author: hallado.autor ?? null,
+      repoId: repo.id
+    })
+  }, [clase, detalle, id, llave, pedirDetalle, repo])
 
   const sePuedeAbrir = clase === 'issue' || clase === 'pr'
 
@@ -243,6 +269,11 @@ export function ReferenciaViva({
                       </span>
                     )
                   })}
+                </span>
+              )}
+              {repo && (
+                <span className="dolphin-ref-tarjeta-gris">
+                  {translate('components.dolphin.tarjetaGithub.abrirEnDolphin', 'Open in Dolphin')}
                 </span>
               )}
             </>

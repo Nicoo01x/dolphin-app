@@ -5,7 +5,7 @@ import { useActiveRepo, useRepos } from '@/store/repos/use-repository-catalog'
 import { Button } from '@/components/ui/button'
 import { translate } from '@/i18n/i18n'
 import { DOLPHIN_BROWSER_PARTITION } from '../../../../shared/browser/browser-session-partition'
-import { DOLPHIN_BROWSER_PAGE_GUEST_WEB_PREFERENCES_ATTRIBUTE } from '../../../../shared/browser/guest-lifecycle/browser-guest-web-preferences'
+import { DOLPHIN_BROWSER_GUEST_WEB_PREFERENCES_ATTRIBUTE } from '../../../../shared/browser/guest-lifecycle/browser-guest-web-preferences'
 import { DolphinMark } from './DolphinMark'
 import { dolphinRunsFor } from './dolphin-available'
 import { dolphinFailureMessage } from './dolphin-failure'
@@ -29,10 +29,22 @@ function appTheme(): ConsoleTheme {
  * La consola como una pantalla más de la app: con su tema y sin su marca ni su selector de
  * proyecto, que ya están en la barra de la app (ver dolphin-app, ui/src/lib/embebida.ts).
  */
+/**
+ * Con la pintura de fondo, la página es vidrio (`marca-de-pagina.ts`) y la consola se pinta
+ * transparente encima, con velos en vez de superficies (ui/src/app.css, `data-vidrio`). Sin eso
+ * tapaba el vidrio con su negro (Nico, 26/11/2026: «no tiene ni el fondo»).
+ */
+function appHasPainting(): boolean {
+  return document.documentElement.hasAttribute('data-dolphin-paisaje')
+}
+
 function embeddedConsoleUrl(url: string, theme: ConsoleTheme, vista: DolphinPageVista): string {
   const embedded = new URL(url)
   embedded.searchParams.set('embebida', '1')
   embedded.searchParams.set('tema', theme)
+  if (appHasPainting()) {
+    embedded.searchParams.set('vidrio', '1')
+  }
   embedded.hash = vista
   return embedded.toString()
 }
@@ -123,7 +135,9 @@ export default function DolphinPage(): React.JSX.Element {
     }
     const webview = document.createElement('webview') as Electron.WebviewTag
     webview.setAttribute('partition', DOLPHIN_BROWSER_PARTITION)
-    webview.setAttribute('webpreferences', DOLPHIN_BROWSER_PAGE_GUEST_WEB_PREFERENCES_ATTRIBUTE)
+    // Why las preferencias base y no las de página: esas fuerzan `transparent=false` (blanco para
+    // una web cualquiera en blanco) y la consola es nuestra: transparente, deja ver el vidrio.
+    webview.setAttribute('webpreferences', DOLPHIN_BROWSER_GUEST_WEB_PREFERENCES_ATTRIBUTE)
     webview.setAttribute(
       'aria-label',
       translate('auto.components.dolphin.DolphinPage.consoleLabel', 'Dolphin console')
@@ -132,7 +146,8 @@ export default function DolphinPage(): React.JSX.Element {
     webview.style.width = '100%'
     webview.style.height = '100%'
     webview.style.border = 'none'
-    webview.style.background = 'var(--background)'
+    // Transparente: lo de atrás es el vidrio de la página (o su fondo liso, sin pintura).
+    webview.style.background = 'transparent'
     container.appendChild(webview)
     webviewRef.current = webview
 
@@ -164,10 +179,11 @@ export default function DolphinPage(): React.JSX.Element {
     // Why sin recargar: cambiar el tema de la app no tiene que tirar lo que la consola está mostrando.
     const themeObserver = new MutationObserver(() => {
       runInConsole(webview, `window.dolphinTema?.(${JSON.stringify(appTheme())})`)
+      runInConsole(webview, `window.dolphinVidrio?.(${JSON.stringify(appHasPainting())})`)
     })
     themeObserver.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class']
+      attributeFilter: ['class', 'data-dolphin-paisaje']
     })
     return () => {
       themeObserver.disconnect()
@@ -205,7 +221,7 @@ export default function DolphinPage(): React.JSX.Element {
   }, [reload])
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col bg-background">
+    <div className="flex h-full min-h-0 flex-1 flex-col">
       {/* Why solo mientras no está lista: lista, la consola trae su barra (vistas, Nueva tarea,
           recargar, abrir afuera) y la marca y el proyecto ya están en la barra de la app. Dos
           barras apiladas repetían «Dolphin» y el proyecto. */}

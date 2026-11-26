@@ -38,6 +38,15 @@ export function getEditorHeaderCopyState(
     }
   }
 
+  if (file.mode === 'winforms-preview') {
+    return {
+      copyText: file.filePath,
+      copyToastLabel: t('auto.components.editor.editorHeader.filePathCopied', 'File path copied'),
+      pathLabel: getEditorDisplayLabel(file, 'fileName', t),
+      pathTitle: file.filePath
+    }
+  }
+
   if (file.mode === 'git-graph') {
     return {
       copyText: null,

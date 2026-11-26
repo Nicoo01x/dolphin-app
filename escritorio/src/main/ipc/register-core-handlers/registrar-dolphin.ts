@@ -6,6 +6,7 @@ import { registrarXray } from '../../dolphin/dolphin-xray'
 import { registerDolphinHandlers } from '../dolphin'
 import { registerDelfinesHandlers } from '../delfines'
 import { registrarLsp } from '../lsp'
+import { registrarWinForms } from '../winforms'
 
 let registrado = false
 
@@ -28,4 +29,5 @@ export function registrarHandlersDolphin(store: Store, runtime: DolphinRuntimeSe
   registrarXray()
   registerDolphinHandlers(store, runtime)
   registerDelfinesHandlers(store)
+  registrarWinForms()
 }

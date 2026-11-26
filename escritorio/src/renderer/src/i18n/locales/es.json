@@ -22006,6 +22006,8 @@
         }
       },
       "tarjetaGithub": {
+        "abrirEnDolphin": "Abrir en Dolphin",
+        "enElNavegador": "{{atajo}}+clic: en el navegador",
         "estado": {
           "abierto": "Abierto",
           "borrador": "Borrador",
@@ -25683,5 +25685,50 @@
     "ventana": {
       "cerrar": "Cerrar"
     }
+  },
+  "winformsPreview": {
+    "tabLabel": "{{name}} (formulario)",
+    "openForm": "Vista previa del formulario",
+    "openControl": "Vista previa del control",
+    "reload": "Volver a abrir el formulario",
+    "noBuild": "Sin build",
+    "buildsFound": "Builds encontrados, el más nuevo primero",
+    "pickAssembly": "Elegir ensamblado…",
+    "addToChat": "Agregar al chat",
+    "copyReference": "Copiar referencia",
+    "copied": "Referencia copiada",
+    "closed": "El formulario se cerró",
+    "details": "Detalles técnicos",
+    "retry": "Reintentar",
+    "dialog": "El formulario abrió «{{title}}»: {{text}}",
+    "stale": "Este build es del {{build}} y {{file}} cambió el {{changed}}: puede que la vista previa no tenga tus últimos cambios.",
+    "phase": {
+      "searching": "Buscando el build…",
+      "host": "Preparando el visor (sólo la primera vez)…",
+      "assembly": "Cargando {{name}}…",
+      "creating": "Construyendo el formulario…",
+      "showing": "Mostrando el formulario…",
+      "slow": "Sigue construyéndose ({{seconds}} s). Si el constructor espera una conexión, puede tardar."
+    },
+    "error": {
+      "noBuild": "No hay un build de este formulario",
+      "noProject": "No encontré el proyecto",
+      "notDotNet": "Ese archivo no es un ensamblado .NET",
+      "architecture": "Arquitectura incompatible",
+      "dependency": "Al build le falta una dependencia",
+      "classMissing": "El build no tiene esta clase",
+      "notAForm": "No es un formulario",
+      "noConstructor": "El formulario necesita parámetros para construirse",
+      "constructor": "El formulario falló al construirse",
+      "windowsOnly": "Sólo en Windows",
+      "generic": "No se pudo abrir el formulario"
+    },
+    "hint": {
+      "constructor": "Suele pasar cuando el constructor abre una conexión a la base o lee configuración que la app carga al arrancar.",
+      "classMissing": "El build es anterior al formulario, o el formulario está en otro ensamblado. Compilá el proyecto o elegí otro ensamblado.",
+      "dependency": "La carpeta del build tiene que tener todas las DLL que usa la app. Elegí un build de una carpeta donde la app corre."
+    },
+    "discarded": "Builds que probé antes",
+    "closeDialog": "Cerrar esa ventana del formulario"
   }
 }

@@ -108,3 +108,4 @@ export type EditorTabView =
   | { mode: 'conflict-review'; conflictReview?: ConflictReviewState }
   | { mode: 'git-graph' }
   | { mode: 'check-details'; checkRunDetails?: OpenCheckRunDetailsState }
+  | { mode: 'winforms-preview'; winformsPreviewClass?: string }

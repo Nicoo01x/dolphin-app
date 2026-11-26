@@ -91,7 +91,16 @@ export type OpenFile = {
   csvPreviewOnly?: boolean
   /** Why: explicit live tail, only meaningful for a read-only local log. */
   liveTail?: boolean
-  mode: 'edit' | 'diff' | 'conflict-review' | 'markdown-preview' | 'check-details' | 'git-graph'
+  /** Dolphin: la clase del formulario que muestra una pestaña 'winforms-preview' (Namespace.Clase). */
+  winformsPreviewClass?: string
+  mode:
+    | 'edit'
+    | 'diff'
+    | 'conflict-review'
+    | 'markdown-preview'
+    | 'check-details'
+    | 'git-graph'
+    | 'winforms-preview'
 }
 
 export type MarkdownViewMode = 'source' | 'rich' | 'preview'

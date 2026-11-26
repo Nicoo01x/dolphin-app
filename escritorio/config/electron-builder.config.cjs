@@ -709,6 +709,11 @@ module.exports = {
         from: 'native/xray-windows/xray.ps1',
         to: 'xray-windows/xray.ps1'
       },
+      // Fuente, no .exe: se compila al primer uso con el csc del .NET Framework (nada que firmar).
+      {
+        from: 'native/winforms-host/DolphinFormHost.cs',
+        to: 'winforms-host/DolphinFormHost.cs'
+      },
       cartelResources
     ]
   },

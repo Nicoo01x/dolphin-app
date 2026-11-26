@@ -121,3 +121,11 @@
     --tw-enter-translate-y: 0;
   }
 }
+
+/* «Abrir en Dolphin»: el mismo velo tonal del box, sin línea, para decir adónde va el clic. */
+.dolphin-tg-pie {
+  margin: 2px -4px -4px;
+  padding: 6px 8px;
+  background: var(--tg-velo);
+  border-radius: var(--dolphin-radio-fila, 8px);
+}

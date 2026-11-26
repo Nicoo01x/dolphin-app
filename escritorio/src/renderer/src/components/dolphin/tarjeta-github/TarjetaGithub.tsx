@@ -40,12 +40,15 @@ function useSinConexion(fallo: boolean, reintentar: () => void): boolean {
 export function TarjetaGithub({
   repo,
   link,
-  otherRepoFallback
+  otherRepoFallback,
+  enDolphin = false
 }: {
   repo: Repo
   link: GitHubIssueOrPRLink
   /** Igual que en la base: para un link de otro repo, lo que se mostraba antes mientras no llega. */
   otherRepoFallback?: ReactNode
+  /** Es del repo del chat: el clic lo abre en Tareas y la tarjeta lo dice. */
+  enDolphin?: boolean
 }): ReactNode {
   const { state, retry } = useNativeChatHoverPreview(
     githubLinkPreviewKey(repo, link),
@@ -56,5 +59,13 @@ export function TarjetaGithub({
   if (otherRepoFallback && state.status !== 'ready') {
     return otherRepoFallback
   }
-  return <VistaDeTarjeta link={link} estado={state} sinConexion={sinConexion} reintentar={retry} />
+  return (
+    <VistaDeTarjeta
+      link={link}
+      estado={state}
+      sinConexion={sinConexion}
+      reintentar={retry}
+      enDolphin={enDolphin}
+    />
+  )
 }

@@ -2,6 +2,7 @@ import type { PresenciaDeDolphin } from '../shared/discord-presencia'
 import type { AvisoDeMemoriaBaja, EstadoDeMemoriaBaja } from '../shared/modo-poca-ram'
 import type { LspApi } from './api/lsp-bridge'
 import type { DelfinesApi } from './api/delfines-api'
+import type { WinFormsApi } from './api/winforms-api'
 import type { CheckpointsApi } from '../shared/checkpoints-de-codigo-tipos'
 import type {
   ClaudeAccountsApi,
@@ -191,6 +192,8 @@ export type PreloadApi = {
   }
   /** Dolphin, sólo escritorio: los bots, acá o en tu servidor. */
   delfines?: DelfinesApi
+  /** Dolphin, sólo escritorio en Windows: la vista previa de formularios WinForms. */
+  winforms?: WinFormsApi
   checkpoints: CheckpointsApi
   gitBash: RuntimeApi['gitBash']
   plugins: PluginsApi

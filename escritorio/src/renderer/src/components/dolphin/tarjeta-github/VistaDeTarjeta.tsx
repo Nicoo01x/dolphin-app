@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ArrowUpRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { GitHubIcon } from '@/components/icons/GitHubIcon'
 import { useTranslate } from '@/i18n/use-translate'
@@ -90,17 +91,37 @@ function Fallo({ sinConexion, reintentar }: { sinConexion: boolean; reintentar: 
   )
 }
 
+/** Dice adónde va el clic: a Tareas, adentro de Dolphin. El navegador queda a un modificador. */
+function PieEnDolphin() {
+  const t = useTranslate()
+  const atajo = navigator.userAgent.includes('Mac') ? '⌘' : 'Ctrl'
+  return (
+    <div className="dolphin-tg-pie flex min-w-0 items-center gap-1.5 text-xs leading-4">
+      <ArrowUpRight aria-hidden className="size-3.5 shrink-0" />
+      <span className="font-medium text-foreground">
+        {t('components.dolphin.tarjetaGithub.abrirEnDolphin', 'Open in Dolphin')}
+      </span>
+      <span className="ml-auto shrink-0 text-muted-foreground">
+        {t('components.dolphin.tarjetaGithub.enElNavegador', '{{atajo}}+click: browser', { atajo })}
+      </span>
+    </div>
+  )
+}
+
 /** Lo que se ve, sin saber de dónde vienen los datos: lo usan la tarjeta real, el fixture y los tests. */
 export function VistaDeTarjeta({
   link,
   estado,
   sinConexion = false,
-  reintentar
+  reintentar,
+  enDolphin = false
 }: {
   link: GitHubIssueOrPRLink
   estado: EstadoDeCarga
   sinConexion?: boolean
   reintentar: () => void
+  /** El clic lo abre en Tareas (abrir-en-dolphin.ts); la tarjeta lo anuncia abajo. */
+  enDolphin?: boolean
 }): React.JSX.Element {
   const t = useTranslate()
   const item = estado.status === 'ready' ? estado.value : null
@@ -137,6 +158,7 @@ export function VistaDeTarjeta({
       ) : (
         <Fallo sinConexion={sinConexion} reintentar={reintentar} />
       )}
+      {item && enDolphin && <PieEnDolphin />}
       <span role="status" aria-live="polite" className="sr-only">
         {anuncio}
       </span>

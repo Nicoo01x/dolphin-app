@@ -19,6 +19,8 @@ import { CLOSE_ALL_CONTEXT_MENUS_EVENT } from '@/lib/overlay-interaction/close-a
 import type { RuntimeFileOperationArgs } from '@/runtime/files/runtime-file-client-types'
 import { createMultiSelectDragGhost } from '../mutations/file-explorer-multi-drag-image'
 import { FileExplorerRowContextMenu } from './file-explorer-row-context-menu'
+import { useTipoWinForms, type TipoWinForms } from '@/lib/winforms/winforms-explorer-kind'
+import { WinFormsRowMarker } from './file-explorer-winforms-marker'
 
 export type FileExplorerRowProps = {
   node: TreeNode
@@ -43,6 +45,10 @@ export type FileExplorerRowProps = {
   runtimeDownloadContext?: RuntimeFileOperationArgs | null
   supportsFolderDownload?: boolean
   canOpenInDolphinBrowser: boolean
+  /** Dolphin: un `X.cs` con `X.Designer.cs` al lado; se confirma leyendo el código. */
+  isWinFormsCandidate?: boolean
+  /** Lo que resultó ser; sólo lo lee el menú contextual. */
+  winFormsKind?: TipoWinForms
   canCollapseFolderSubtree: boolean
   targetDir: string
   targetDepth: number
@@ -89,6 +95,7 @@ export function FileExplorerRow({
   runtimeDownloadContext,
   supportsFolderDownload = false,
   canOpenInDolphinBrowser,
+  isWinFormsCandidate = false,
   canCollapseFolderSubtree,
   targetDir,
   targetDepth,
@@ -115,6 +122,7 @@ export function FileExplorerRow({
   onNativeDragExpandDir
 }: FileExplorerRowProps): React.JSX.Element {
   const t = useTranslate()
+  const winFormsKind = useTipoWinForms(node.path, isWinFormsCandidate)
   const showLoadError = node.isDirectory && isExpanded && !isLoading && loadError !== null
   const rowDropDir = node.isDirectory ? node.path : targetDir
   const { setRowDragNode, handleDragOver, handleDragEnter, handleDragLeave, handleDrop } =
@@ -244,6 +252,7 @@ export function FileExplorerRow({
           >
             {node.name}
           </span>
+          {winFormsKind ? <WinFormsRowMarker node={node} kind={winFormsKind} /> : null}
           {showLoadError ? (
             <span className="w-0 flex-1 truncate text-destructive" title={loadError}>
               {loadError}
@@ -276,6 +285,7 @@ export function FileExplorerRow({
         runtimeDownloadContext={runtimeDownloadContext}
         supportsFolderDownload={supportsFolderDownload}
         canOpenInDolphinBrowser={canOpenInDolphinBrowser}
+        winFormsKind={winFormsKind}
         canCollapseFolderSubtree={canCollapseFolderSubtree}
         targetDir={targetDir}
         targetDepth={targetDepth}

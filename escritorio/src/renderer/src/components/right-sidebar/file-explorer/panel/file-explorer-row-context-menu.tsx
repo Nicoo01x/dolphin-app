@@ -1,6 +1,7 @@
 import { preventSecondaryMenuSelection } from '@/components/ui/prevent-secondary-menu-selection'
 import React, { useCallback } from 'react'
 import {
+  AppWindow,
   Copy,
   Download,
   ExternalLink,
@@ -48,6 +49,7 @@ import {
 } from './file-explorer-row-action-visibility'
 import { copyFileToOsClipboard, downloadRemoteFile } from './file-explorer-row-file-transfer'
 import { fileExplorerNodeTabRelativePath } from '../tree/file-explorer-directory-listing'
+import { openWinFormsPreview } from '@/lib/winforms/winforms-preview-open'
 
 const isMac = navigator.userAgent.includes('Mac')
 
@@ -60,6 +62,7 @@ type FileExplorerRowContextMenuProps = Pick<
   | 'runtimeDownloadContext'
   | 'supportsFolderDownload'
   | 'canOpenInDolphinBrowser'
+  | 'winFormsKind'
   | 'canCollapseFolderSubtree'
   | 'targetDir'
   | 'targetDepth'
@@ -85,6 +88,7 @@ export function FileExplorerRowContextMenu({
   runtimeDownloadContext,
   supportsFolderDownload,
   canOpenInDolphinBrowser,
+  winFormsKind,
   canCollapseFolderSubtree,
   targetDir,
   targetDepth,
@@ -231,6 +235,22 @@ export function FileExplorerRowContextMenu({
         >
           <Eye />
           {t('auto.components.right.sidebar.FileExplorerRow.d87a4c42e1', 'Open Markdown Preview')}
+        </ContextMenuItem>
+      )}
+      {!node.isDirectory && activeWorktreeId && winFormsKind && (
+        <ContextMenuItem
+          onSelect={() =>
+            openWinFormsPreview({
+              filePath: node.path,
+              relativePath: fileExplorerNodeTabRelativePath(node),
+              worktreeId: activeWorktreeId
+            })
+          }
+        >
+          <AppWindow />
+          {winFormsKind === 'control'
+            ? t('winformsPreview.openControl', 'Preview Control')
+            : t('winformsPreview.openForm', 'Preview Form')}
         </ContextMenuItem>
       )}
       {showRemoteDownloadAction && (

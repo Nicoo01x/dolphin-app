@@ -32,7 +32,13 @@ function Flotante({
       data-slot="hover-card-content"
       className="rounded-md border bg-popover text-popover-foreground shadow-floating"
     >
-      <VistaDeTarjeta link={link} estado={estado} sinConexion={sinConexion} reintentar={() => {}} />
+      <VistaDeTarjeta
+        link={link}
+        estado={estado}
+        sinConexion={sinConexion}
+        reintentar={() => {}}
+        enDolphin
+      />
     </div>
   )
 }

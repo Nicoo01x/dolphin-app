@@ -21,6 +21,10 @@ export function restoresSavedContentTab(
   if (tab.contentType === 'editor' && tab.entityId.startsWith('html-preview::')) {
     return false
   }
+  // Una vista previa de WinForms es un proceso vivo: al reiniciar no se relanza sola.
+  if (tab.contentType === 'editor' && tab.entityId.startsWith('winforms-preview::')) {
+    return false
+  }
   if (!isTransientEditorContentType(tab.contentType)) {
     return true
   }
